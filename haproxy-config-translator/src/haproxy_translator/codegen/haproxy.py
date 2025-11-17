@@ -168,6 +168,16 @@ class HAProxyCodeGenerator:
         for code, file in defaults.errorfiles.items():
             lines.append(self._indent(f"errorfile {code} {file}"))
 
+        # Error redirects
+        for code, url in defaults.errorloc.items():
+            lines.append(self._indent(f"errorloc {code} {url}"))
+
+        for code, url in defaults.errorloc302.items():
+            lines.append(self._indent(f"errorloc302 {code} {url}"))
+
+        for code, url in defaults.errorloc303.items():
+            lines.append(self._indent(f"errorloc303 {code} {url}"))
+
         # HTTP check
         if defaults.http_check:
             lines.extend(self._generate_http_check(defaults.http_check, indent=True))
@@ -198,6 +208,10 @@ class HAProxyCodeGenerator:
 
         if frontend.timeout_http_keep_alive:
             lines.append(self._indent(f"timeout http-keep-alive {frontend.timeout_http_keep_alive}"))
+
+        # Monitor URI
+        if frontend.monitor_uri:
+            lines.append(self._indent(f"monitor-uri {frontend.monitor_uri}"))
 
         # ACLs
         for acl in frontend.acls:

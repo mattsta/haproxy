@@ -132,6 +132,9 @@ class DefaultsConfig(IRNode):
     log: str | None = "global"
     options: list[str] = field(default_factory=list)
     errorfiles: dict[int, str] = field(default_factory=dict)
+    errorloc: dict[int, str] = field(default_factory=dict)  # 302 redirect
+    errorloc302: dict[int, str] = field(default_factory=dict)  # explicit 302
+    errorloc303: dict[int, str] = field(default_factory=dict)  # 303 redirect
     http_check: Optional["HealthCheck"] = None
 
 

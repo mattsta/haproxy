@@ -72,6 +72,9 @@ defaults_section: "defaults" "{" defaults_property* "}"
                   | "log" ":" string                   -> defaults_log
                   | "option" ":" string_or_array       -> defaults_option
                   | timeout_block                      -> defaults_timeout
+                  | "errorloc" number string           -> defaults_errorloc
+                  | "errorloc302" number string        -> defaults_errorloc302
+                  | "errorloc303" number string        -> defaults_errorloc303
 
 timeout_block: "timeout" ":" "{" timeout_item+ "}"
 
@@ -98,6 +101,7 @@ frontend_section: "frontend" identifier "{" frontend_property* "}"
                   | "timeout_client" ":" duration          -> frontend_timeout_client
                   | "timeout_http_request" ":" duration    -> frontend_timeout_http_request
                   | "timeout_http_keep_alive" ":" duration -> frontend_timeout_http_keep_alive
+                  | "monitor_uri" ":" string               -> frontend_monitor_uri
                   | "maxconn" ":" number                   -> frontend_maxconn
 
 bind_directive: "bind" bind_address bind_option*

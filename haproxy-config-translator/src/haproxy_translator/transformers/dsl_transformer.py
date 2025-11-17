@@ -229,6 +229,9 @@ class DSLTransformer(Transformer):
         timeout_http_keep_alive = None
         log = "global"
         options = []
+        errorloc = {}
+        errorloc302 = {}
+        errorloc303 = {}
 
         for item in items:
             if isinstance(item, tuple):
@@ -244,6 +247,15 @@ class DSLTransformer(Transformer):
                         options.extend(value)
                     else:
                         options.append(value)
+                elif key == "errorloc":
+                    code, url = value
+                    errorloc[code] = url
+                elif key == "errorloc302":
+                    code, url = value
+                    errorloc302[code] = url
+                elif key == "errorloc303":
+                    code, url = value
+                    errorloc303[code] = url
                 elif key == "timeout":
                     for timeout_key, timeout_value in value.items():
                         if timeout_key == "connect":
@@ -270,6 +282,9 @@ class DSLTransformer(Transformer):
             timeout_http_keep_alive=timeout_http_keep_alive,
             log=log,
             options=options,
+            errorloc=errorloc,
+            errorloc302=errorloc302,
+            errorloc303=errorloc303,
         )
 
     def defaults_mode(self, items: list[Any]) -> tuple[str, str]:
@@ -283,6 +298,15 @@ class DSLTransformer(Transformer):
 
     def defaults_option(self, items: list[Any]) -> tuple[str, Any]:
         return ("option", items[0])
+
+    def defaults_errorloc(self, items: list[Any]) -> tuple[str, tuple[int, str]]:
+        return ("errorloc", (int(items[0]), str(items[1])))
+
+    def defaults_errorloc302(self, items: list[Any]) -> tuple[str, tuple[int, str]]:
+        return ("errorloc302", (int(items[0]), str(items[1])))
+
+    def defaults_errorloc303(self, items: list[Any]) -> tuple[str, tuple[int, str]]:
+        return ("errorloc303", (int(items[0]), str(items[1])))
 
     def defaults_timeout(self, items: list[Any]) -> tuple[str, dict[str, str]]:
         return ("timeout", items[0])
@@ -315,6 +339,7 @@ class DSLTransformer(Transformer):
         timeout_client = None
         timeout_http_request = None
         timeout_http_keep_alive = None
+        monitor_uri = None
         maxconn = None
 
         for prop in properties:
@@ -353,6 +378,8 @@ class DSLTransformer(Transformer):
                     timeout_http_request = value
                 elif key == "timeout_http_keep_alive":
                     timeout_http_keep_alive = value
+                elif key == "monitor_uri":
+                    monitor_uri = value
                 elif key == "maxconn":
                     maxconn = value
 
@@ -369,6 +396,7 @@ class DSLTransformer(Transformer):
             timeout_client=timeout_client,
             timeout_http_request=timeout_http_request,
             timeout_http_keep_alive=timeout_http_keep_alive,
+            monitor_uri=monitor_uri,
             maxconn=maxconn,
         )
 
@@ -389,6 +417,9 @@ class DSLTransformer(Transformer):
 
     def frontend_timeout_http_keep_alive(self, items: list[Any]) -> tuple[str, str]:
         return ("timeout_http_keep_alive", str(items[0]))
+
+    def frontend_monitor_uri(self, items: list[Any]) -> tuple[str, str]:
+        return ("monitor_uri", str(items[0]))
 
     def frontend_maxconn(self, items: list[Any]) -> tuple[str, int]:
         return ("maxconn", items[0])
