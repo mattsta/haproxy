@@ -8,7 +8,11 @@ from lark import Lark, LarkError
 
 from ..ir import ConfigIR
 from ..transformers.dsl_transformer import DSLTransformer
-from ..utils.errors import ParseError, SourceLocation
+from ..transformers.loop_unroller import LoopUnroller
+from ..transformers.template_expander import TemplateExpander
+from ..transformers.variable_resolver import VariableResolver
+from ..utils.errors import ParseError, SourceLocation, ValidationError
+from ..validators.semantic import SemanticValidator
 from .base import ConfigParser
 
 
@@ -46,14 +50,39 @@ class DSLParser(ConfigParser):
         return [".hap", ".haproxy"]
 
     def parse(self, source: str, filepath: Path | None = None) -> ConfigIR:
-        """Parse DSL source code into IR."""
+        """Parse DSL source code into IR and apply transformations.
+
+        Pipeline:
+        1. Parse source to AST
+        2. Transform AST to IR
+        3. Expand templates
+        4. Resolve variables
+        5. Unroll loops
+        6. Validate semantics
+        """
         try:
-            # Parse with Lark
+            # Step 1: Parse with Lark
             parse_tree = self.parser.parse(source)
 
-            # Transform to IR
+            # Step 2: Transform to IR
             transformer = DSLTransformer(filepath=str(filepath) if filepath else "<input>")
-            return cast("ConfigIR", transformer.transform(parse_tree))
+            ir = cast("ConfigIR", transformer.transform(parse_tree))
+
+            # Step 3: Expand templates
+            template_expander = TemplateExpander(ir)
+            ir = template_expander.expand()
+
+            # Step 4: Resolve variables (multi-pass for nested references)
+            variable_resolver = VariableResolver(ir)
+            ir = variable_resolver.resolve()
+
+            # Step 5: Unroll loops
+            loop_unroller = LoopUnroller(ir)
+            ir = loop_unroller.unroll()
+
+            # Step 6: Validate semantics
+            validator = SemanticValidator(ir)
+            return validator.validate()
 
         except LarkError as e:
             # Convert Lark error to ParseError
@@ -66,6 +95,10 @@ class DSLParser(ConfigParser):
                 )
 
             raise ParseError(f"Syntax error: {e}", location=location) from e
+
+        except (ValidationError, ParseError):
+            # Re-raise validation and parse errors as-is
+            raise
 
         except Exception as e:
             # Catch any other errors

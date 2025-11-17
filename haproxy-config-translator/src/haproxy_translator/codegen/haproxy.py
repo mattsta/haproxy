@@ -73,6 +73,8 @@ class HAProxyCodeGenerator:
 
         # Write to file if output_path specified
         if output_path:
+            # Create parent directory if it doesn't exist
+            output_path.parent.mkdir(parents=True, exist_ok=True)
             output_path.write_text(config, encoding="utf-8")
 
         return config

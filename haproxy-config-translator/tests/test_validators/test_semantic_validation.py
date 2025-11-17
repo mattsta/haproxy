@@ -56,11 +56,9 @@ class TestSemanticValidation:
             }
         }
         """
-        ir = parser.parse(source)
-        validator = SemanticValidator(ir)
-
+        # Validation is now integrated into parser
         with pytest.raises(ValidationError, match="default_backend 'nonexistent' does not exist"):
-            validator.validate()
+            parser.parse(source)
 
     @pytest.mark.skip(reason="route block not yet converted to use_backend_rules by parser")
     def test_invalid_use_backend_reference(self, parser):
@@ -110,11 +108,9 @@ class TestSemanticValidation:
             }
         }
         """
-        ir = parser.parse(source)
-        validator = SemanticValidator(ir)
-
+        # Validation is now integrated into parser
         with pytest.raises(ValidationError, match="duplicate server names: web1"):
-            validator.validate()
+            parser.parse(source)
 
     @pytest.mark.skip(reason="frontend mode parsing defaults to HTTP, parser limitation")
     def test_http_option_in_tcp_mode(self, parser):
@@ -161,11 +157,9 @@ class TestSemanticValidation:
             }
         }
         """
-        ir = parser.parse(source)
-        validator = SemanticValidator(ir)
-
+        # Validation is now integrated into parser
         with pytest.raises(ValidationError, match="invalid health check method 'INVALID'"):
-            validator.validate()
+            parser.parse(source)
 
     def test_invalid_health_check_status(self, parser):
         """Test error when health check expect status is out of range."""
@@ -189,11 +183,9 @@ class TestSemanticValidation:
             }
         }
         """
-        ir = parser.parse(source)
-        validator = SemanticValidator(ir)
-
+        # Validation is now integrated into parser, so ValidationError is raised during parse
         with pytest.raises(ValidationError, match="invalid health check expect status 999"):
-            validator.validate()
+            parser.parse(source)
 
     def test_warning_for_backend_without_servers(self, parser):
         """Test warning when backend has no servers defined."""

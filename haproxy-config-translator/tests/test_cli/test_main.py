@@ -255,7 +255,6 @@ config test {
         content = output_file.read_text()
         assert "10.0.1.1:8080" in content
 
-    @pytest.mark.xfail(reason="Full transformation pipeline integration pending")
     def test_template_expansion(self, runner, tmp_path):
         """Test configuration with templates."""
         config_content = """
@@ -296,7 +295,6 @@ config test {
         assert "check" in content
         assert "rise 3" in content
 
-    @pytest.mark.xfail(reason="Directory creation needs explicit mkdir in HAProxyCodeGenerator")
     def test_output_directory_creation(self, runner, sample_config, tmp_path):
         """Test that output directory is created if it doesn't exist."""
         output_file = tmp_path / "nested" / "dir" / "haproxy.cfg"

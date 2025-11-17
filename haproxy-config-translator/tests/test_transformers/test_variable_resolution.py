@@ -132,12 +132,10 @@ class TestVariableResolution:
             }
         }
         """
-        ir = parser.parse(source)
-        resolver = VariableResolver(ir)
-
-        # Should raise ParseError for undefined variable
+        # Variable resolution is now integrated into parser
+        # Should raise ParseError for undefined variable during parse
         with pytest.raises(ParseError, match="Undefined variable"):
-            resolver.resolve()
+            parser.parse(source)
 
     def test_env_variable_resolution(self, parser, monkeypatch):
         """Test env() function resolves environment variables."""

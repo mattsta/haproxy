@@ -194,6 +194,9 @@ class TestFrontendSection:
                 mode: http
                 default_backend: servers
             }
+            backend servers {
+                balance: roundrobin
+            }
         }
         """
         ir = parser.parse(source)
@@ -244,6 +247,9 @@ class TestFrontendSection:
             frontend web {
                 acl is_api { path_beg "/api" }
                 default_backend: servers
+            }
+            backend servers {
+                balance: roundrobin
             }
         }
         """

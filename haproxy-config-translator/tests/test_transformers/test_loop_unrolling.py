@@ -296,16 +296,13 @@ class TestLoopUnrolling:
             }
         }
         """
+        # Loop unrolling is now integrated into parser
         ir = parser.parse(source)
 
-        # Before unroll - should have loop metadata
-        assert "server_loops" in ir.backends[0].metadata
-
-        unroller = LoopUnroller(ir)
-        ir = unroller.unroll()
-
-        # After unroll - metadata should be removed
+        # After parsing (which includes unrolling), metadata should be removed
         assert "server_loops" not in ir.backends[0].metadata
+        # Servers should be generated
+        assert len(ir.backends[0].servers) == 2
 
     def test_multiple_backends_with_loops(self, parser):
         """Test loop unrolling across multiple backends."""

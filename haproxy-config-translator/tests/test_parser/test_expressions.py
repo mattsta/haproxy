@@ -334,6 +334,9 @@ class TestQualifiedIdentifiers:
                 }
                 default_backend: servers
             }
+            backend servers {
+                balance: roundrobin
+            }
         }
         """
         ir = parser.parse(source)
