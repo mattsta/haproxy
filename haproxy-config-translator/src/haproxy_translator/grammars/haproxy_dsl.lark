@@ -12,6 +12,7 @@ config: "config" identifier "{" statement* "}"
           | frontend_section
           | backend_section
           | listen_section
+          | lua_section
           | acl_definition
           | template_definition
           | variable_declaration
@@ -52,8 +53,8 @@ lua_section: "lua" "{" lua_item* "}"
 
 lua_load: "load" string
 
-lua_script: "script" identifier "{" LUA_CODE "}"
-          | "script" identifier "(" lua_param_list ")" "{" LUA_CODE "}"
+lua_script: ("script" | "inline") identifier "{" LUA_CODE "}"
+          | ("script" | "inline") identifier "(" lua_param_list ")" "{" LUA_CODE "}"
 
 lua_param_list: lua_param ("," lua_param)*
 lua_param: identifier ":" template_var
@@ -206,7 +207,7 @@ server_definition: "server" (identifier | string) "{" server_property* "}"
 server_inline_param: identifier ":" value
 
 ?server_property: "address" ":" string              -> server_address
-                | "port" ":" number                 -> server_port
+                | "port" ":" number_or_string       -> server_port
                 | "check" ":" boolean               -> server_check
                 | "inter" ":" duration              -> server_inter
                 | "rise" ":" number                 -> server_rise
@@ -359,11 +360,15 @@ IDENTIFIER: /[a-zA-Z_][a-zA-Z0-9_]*/
 
 identifier: IDENTIFIER
 
-string: ESCAPED_STRING | INTERPOLATED_STRING
+string: ESCAPED_STRING | INTERPOLATED_STRING | VAR_REF
 
 INTERPOLATED_STRING: /"[^"]*\$\{[^}]+\}[^"]*"/  // String with ${var}
 
+VAR_REF: /\$\{[a-zA-Z_][a-zA-Z0-9_]*\}/  // Bare ${var} reference
+
 number: INT | FLOAT
+
+?number_or_string: number | string
 
 boolean: BOOLEAN
 

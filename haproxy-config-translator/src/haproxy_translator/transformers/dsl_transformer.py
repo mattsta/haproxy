@@ -932,8 +932,14 @@ class DSLTransformer(Transformer):
     def server_address(self, items: list[Any]) -> tuple[str, str]:
         return ("address", items[0])
 
-    def server_port(self, items: list[Any]) -> tuple[str, int]:
-        return ("port", items[0])
+    def server_port(self, items: list[Any]) -> tuple[str, int | str]:
+        # Port can be either a number or a string with variable interpolation
+        value = items[0]
+        if isinstance(value, str):
+            # If it's a string, it may contain ${var} - return as-is for variable resolution
+            return ("port", value)
+        # Otherwise it's a number
+        return ("port", int(value))
 
     def server_check(self, items: list[Any]) -> tuple[str, bool]:
         return ("check", items[0])

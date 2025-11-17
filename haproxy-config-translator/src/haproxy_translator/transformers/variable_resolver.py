@@ -200,9 +200,22 @@ class VariableResolver:
         resolved_ssl_verify = (
             self._resolve_value(server.ssl_verify) if server.ssl_verify else None
         )
+
+        # Resolve port if it's a string with variable reference
+        resolved_port = server.port
+        if isinstance(server.port, str):
+            resolved_port_str = self._resolve_value(server.port)
+            # Try to convert to int if possible
+            try:
+                resolved_port = int(resolved_port_str)
+            except ValueError:
+                # Keep as string if not a valid integer
+                resolved_port = resolved_port_str
+
         return replace(
             server,
             address=resolved_address,
+            port=resolved_port,
             ssl_verify=resolved_ssl_verify,
         )
 

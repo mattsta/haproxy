@@ -217,7 +217,7 @@ class Server(IRNode):
 
     name: str = ""
     address: str = ""
-    port: int = 8080
+    port: int | str = 8080  # Can be int or string with ${var} interpolation
     check: bool = False
     check_interval: str | None = None  # inter
     rise: int = 2

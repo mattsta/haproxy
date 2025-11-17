@@ -125,7 +125,6 @@ class TestCLI:
         assert result.exit_code == 1
         assert "Error:" in result.output
 
-    @pytest.mark.xfail(reason="Lua extraction not yet fully integrated in parser")
     def test_lua_extraction(self, runner, tmp_path):
         """Test Lua script extraction."""
         config_content = """
@@ -162,7 +161,6 @@ config test {
         if lua_dir.exists():
             assert "Lua scripts written to:" in result.output
 
-    @pytest.mark.xfail(reason="Lua extraction not yet fully integrated in parser")
     def test_custom_lua_dir(self, runner, tmp_path):
         """Test custom Lua output directory."""
         config_content = """
@@ -220,7 +218,6 @@ config test {
         assert result.exit_code == 1
         assert "Error:" in result.output
 
-    @pytest.mark.xfail(reason="Full transformation pipeline integration pending")
     def test_variable_interpolation(self, runner, tmp_path):
         """Test configuration with variables."""
         config_content = """
