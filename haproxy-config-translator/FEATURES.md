@@ -2,24 +2,25 @@
 
 This document analyzes feature support in the HAProxy Configuration Translator compared to HAProxy 3.0.
 
-**Last Updated**: 2025-01-17
+**Last Updated**: 2025-01-17 (v0.4.0)
 **HAProxy Version Reference**: 3.0.12-38
-**Translator Version**: 0.3.0
+**Translator Version**: 0.4.0
 
 ## Feature Support Summary
 
 | Category | Coverage | Notes |
 |----------|----------|-------|
 | **Global Section** | 70% | Core features complete, clustering/advanced features pending |
-| **Defaults Section** | 80% | Core timeouts and options supported, HTTP-specific timeouts pending |
-| **Frontend** | 85% | Full ACL, routing, HTTP rules support; TCP-level rules pending |
-| **Backend** | 90% | Comprehensive support for load balancing, servers, health checks |
-| **Server Options** | 75% | Core options complete, advanced SSL and networking pending |
+| **Defaults Section** | 90% | Core timeouts, HTTP timeouts, error redirects complete |
+| **Frontend** | 90% | Full ACL, routing, HTTP rules, monitoring support; TCP-level rules pending |
+| **Backend** | 95% | All balance algorithms, comprehensive server options, health checks |
+| **Server Options** | 85% | Core + SSL (SNI/ALPN) complete, advanced networking pending |
+| **Balance Algorithms** | 100% | All 10 primary algorithms fully implemented and tested |
 | **ACLs** | 90% | Full ACL definition support, all criteria types supported |
 | **HTTP Rules** | 85% | Request/response manipulation complete, some advanced actions pending |
 | **DSL Features** | 100% | Variables, templates, loops, conditionals fully supported |
 
-**Overall Coverage**: ~85% of common HAProxy use cases
+**Overall Coverage**: ~90% of common HAProxy use cases (up from ~85%)
 
 ---
 
@@ -115,11 +116,16 @@ This document analyzes feature support in the HAProxy Configuration Translator c
 **Retries:**
 - `retries` - Connection retry count
 
-### ❌ **NOT YET SUPPORTED**
-
 **HTTP Timeouts:**
-- `timeout http-request` - HTTP request timeout
-- `timeout http-keep-alive` - Keep-alive timeout
+- `timeout http-request` - HTTP request timeout (security)
+- `timeout http-keep-alive` - Keep-alive timeout (performance)
+
+**Error Handling:**
+- `errorloc` - Redirect error pages (302 redirect)
+- `errorloc302` - Explicit 302 redirect for error pages
+- `errorloc303` - 303 See Other redirect for error pages
+
+### ❌ **NOT YET SUPPORTED**
 
 **Common Options (should be explicit):**
 - `option http-keep-alive` - Connection reuse
@@ -128,7 +134,6 @@ This document analyzes feature support in the HAProxy Configuration Translator c
 - `option redispatch` - Retry on server failure
 
 **Error Handling:**
-- `errorloc`, `errorloc302`, `errorloc303` - Redirect error pages
 - `http-error` - Custom HTTP error responses
 
 **Load Balancing:**
@@ -152,6 +157,11 @@ This document analyzes feature support in the HAProxy Configuration Translator c
 - `mode` - http or tcp
 - `maxconn` - Maximum connections
 - `timeout client` - Client timeout override
+- `timeout http-request` - HTTP request timeout (security)
+- `timeout http-keep-alive` - Keep-alive timeout (performance)
+
+**Monitoring:**
+- `monitor-uri` - Health check URI endpoint (returns 200 OK)
 
 **Access Control:**
 - `acl` - Full ACL definition support
@@ -193,7 +203,6 @@ This document analyzes feature support in the HAProxy Configuration Translator c
 - `capture cookie` - Extract cookies
 
 **Monitoring:**
-- `monitor-uri` - Health check URI
 - `monitor fail` - Force health check failure
 
 **Other:**
@@ -315,6 +324,8 @@ This document analyzes feature support in the HAProxy Configuration Translator c
 **SSL:**
 - `ssl` - Enable SSL to server
 - `verify` - Certificate verification mode
+- `sni` - Server Name Indication (for TLS SNI extension)
+- `alpn` - Application Layer Protocol Negotiation (for HTTP/2, etc.)
 
 **PROXY Protocol:**
 - `send-proxy` - Send PROXY protocol v1
@@ -329,8 +340,6 @@ This document analyzes feature support in the HAProxy Configuration Translator c
 - `ca-file`, `crt`, `key` - Server certificates
 
 **SSL Advanced:**
-- `sni` - Server Name Indication
-- `alpn` - Application Layer Protocol Negotiation
 - `ssl-min-ver`, `ssl-max-ver` - TLS version constraints
 
 **Performance:**
@@ -450,23 +459,23 @@ All major actions supported through flexible parameters dict:
 
 ### ✅ **SUPPORTED**
 
+All 10 primary balance algorithms are fully implemented and tested:
+
 - `roundrobin` - Round-robin distribution
 - `leastconn` - Least connections
 - `source` - Source IP hashing
 - `uri` - Request URI hashing
 - `url_param` - URL parameter hashing
 - `random` - Random selection
-
-### ❌ **NOT YET SUPPORTED**
-
 - `static-rr` - Static round-robin
 - `first` - First available server
 - `hdr` - Header-based hashing
 - `rdp-cookie` - RDP cookie hashing
+
+### ❌ **NOT YET SUPPORTED**
+
 - Consistent hashing variants: `url32`, `url32+src`, `base`, `base32`, `base32+src`
 - `wt6` - Weighted distribution (legacy)
-
-**Note:** Can be added to `BalanceAlgorithm` enum easily.
 
 ---
 
