@@ -153,7 +153,7 @@ class TestDefaultsSection:
         source = """
         config test {
             defaults {
-                timeout {
+                timeout: {
                     connect: 5s
                     client: 50s
                     server: 50s

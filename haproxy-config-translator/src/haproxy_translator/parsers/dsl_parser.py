@@ -31,7 +31,8 @@ class DSLParser(ConfigParser):
         self.parser = Lark(
             grammar,
             start="config",
-            parser="lalr",  # Fast LALR parser
+            parser="earley",  # Earley parser - handles ambiguity better than LALR
+            # ambiguity="resolve" - automatically resolves ambiguities (default)
             propagate_positions=True,  # Track source positions
             maybe_placeholders=False,
         )

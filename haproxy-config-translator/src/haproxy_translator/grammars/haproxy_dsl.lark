@@ -73,12 +73,11 @@ defaults_section: "defaults" "{" defaults_property* "}"
                   | "option" ":" string_or_array       -> defaults_option
                   | timeout_block                      -> defaults_timeout
 
-timeout_block: "timeout" "{" timeout_item+ "}"
+timeout_block: "timeout" ":" "{" timeout_item+ "}"
 
 timeout_item: identifier ":" duration
 
 duration: number TIME_UNIT
-TIME_UNIT: "ms" | "s" | "m" | "h" | "d"
 
 mode_value: "http" | "tcp"
 
@@ -221,7 +220,7 @@ acl_criterion: identifier (string | number)*
 // ===== Template Definition =====
 template_definition: "template" identifier "{" template_property+ "}"
 
-?template_property: identifier ":" value
+template_property: identifier ":" value
 
 // ===== Variable Declaration =====
 variable_declaration: "let" identifier "=" expression
@@ -287,6 +286,7 @@ env_call: "env" "(" string ("," simple_value)? ")"
       | object
 
 ?simple_value: string
+             | duration  // Must come before number to match duration first
              | number
              | boolean
              | identifier
@@ -308,18 +308,20 @@ object_pair_list: object_pair ("," object_pair)*
 object_pair: (identifier | string) ":" value
 
 // ===== Primitives =====
-identifier: /[a-zA-Z_][a-zA-Z0-9_]*/
+// Terminals defined with priority hints
+TIME_UNIT.2: "ms" | "s" | "m" | "h" | "d"
+BOOLEAN.2: "true" | "false" | "yes" | "no" | "on" | "off" | "1" | "0"
+INT: /\d+/
+FLOAT: /\d+\.\d+/
+IDENTIFIER: /[a-zA-Z_][a-zA-Z0-9_]*/
+
+identifier: IDENTIFIER
 
 string: ESCAPED_STRING | INTERPOLATED_STRING
 
 INTERPOLATED_STRING: /"[^"]*\$\{[^}]+\}[^"]*"/  // String with ${var}
 
 number: INT | FLOAT
-
-INT: /\d+/
-FLOAT: /\d+\.\d+/
-
-BOOLEAN: "true" | "false" | "yes" | "no" | "on" | "off" | "1" | "0"
 
 boolean: BOOLEAN
 

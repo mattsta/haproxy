@@ -852,6 +852,12 @@ class DSLTransformer(Transformer):
         return items
 
     # ===== Template =====
+    def template_property(self, items: list[Any]) -> tuple[str, Any]:
+        """Transform template property to (key, value) tuple."""
+        key = str(items[0])
+        value = items[1] if len(items) > 1 else None
+        return (key, value)
+
     def template_definition(self, items: list[Any]) -> Template:
         name = str(items[0])
         properties = {}

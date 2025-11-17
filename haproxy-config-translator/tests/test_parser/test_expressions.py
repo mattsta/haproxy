@@ -115,8 +115,8 @@ class TestTemplates:
         ir = parser.parse(source)
         assert "server_defaults" in ir.templates
         template = ir.templates["server_defaults"]
-        assert template.properties["check"] is True
-        assert template.properties["inter"] == "3s"
+        assert template.parameters["check"] is True
+        assert template.parameters["inter"] == "3s"
 
     def test_template_spreading(self, parser):
         """Test template spreading syntax."""
@@ -211,7 +211,7 @@ class TestDurationValues:
         source = """
         config test {
             defaults {
-                timeout {
+                timeout: {
                     connect: 5s
                 }
             }
@@ -225,7 +225,7 @@ class TestDurationValues:
         source = """
         config test {
             defaults {
-                timeout {
+                timeout: {
                     connect: 5000ms
                 }
             }
@@ -239,7 +239,7 @@ class TestDurationValues:
         source = """
         config test {
             defaults {
-                timeout {
+                timeout: {
                     client: 5m
                 }
             }
