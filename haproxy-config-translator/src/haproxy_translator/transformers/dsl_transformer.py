@@ -27,6 +27,10 @@ from ..ir.nodes import (
     Server,
     ServerTemplate,
     StatsConfig,
+    StickRule,
+    StickTable,
+    TcpRequestRule,
+    TcpResponseRule,
     Template,
     UseBackendRule,
     Variable,
@@ -343,9 +347,13 @@ class DSLTransformer(Transformer):
         acls = []
         http_request_rules = []
         http_response_rules = []
+        tcp_request_rules = []
+        tcp_response_rules = []
         use_backend_rules = []
         default_backend = None
         options = []
+        stick_table = None
+        stick_rules = []
         timeout_client = None
         timeout_http_request = None
         timeout_http_keep_alive = None
@@ -367,6 +375,18 @@ class DSLTransformer(Transformer):
                 http_response_rules.append(prop)
             elif isinstance(prop, list) and all(isinstance(x, HttpResponseRule) for x in prop):
                 http_response_rules.extend(prop)
+            elif isinstance(prop, TcpRequestRule):
+                tcp_request_rules.append(prop)
+            elif isinstance(prop, list) and all(isinstance(x, TcpRequestRule) for x in prop):
+                tcp_request_rules.extend(prop)
+            elif isinstance(prop, TcpResponseRule):
+                tcp_response_rules.append(prop)
+            elif isinstance(prop, list) and all(isinstance(x, TcpResponseRule) for x in prop):
+                tcp_response_rules.extend(prop)
+            elif isinstance(prop, StickTable):
+                stick_table = prop
+            elif isinstance(prop, StickRule):
+                stick_rules.append(prop)
             elif isinstance(prop, UseBackendRule):
                 use_backend_rules.append(prop)
             elif isinstance(prop, list) and all(isinstance(x, UseBackendRule) for x in prop):
@@ -400,9 +420,13 @@ class DSLTransformer(Transformer):
             acls=acls,
             http_request_rules=http_request_rules,
             http_response_rules=http_response_rules,
+            tcp_request_rules=tcp_request_rules,
+            tcp_response_rules=tcp_response_rules,
             use_backend_rules=use_backend_rules,
             default_backend=default_backend,
             options=options,
+            stick_table=stick_table,
+            stick_rules=stick_rules,
             timeout_client=timeout_client,
             timeout_http_request=timeout_http_request,
             timeout_http_keep_alive=timeout_http_keep_alive,
@@ -557,10 +581,16 @@ class DSLTransformer(Transformer):
         server_templates = []
         server_loops = []  # Collect for loops
         health_check = None
+        acls = []
         options = []
         http_request_rules = []
+        http_response_rules = []
+        tcp_request_rules = []
+        tcp_response_rules = []
         compression = None
         cookie = None
+        stick_table = None
+        stick_rules = []
         timeout_server = None
         timeout_connect = None
         timeout_check = None
@@ -571,6 +601,12 @@ class DSLTransformer(Transformer):
                 servers.append(prop)
             elif isinstance(prop, ForLoop):
                 server_loops.append(prop)
+            elif isinstance(prop, ACL):
+                acls.append(prop)
+            elif isinstance(prop, StickTable):
+                stick_table = prop
+            elif isinstance(prop, StickRule):
+                stick_rules.append(prop)
             elif isinstance(prop, list):
                 # Handle mixed lists of servers and loops
                 for item in prop:
@@ -578,6 +614,14 @@ class DSLTransformer(Transformer):
                         servers.append(item)
                     elif isinstance(item, ForLoop):
                         server_loops.append(item)
+                    elif isinstance(item, HttpRequestRule):
+                        http_request_rules.append(item)
+                    elif isinstance(item, HttpResponseRule):
+                        http_response_rules.append(item)
+                    elif isinstance(item, TcpRequestRule):
+                        tcp_request_rules.append(item)
+                    elif isinstance(item, TcpResponseRule):
+                        tcp_response_rules.append(item)
             elif isinstance(prop, ServerTemplate):
                 server_templates.append(prop)
             elif isinstance(prop, HealthCheck):
@@ -620,10 +664,16 @@ class DSLTransformer(Transformer):
             servers=servers,
             server_templates=server_templates,
             health_check=health_check,
+            acls=acls,
             options=options,
             http_request_rules=http_request_rules,
+            http_response_rules=http_response_rules,
+            tcp_request_rules=tcp_request_rules,
+            tcp_response_rules=tcp_response_rules,
             compression=compression,
             cookie=cookie,
+            stick_table=stick_table,
+            stick_rules=stick_rules,
             timeout_server=timeout_server,
             timeout_connect=timeout_connect,
             timeout_check=timeout_check,
@@ -1219,3 +1269,209 @@ class DSLTransformer(Transformer):
 
     def LUA_CODE(self, token: Token) -> str:
         return str(token).strip()
+
+    # ===== Stick Table Support =====
+    def stick_table_block(self, items: list[Any]) -> StickTable:
+        """Transform stick-table block."""
+        table_type = "ip"
+        size = 100000
+        expire = None
+        nopurge = False
+        peers = None
+        store = []
+
+        for item in items:
+            if isinstance(item, tuple):
+                key, value = item
+                if key == "type":
+                    table_type = value
+                elif key == "size":
+                    size = int(value)
+                elif key == "expire":
+                    expire = value
+                elif key == "nopurge":
+                    nopurge = value
+                elif key == "peers":
+                    peers = value
+                elif key == "store":
+                    store = value if isinstance(value, list) else [value]
+
+        return StickTable(
+            type=table_type,
+            size=size,
+            expire=expire,
+            nopurge=nopurge,
+            peers=peers,
+            store=store,
+        )
+
+    def stick_table_type(self, items: list[Token]) -> str:
+        """Extract stick-table type from grammar alternatives."""
+        return str(items[0]) if items else "ip"
+
+    def stick_table_type_prop(self, items: list[Any]) -> tuple[str, str]:
+        return ("type", items[0])
+
+    def stick_table_size(self, items: list[Any]) -> tuple[str, int]:
+        return ("size", int(items[0]))
+
+    def stick_table_expire(self, items: list[Any]) -> tuple[str, str]:
+        return ("expire", str(items[0]))
+
+    def stick_table_nopurge(self, items: list[Any]) -> tuple[str, bool]:
+        return ("nopurge", bool(items[0]))
+
+    def stick_table_peers(self, items: list[Any]) -> tuple[str, str]:
+        return ("peers", str(items[0]))
+
+    def stick_table_store(self, items: list[Any]) -> tuple[str, list[str]]:
+        return ("store", items[0] if isinstance(items[0], list) else [str(items[0])])
+
+    def pattern(self, items: list[Any]) -> str:
+        """Extract pattern value (string or identifier)."""
+        return str(items[0]) if items else ""
+
+    def stick_rule(self, items: list[Any]) -> StickRule:
+        """Transform stick rule (stick on/match/store)."""
+        rule_type_item = items[0]
+        pattern_value = items[1] if len(items) > 1 else ""
+        condition = None
+
+        # Extract condition if present (from if_condition)
+        if len(items) > 2:
+            condition_item = items[2]
+            if isinstance(condition_item, tuple) and condition_item[0] == "condition":
+                condition = condition_item[1]
+            else:
+                condition = str(condition_item)
+
+        # Determine rule type
+        if isinstance(rule_type_item, tuple):
+            rule_type = rule_type_item[0]
+        else:
+            rule_type = "on"  # default
+
+        return StickRule(
+            rule_type=rule_type,
+            pattern=pattern_value,
+            table=None,  # Can be enhanced to parse table reference
+            condition=condition,
+        )
+
+    def stick_on(self, items: list[Any]) -> tuple[str, str]:
+        return ("on", "")
+
+    def stick_match(self, items: list[Any]) -> tuple[str, str]:
+        return ("match", "")
+
+    def stick_store_request(self, items: list[Any]) -> tuple[str, str]:
+        return ("store-request", "")
+
+    def stick_store_response(self, items: list[Any]) -> tuple[str, str]:
+        return ("store-response", "")
+
+    # ===== TCP Request/Response Rules =====
+    def tcp_request_block(self, items: list[Any]) -> list[TcpRequestRule]:
+        """Transform tcp-request block."""
+        return items
+
+    def tcp_request_type(self, items: list[Token]) -> str:
+        """Extract tcp-request type from grammar alternatives."""
+        if items:
+            # Items contains a Token, extract its value
+            value = str(items[0])
+            # Remove any quotes and return lowercase
+            return value.strip('"').lower()
+        return "connection"
+
+    def tcp_request_rule(self, items: list[Any]) -> TcpRequestRule:
+        """Transform individual tcp-request rule."""
+        rule_type = items[0]
+        action = str(items[1]) if len(items) > 1 else ""
+        condition = None
+        parameters = {}
+
+        # Parse remaining items for condition (grammar only supports if_condition, no params)
+        for item in items[2:]:
+            if isinstance(item, tuple):
+                # Check if this is an if_condition tuple
+                if item[0] == "condition":
+                    condition = item[1]
+
+        return TcpRequestRule(
+            rule_type=rule_type,
+            action=action,
+            condition=condition,
+            parameters=parameters,
+        )
+
+    def if_condition(self, items: list[Any]) -> tuple[str, str]:
+        """Transform if condition to a tuple marking it as a condition."""
+        condition = str(items[0]) if items else ""
+        return ("condition", condition)
+
+    def condition_expr(self, items: list[Any]) -> str:
+        """Extract condition expression (ACL name or expression)."""
+        return str(items[0]) if items else ""
+
+    def tcp_response_block(self, items: list[Any]) -> list[TcpResponseRule]:
+        """Transform tcp-response block."""
+        return items
+
+    def tcp_response_type(self, items: list[Token]) -> str:
+        """Extract tcp-response type from grammar alternatives."""
+        return str(items[0]) if items else "content"
+
+    def tcp_response_rule(self, items: list[Any]) -> TcpResponseRule:
+        """Transform individual tcp-response rule."""
+        rule_type = items[0]
+        action = str(items[1]) if len(items) > 1 else ""
+        condition = None
+        parameters = {}
+
+        for item in items[2:]:
+            if isinstance(item, tuple):
+                # Check if this is an if_condition tuple
+                if item[0] == "condition":
+                    condition = item[1]
+                else:
+                    key, value = item
+                    parameters[key] = value
+            elif isinstance(item, str):
+                condition = item
+
+        return TcpResponseRule(
+            rule_type=rule_type,
+            action=action,
+            condition=condition,
+            parameters=parameters,
+        )
+
+    def tcp_rule_param(self, items: list[Any]) -> tuple[str, Any]:
+        """Transform tcp rule parameter."""
+        return (str(items[0]), items[1])
+
+    def tcp_rule_value(self, items: list[Any]) -> Any:
+        """Transform tcp rule value."""
+        return items[0]
+
+    # ===== Backend ACL Support =====
+    def backend_acl(self, items: list[Any]) -> ACL:
+        """Transform ACL in backend."""
+        return items[0] if items and isinstance(items[0], ACL) else items[0]
+
+    def backend_tcp_request(self, items: list[Any]) -> list[TcpRequestRule]:
+        """Transform tcp-request in backend."""
+        return items[0] if items else []
+
+    def backend_tcp_response(self, items: list[Any]) -> list[TcpResponseRule]:
+        """Transform tcp-response in backend."""
+        return items[0] if items else []
+
+    def backend_stick_table(self, items: list[Any]) -> StickTable:
+        """Transform stick-table in backend."""
+        return items[0] if items else None
+
+    def backend_stick_rule(self, items: list[Any]) -> StickRule:
+        """Transform stick rule in backend."""
+        return items[0] if items else None

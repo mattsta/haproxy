@@ -95,6 +95,10 @@ frontend_section: "frontend" identifier "{" frontend_property* "}"
                   | use_acl_directive
                   | http_request_block
                   | http_response_block
+                  | tcp_request_block
+                  | tcp_response_block
+                  | stick_table_block
+                  | stick_rule
                   | routing_block
                   | use_backend_rule
                   | "default_backend" ":" identifier       -> frontend_default_backend
@@ -133,6 +137,46 @@ http_rule: action_expr if_condition?
 
 action_expr: action_name http_rule_params*
 
+// ===== TCP Request/Response Rules =====
+tcp_request_block: "tcp-request" "{" tcp_request_rule* "}"
+tcp_response_block: "tcp-response" "{" tcp_response_rule* "}"
+
+// Use priority 5 for TCP keywords to prevent matching as identifiers
+TCP_REQUEST_CONNECTION.5: "connection"
+TCP_REQUEST_CONTENT.5: "content"
+TCP_REQUEST_INSPECT_DELAY.5: "inspect-delay"
+
+tcp_request_rule: tcp_request_type action_name if_condition
+                | tcp_request_type action_name
+
+tcp_request_type: TCP_REQUEST_CONNECTION | TCP_REQUEST_CONTENT | TCP_REQUEST_INSPECT_DELAY
+
+tcp_response_rule: tcp_response_type action_name if_condition
+                 | tcp_response_type action_name
+
+tcp_response_type: TCP_REQUEST_CONTENT | TCP_REQUEST_INSPECT_DELAY
+
+// ===== Stick Table and Rules =====
+stick_table_block: "stick-table" "{" stick_table_property* "}"
+
+?stick_table_property: "type" ":" stick_table_type     -> stick_table_type_prop
+                     | "size" ":" number                -> stick_table_size
+                     | "expire" ":" duration            -> stick_table_expire
+                     | "nopurge" ":" boolean            -> stick_table_nopurge
+                     | "peers" ":" identifier           -> stick_table_peers
+                     | "store" ":" string_array         -> stick_table_store
+
+stick_table_type: "ip" | "ipv6" | "integer" | "string" | "binary"
+
+stick_rule: stick_rule_type pattern if_condition?
+
+stick_rule_type: "stick" "on"              -> stick_on
+               | "stick" "match"           -> stick_match
+               | "stick" "store-request"   -> stick_store_request
+               | "stick" "store-response"  -> stick_store_response
+
+pattern: string | identifier
+
 action_name: qualified_identifier  // Allow "lua.function_name"
 
 qualified_identifier: identifier ("." identifier)*
@@ -161,12 +205,17 @@ backend_section: "backend" identifier "{" backend_property* "}"
                  | "balance" ":" balance_algo               -> backend_balance
                  | "option" ":" string_or_array             -> backend_option
                  | "cookie" ":" string                      -> backend_cookie
+                 | acl_definition                           -> backend_acl
                  | health_check_block                       -> backend_health_check
                  | servers_block                            -> backend_servers
                  | server_template_block                    -> backend_server_template
                  | compression_block                        -> backend_compression
                  | http_request_block                       -> backend_http_request
                  | http_response_block                      -> backend_http_response
+                 | tcp_request_block                        -> backend_tcp_request
+                 | tcp_response_block                       -> backend_tcp_response
+                 | stick_table_block                        -> backend_stick_table
+                 | stick_rule                               -> backend_stick_rule
                  | "timeout_server" ":" duration            -> backend_timeout_server
                  | "timeout_connect" ":" duration           -> backend_timeout_connect
                  | "timeout_check" ":" duration             -> backend_timeout_check

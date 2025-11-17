@@ -230,6 +230,22 @@ class HAProxyCodeGenerator:
         for acl in frontend.acls:
             lines.append(self._indent(self._format_acl(acl)))
 
+        # Stick table
+        if frontend.stick_table:
+            lines.append(self._indent(self._format_stick_table(frontend.stick_table)))
+
+        # Stick rules
+        for stick_rule in frontend.stick_rules:
+            lines.append(self._indent(self._format_stick_rule(stick_rule)))
+
+        # TCP request rules
+        for tcp_req in frontend.tcp_request_rules:
+            lines.append(self._indent(self._format_tcp_request_rule(tcp_req)))
+
+        # TCP response rules
+        for tcp_resp in frontend.tcp_response_rules:
+            lines.append(self._indent(self._format_tcp_response_rule(tcp_resp)))
+
         # HTTP request rules
         for req_rule in frontend.http_request_rules:
             lines.append(self._indent(self._format_http_request_rule(req_rule)))
@@ -283,6 +299,18 @@ class HAProxyCodeGenerator:
         for option in backend.options:
             lines.append(self._indent(f"option {option}"))
 
+        # ACLs
+        for acl in backend.acls:
+            lines.append(self._indent(self._format_acl(acl)))
+
+        # Stick table
+        if backend.stick_table:
+            lines.append(self._indent(self._format_stick_table(backend.stick_table)))
+
+        # Stick rules
+        for stick_rule in backend.stick_rules:
+            lines.append(self._indent(self._format_stick_rule(stick_rule)))
+
         # Cookie
         if backend.cookie:
             lines.append(self._indent(f"cookie {backend.cookie}"))
@@ -290,6 +318,14 @@ class HAProxyCodeGenerator:
         # Health check
         if backend.health_check:
             lines.extend(self._generate_http_check(backend.health_check, indent=True))
+
+        # TCP request rules
+        for tcp_req in backend.tcp_request_rules:
+            lines.append(self._indent(self._format_tcp_request_rule(tcp_req)))
+
+        # TCP response rules
+        for tcp_resp in backend.tcp_response_rules:
+            lines.append(self._indent(self._format_tcp_response_rule(tcp_resp)))
 
         # HTTP request rules
         for req_rule in backend.http_request_rules:
@@ -512,3 +548,63 @@ class HAProxyCodeGenerator:
     def get_lua_files(self) -> list[str]:
         """Get list of Lua files referenced in configuration."""
         return self.lua_files
+
+    def _format_stick_table(self, stick_table: "StickTable") -> str:
+        """Format stick-table directive."""
+        parts = [f"stick-table type {stick_table.type} size {stick_table.size}"]
+        
+        if stick_table.expire:
+            parts.append(f"expire {stick_table.expire}")
+        
+        if stick_table.nopurge:
+            parts.append("nopurge")
+        
+        if stick_table.peers:
+            parts.append(f"peers {stick_table.peers}")
+        
+        if stick_table.store:
+            store_str = " ".join(stick_table.store)
+            parts.append(f"store {store_str}")
+        
+        return " ".join(parts)
+
+    def _format_stick_rule(self, stick_rule: "StickRule") -> str:
+        """Format stick rule (stick on/match/store)."""
+        parts = [f"stick {stick_rule.rule_type}"]
+        
+        if stick_rule.pattern:
+            parts.append(stick_rule.pattern)
+        
+        if stick_rule.table:
+            parts.append(f"table {stick_rule.table}")
+        
+        if stick_rule.condition:
+            parts.append(f"if {stick_rule.condition}")
+        
+        return " ".join(parts)
+
+    def _format_tcp_request_rule(self, tcp_req: "TcpRequestRule") -> str:
+        """Format tcp-request rule."""
+        parts = [f"tcp-request {tcp_req.rule_type} {tcp_req.action}"]
+        
+        # Add parameters
+        for key, value in tcp_req.parameters.items():
+            parts.append(f"{key} {value}")
+        
+        if tcp_req.condition:
+            parts.append(f"if {tcp_req.condition}")
+        
+        return " ".join(parts)
+
+    def _format_tcp_response_rule(self, tcp_resp: "TcpResponseRule") -> str:
+        """Format tcp-response rule."""
+        parts = [f"tcp-response {tcp_resp.rule_type} {tcp_resp.action}"]
+        
+        # Add parameters
+        for key, value in tcp_resp.parameters.items():
+            parts.append(f"{key} {value}")
+        
+        if tcp_resp.condition:
+            parts.append(f"if {tcp_resp.condition}")
+        
+        return " ".join(parts)
