@@ -24,6 +24,10 @@ class BalanceAlgorithm(Enum):
     URI = "uri"
     URL_PARAM = "url_param"
     RANDOM = "random"
+    STATIC_RR = "static-rr"
+    FIRST = "first"
+    HDR = "hdr"
+    RDP_COOKIE = "rdp-cookie"
 
 
 class LogLevel(Enum):
@@ -123,6 +127,8 @@ class DefaultsConfig(IRNode):
     timeout_server: str = "50s"
     timeout_check: str | None = None
     timeout_queue: str | None = None
+    timeout_http_request: str | None = None  # HTTP request timeout
+    timeout_http_keep_alive: str | None = None  # Keep-alive timeout
     log: str | None = "global"
     options: list[str] = field(default_factory=list)
     errorfiles: dict[int, str] = field(default_factory=dict)
@@ -217,6 +223,8 @@ class Server(IRNode):
     maxconn: int | None = None
     ssl: bool = False
     ssl_verify: str | None = None
+    sni: str | None = None  # Server Name Indication
+    alpn: list[str] = field(default_factory=list)  # ALPN protocols
     backup: bool = False
     disabled: bool = False
     send_proxy: bool = False
@@ -277,7 +285,10 @@ class Frontend(IRNode):
     default_backend: str | None = None
     options: list[str] = field(default_factory=list)
     timeout_client: str | None = None
+    timeout_http_request: str | None = None  # HTTP request timeout
+    timeout_http_keep_alive: str | None = None  # Keep-alive timeout
     maxconn: int | None = None
+    monitor_uri: str | None = None  # Monitor URI for health checks
 
 
 @dataclass(frozen=True)
@@ -289,6 +300,7 @@ class Backend(IRNode):
     balance: BalanceAlgorithm = BalanceAlgorithm.ROUNDROBIN
     servers: list[Server] = field(default_factory=list)
     server_templates: list[ServerTemplate] = field(default_factory=list)
+    default_server: Server | None = None  # Default server options
     health_check: HealthCheck | None = None
     options: list[str] = field(default_factory=list)
     http_request_rules: list[HttpRequestRule] = field(default_factory=list)

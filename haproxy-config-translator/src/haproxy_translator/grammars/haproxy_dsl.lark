@@ -11,7 +11,7 @@ config: "config" identifier "{" statement* "}"
           | defaults_section
           | frontend_section
           | backend_section
-          // | listen_section  // Temporarily disabled
+          | listen_section
           | acl_definition
           | template_definition
           | variable_declaration
@@ -165,7 +165,7 @@ backend_section: "backend" identifier "{" backend_property* "}"
                  | "timeout_check" ":" duration             -> backend_timeout_check
                  | "retries" ":" number                     -> backend_retries
 
-balance_algo: "roundrobin" | "leastconn" | "source" | "uri" | "url_param" | "random"
+balance_algo: "roundrobin" | "leastconn" | "source" | "uri" | "url_param" | "random" | "static-rr" | "first" | "hdr" | "rdp-cookie"
 
 health_check_block: "health-check" "{" health_check_property* "}"
 
@@ -213,9 +213,20 @@ compression_block: "compression" "{" compression_property* "}"
                      | "type" ":" string_array        -> compression_type
 
 // ===== Listen Section =====
-// Temporarily disabled to avoid grammar conflicts
-// listen_section: "listen" identifier "{" listen_property* "}"
-// ?listen_property: bind_directive | acl_definition | "mode" ":" mode_value | backend_property
+listen_section: "listen" identifier "{" listen_property* "}"
+
+?listen_property: bind_directive
+                | "mode" ":" mode_value                    -> listen_mode
+                | "balance" ":" balance_algo               -> listen_balance
+                | acl_definition
+                | acl_block
+                | "option" ":" string_or_array             -> listen_option
+                | servers_block                            -> listen_servers
+                | health_check_block                       -> listen_health_check
+                | "timeout_client" ":" duration            -> listen_timeout_client
+                | "timeout_server" ":" duration            -> listen_timeout_server
+                | "timeout_connect" ":" duration           -> listen_timeout_connect
+                | "maxconn" ":" number                     -> listen_maxconn
 
 // ===== ACL Definition =====
 // ACL block containing multiple ACLs

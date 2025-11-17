@@ -607,6 +607,122 @@ class DSLTransformer(Transformer):
     def backend_retries(self, items: list[Any]) -> tuple[str, int]:
         return ("retries", items[0])
 
+    # ===== Listen Section =====
+    def listen_section(self, items: list[Any]) -> Listen:
+        name = str(items[0])
+        properties = items[1:]
+
+        binds = []
+        mode = Mode.HTTP
+        balance = BalanceAlgorithm.ROUNDROBIN
+        servers = []
+        server_loops = []
+        acls = []
+        options = []
+        timeout_client = None
+        timeout_server = None
+        timeout_connect = None
+        maxconn = None
+        health_check = None
+
+        for prop in properties:
+            if isinstance(prop, Bind):
+                binds.append(prop)
+            elif isinstance(prop, ACL):
+                acls.append(prop)
+            elif isinstance(prop, list):
+                if all(isinstance(x, ACL) for x in prop):
+                    acls.extend(prop)
+                elif all(isinstance(x, Server) for x in prop):
+                    servers.extend(prop)
+                else:
+                    # Handle mixed lists
+                    for item in prop:
+                        if isinstance(item, Server):
+                            servers.append(item)
+                        elif isinstance(item, ForLoop):
+                            server_loops.append(item)
+                        elif isinstance(item, ACL):
+                            acls.append(item)
+            elif isinstance(prop, Server):
+                servers.append(prop)
+            elif isinstance(prop, ForLoop):
+                server_loops.append(prop)
+            elif isinstance(prop, HealthCheck):
+                health_check = prop
+            elif isinstance(prop, tuple):
+                key, value = prop
+                if key == "mode":
+                    mode = Mode(value)
+                elif key == "balance":
+                    balance = BalanceAlgorithm(value)
+                elif key == "option":
+                    if isinstance(value, list):
+                        options.extend(value)
+                    else:
+                        options.append(value)
+                elif key == "timeout_client":
+                    timeout_client = value
+                elif key == "timeout_server":
+                    timeout_server = value
+                elif key == "timeout_connect":
+                    timeout_connect = value
+                elif key == "maxconn":
+                    maxconn = value
+
+        # Build metadata
+        metadata: dict[str, Any] = {}
+        if server_loops:
+            metadata["server_loops"] = server_loops
+        if timeout_client:
+            metadata["timeout_client"] = timeout_client
+        if timeout_server:
+            metadata["timeout_server"] = timeout_server
+        if timeout_connect:
+            metadata["timeout_connect"] = timeout_connect
+        if maxconn:
+            metadata["maxconn"] = maxconn
+        if health_check:
+            metadata["health_check"] = health_check
+
+        return Listen(
+            name=name,
+            binds=binds,
+            mode=mode,
+            balance=balance,
+            servers=servers,
+            acls=acls,
+            options=options,
+            metadata=metadata,
+        )
+
+    def listen_mode(self, items: list[Any]) -> tuple[str, str]:
+        return ("mode", items[0])
+
+    def listen_balance(self, items: list[Any]) -> tuple[str, str]:
+        return ("balance", items[0])
+
+    def listen_option(self, items: list[Any]) -> tuple[str, Any]:
+        return ("option", items[0])
+
+    def listen_servers(self, items: list[Any]) -> list[Server]:
+        return cast("list[Server]", items[0])
+
+    def listen_health_check(self, items: list[Any]) -> HealthCheck:
+        return cast("HealthCheck", items[0])
+
+    def listen_timeout_client(self, items: list[Any]) -> tuple[str, str]:
+        return ("timeout_client", str(items[0]))
+
+    def listen_timeout_server(self, items: list[Any]) -> tuple[str, str]:
+        return ("timeout_server", str(items[0]))
+
+    def listen_timeout_connect(self, items: list[Any]) -> tuple[str, str]:
+        return ("timeout_connect", str(items[0]))
+
+    def listen_maxconn(self, items: list[Any]) -> tuple[str, int]:
+        return ("maxconn", items[0])
+
     def health_check_block(self, items: list[Any]) -> HealthCheck:
         method = "GET"
         uri = "/"
