@@ -99,6 +99,48 @@ class StatsConfig(IRNode):
 
 
 @dataclass(frozen=True)
+class StickTable(IRNode):
+    """Stick table configuration for session persistence and rate limiting."""
+
+    type: str = "ip"  # ip, ipv6, integer, string, binary
+    size: int = 100000  # Number of entries
+    expire: str | None = None  # Expiration time (e.g., "30m", "1h")
+    nopurge: bool = False  # Don't purge oldest entries when full
+    peers: str | None = None  # Peer section name for replication
+    store: list[str] = field(default_factory=list)  # Data types: gpc0, conn_rate, http_req_rate, etc.
+
+
+@dataclass(frozen=True)
+class StickRule(IRNode):
+    """Stick rule for session persistence (stick on/match/store)."""
+
+    rule_type: str = "on"  # "on", "match", "store-request", "store-response"
+    pattern: str = ""  # Stick pattern expression (e.g., "src", "cookie(JSESSIONID)")
+    table: str | None = None  # Table name for stick match
+    condition: str | None = None  # ACL condition (e.g., "if !localhost")
+
+
+@dataclass(frozen=True)
+class TcpRequestRule(IRNode):
+    """TCP request processing rule."""
+
+    rule_type: str = "connection"  # "connection", "content", "inspect-delay"
+    action: str = ""  # accept, reject, expect-proxy, set-var, track-sc0, etc.
+    condition: str | None = None  # ACL condition
+    parameters: dict[str, Any] = field(default_factory=dict)  # Additional params
+
+
+@dataclass(frozen=True)
+class TcpResponseRule(IRNode):
+    """TCP response processing rule."""
+
+    rule_type: str = "content"  # "content", "inspect-delay"
+    action: str = ""  # accept, reject, close, set-var, etc.
+    condition: str | None = None  # ACL condition
+    parameters: dict[str, Any] = field(default_factory=dict)
+
+
+@dataclass(frozen=True)
 class GlobalConfig(IRNode):
     """Global configuration section."""
 
@@ -284,9 +326,13 @@ class Frontend(IRNode):
     acls: list[ACL] = field(default_factory=list)
     http_request_rules: list[HttpRequestRule] = field(default_factory=list)
     http_response_rules: list[HttpResponseRule] = field(default_factory=list)
+    tcp_request_rules: list["TcpRequestRule"] = field(default_factory=list)
+    tcp_response_rules: list["TcpResponseRule"] = field(default_factory=list)
     use_backend_rules: list[UseBackendRule] = field(default_factory=list)
     default_backend: str | None = None
     options: list[str] = field(default_factory=list)
+    stick_table: Optional["StickTable"] = None
+    stick_rules: list["StickRule"] = field(default_factory=list)
     timeout_client: str | None = None
     timeout_http_request: str | None = None  # HTTP request timeout
     timeout_http_keep_alive: str | None = None  # Keep-alive timeout
@@ -305,11 +351,16 @@ class Backend(IRNode):
     server_templates: list[ServerTemplate] = field(default_factory=list)
     default_server: Server | None = None  # Default server options
     health_check: HealthCheck | None = None
+    acls: list[ACL] = field(default_factory=list)
     options: list[str] = field(default_factory=list)
     http_request_rules: list[HttpRequestRule] = field(default_factory=list)
     http_response_rules: list[HttpResponseRule] = field(default_factory=list)
+    tcp_request_rules: list["TcpRequestRule"] = field(default_factory=list)
+    tcp_response_rules: list["TcpResponseRule"] = field(default_factory=list)
     compression: CompressionConfig | None = None
     cookie: str | None = None
+    stick_table: Optional["StickTable"] = None
+    stick_rules: list["StickRule"] = field(default_factory=list)
     timeout_server: str | None = None
     timeout_connect: str | None = None
     timeout_check: str | None = None
@@ -326,7 +377,13 @@ class Listen(IRNode):
     balance: BalanceAlgorithm = BalanceAlgorithm.ROUNDROBIN
     servers: list[Server] = field(default_factory=list)
     acls: list[ACL] = field(default_factory=list)
+    http_request_rules: list[HttpRequestRule] = field(default_factory=list)
+    http_response_rules: list[HttpResponseRule] = field(default_factory=list)
+    tcp_request_rules: list["TcpRequestRule"] = field(default_factory=list)
+    tcp_response_rules: list["TcpResponseRule"] = field(default_factory=list)
     options: list[str] = field(default_factory=list)
+    stick_table: Optional["StickTable"] = None
+    stick_rules: list["StickRule"] = field(default_factory=list)
 
 
 # DSL-specific IR nodes (for advanced features)
