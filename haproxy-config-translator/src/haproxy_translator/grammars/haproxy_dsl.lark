@@ -96,6 +96,8 @@ frontend_section: "frontend" identifier "{" frontend_property* "}"
                   | "default_backend" ":" identifier       -> frontend_default_backend
                   | "option" ":" string_or_array           -> frontend_option
                   | "timeout_client" ":" duration          -> frontend_timeout_client
+                  | "timeout_http_request" ":" duration    -> frontend_timeout_http_request
+                  | "timeout_http_keep_alive" ":" duration -> frontend_timeout_http_keep_alive
                   | "maxconn" ":" number                   -> frontend_maxconn
 
 bind_directive: "bind" bind_address bind_option*
@@ -198,6 +200,8 @@ server_inline_param: identifier ":" value
                 | "maxconn" ":" number              -> server_maxconn
                 | "ssl" ":" boolean                 -> server_ssl
                 | "verify" ":" string               -> server_verify
+                | "sni" ":" string                  -> server_sni
+                | "alpn" ":" string_array           -> server_alpn
                 | "backup" ":" boolean              -> server_backup
                 | template_spread                   -> server_template_spread
 

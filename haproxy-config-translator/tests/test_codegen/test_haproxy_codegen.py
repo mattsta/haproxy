@@ -284,6 +284,32 @@ class TestHAProxyCodeGenerator:
 
         assert "server web1 10.0.1.1:443 ssl verify none" in output
 
+    def test_server_with_sni_and_alpn(self, codegen):
+        """Test generation of server with SNI and ALPN."""
+        ir = ConfigIR(
+            name="test",
+            backends=[
+                Backend(
+                    name="servers",
+                    servers=[
+                        Server(
+                            name="web1",
+                            address="10.0.1.1",
+                            port=443,
+                            ssl=True,
+                            ssl_verify="none",
+                            sni="example.com",
+                            alpn=["h2", "http/1.1"],
+                        )
+                    ],
+                )
+            ],
+        )
+
+        output = codegen.generate(ir)
+
+        assert "server web1 10.0.1.1:443 ssl verify none sni example.com alpn h2,http/1.1" in output
+
     def test_server_with_backup(self, codegen):
         """Test generation of backup server."""
         ir = ConfigIR(

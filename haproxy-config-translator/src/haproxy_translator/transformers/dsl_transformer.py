@@ -225,6 +225,8 @@ class DSLTransformer(Transformer):
         timeout_client = "50s"
         timeout_server = "50s"
         timeout_check = None
+        timeout_http_request = None
+        timeout_http_keep_alive = None
         log = "global"
         options = []
 
@@ -252,6 +254,10 @@ class DSLTransformer(Transformer):
                             timeout_server = timeout_value
                         elif timeout_key == "check":
                             timeout_check = timeout_value
+                        elif timeout_key == "http_request":
+                            timeout_http_request = timeout_value
+                        elif timeout_key == "http_keep_alive":
+                            timeout_http_keep_alive = timeout_value
 
         return DefaultsConfig(
             mode=mode,
@@ -260,6 +266,8 @@ class DSLTransformer(Transformer):
             timeout_client=timeout_client,
             timeout_server=timeout_server,
             timeout_check=timeout_check,
+            timeout_http_request=timeout_http_request,
+            timeout_http_keep_alive=timeout_http_keep_alive,
             log=log,
             options=options,
         )
@@ -305,6 +313,8 @@ class DSLTransformer(Transformer):
         default_backend = None
         options = []
         timeout_client = None
+        timeout_http_request = None
+        timeout_http_keep_alive = None
         maxconn = None
 
         for prop in properties:
@@ -339,6 +349,10 @@ class DSLTransformer(Transformer):
                         options.append(value)
                 elif key == "timeout_client":
                     timeout_client = value
+                elif key == "timeout_http_request":
+                    timeout_http_request = value
+                elif key == "timeout_http_keep_alive":
+                    timeout_http_keep_alive = value
                 elif key == "maxconn":
                     maxconn = value
 
@@ -353,6 +367,8 @@ class DSLTransformer(Transformer):
             default_backend=default_backend,
             options=options,
             timeout_client=timeout_client,
+            timeout_http_request=timeout_http_request,
+            timeout_http_keep_alive=timeout_http_keep_alive,
             maxconn=maxconn,
         )
 
@@ -367,6 +383,12 @@ class DSLTransformer(Transformer):
 
     def frontend_timeout_client(self, items: list[Any]) -> tuple[str, str]:
         return ("timeout_client", str(items[0]))
+
+    def frontend_timeout_http_request(self, items: list[Any]) -> tuple[str, str]:
+        return ("timeout_http_request", str(items[0]))
+
+    def frontend_timeout_http_keep_alive(self, items: list[Any]) -> tuple[str, str]:
+        return ("timeout_http_keep_alive", str(items[0]))
 
     def frontend_maxconn(self, items: list[Any]) -> tuple[str, int]:
         return ("maxconn", items[0])
@@ -788,6 +810,8 @@ class DSLTransformer(Transformer):
         maxconn = None
         ssl = False
         ssl_verify = None
+        sni = None
+        alpn = []
         backup = False
         template_spreads = []
 
@@ -817,6 +841,10 @@ class DSLTransformer(Transformer):
                     ssl = value
                 elif key == "verify":
                     ssl_verify = value
+                elif key == "sni":
+                    sni = value
+                elif key == "alpn":
+                    alpn = value
                 elif key == "backup":
                     backup = value
 
@@ -837,6 +865,8 @@ class DSLTransformer(Transformer):
             maxconn=maxconn,
             ssl=ssl,
             ssl_verify=ssl_verify,
+            sni=sni,
+            alpn=alpn,
             backup=backup,
             metadata=metadata,
         )
@@ -897,6 +927,12 @@ class DSLTransformer(Transformer):
 
     def server_verify(self, items: list[Any]) -> tuple[str, str]:
         return ("verify", items[0])
+
+    def server_sni(self, items: list[Any]) -> tuple[str, str]:
+        return ("sni", items[0])
+
+    def server_alpn(self, items: list[Any]) -> tuple[str, list[str]]:
+        return ("alpn", items[0])
 
     def server_backup(self, items: list[Any]) -> tuple[str, bool]:
         return ("backup", items[0])

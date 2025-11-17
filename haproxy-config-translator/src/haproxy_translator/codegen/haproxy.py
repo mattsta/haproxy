@@ -154,6 +154,12 @@ class HAProxyCodeGenerator:
         if defaults.timeout_queue:
             lines.append(self._indent(f"timeout queue {defaults.timeout_queue}"))
 
+        if defaults.timeout_http_request:
+            lines.append(self._indent(f"timeout http-request {defaults.timeout_http_request}"))
+
+        if defaults.timeout_http_keep_alive:
+            lines.append(self._indent(f"timeout http-keep-alive {defaults.timeout_http_keep_alive}"))
+
         # Options
         for option in defaults.options:
             lines.append(self._indent(f"option {option}"))
@@ -186,6 +192,12 @@ class HAProxyCodeGenerator:
         # Timeout
         if frontend.timeout_client:
             lines.append(self._indent(f"timeout client {frontend.timeout_client}"))
+
+        if frontend.timeout_http_request:
+            lines.append(self._indent(f"timeout http-request {frontend.timeout_http_request}"))
+
+        if frontend.timeout_http_keep_alive:
+            lines.append(self._indent(f"timeout http-keep-alive {frontend.timeout_http_keep_alive}"))
 
         # ACLs
         for acl in frontend.acls:
@@ -414,6 +426,11 @@ class HAProxyCodeGenerator:
             parts.append("ssl")
             if server.ssl_verify:
                 parts.append(f"verify {server.ssl_verify}")
+            if server.sni:
+                parts.append(f"sni {server.sni}")
+            if server.alpn:
+                alpn_str = ",".join(server.alpn)
+                parts.append(f"alpn {alpn_str}")
 
         if server.backup:
             parts.append("backup")
