@@ -59,7 +59,7 @@ class LogFacility(Enum):
 class IRNode:
     """Base class for all IR nodes."""
 
-    location: Optional[SourceLocation] = None
+    location: SourceLocation | None = None
     metadata: dict[str, Any] = field(default_factory=dict)
 
 
@@ -71,14 +71,14 @@ class LogTarget(IRNode):
     address: str = field(default="")
     facility: LogFacility = LogFacility.LOCAL0
     level: LogLevel = LogLevel.INFO
-    minlevel: Optional[LogLevel] = None
+    minlevel: LogLevel | None = None
 
 
 @dataclass(frozen=True)
 class LuaScript(IRNode):
     """Lua script definition."""
 
-    name: Optional[str] = None
+    name: str | None = None
     source_type: str = "inline"  # "inline" or "file"
     content: str = ""  # Inline Lua code or file path
     parameters: dict[str, Any] = field(default_factory=dict)  # Template params
@@ -90,8 +90,8 @@ class StatsConfig(IRNode):
 
     enable: bool = True
     uri: str = "/stats"
-    auth: Optional[str] = None
-    refresh: Optional[str] = None
+    auth: str | None = None
+    refresh: str | None = None
 
 
 @dataclass(frozen=True)
@@ -100,15 +100,15 @@ class GlobalConfig(IRNode):
 
     daemon: bool = True
     maxconn: int = 2000
-    user: Optional[str] = None
-    group: Optional[str] = None
-    chroot: Optional[str] = None
-    pidfile: Optional[str] = None
+    user: str | None = None
+    group: str | None = None
+    chroot: str | None = None
+    pidfile: str | None = None
     log_targets: list[LogTarget] = field(default_factory=list)
     lua_scripts: list[LuaScript] = field(default_factory=list)
-    stats: Optional[StatsConfig] = None
+    stats: StatsConfig | None = None
     tuning: dict[str, Any] = field(default_factory=dict)
-    ssl_default_bind_ciphers: Optional[str] = None
+    ssl_default_bind_ciphers: str | None = None
     ssl_default_bind_options: list[str] = field(default_factory=list)
 
 
@@ -121,9 +121,9 @@ class DefaultsConfig(IRNode):
     timeout_connect: str = "5s"
     timeout_client: str = "50s"
     timeout_server: str = "50s"
-    timeout_check: Optional[str] = None
-    timeout_queue: Optional[str] = None
-    log: Optional[str] = "global"
+    timeout_check: str | None = None
+    timeout_queue: str | None = None
+    log: str | None = "global"
     options: list[str] = field(default_factory=list)
     errorfiles: dict[int, str] = field(default_factory=dict)
     http_check: Optional["HealthCheck"] = None
@@ -152,7 +152,7 @@ class HttpRequestRule(IRNode):
     """HTTP request rule."""
 
     action: str = ""  # deny, allow, redirect, set-header, lua.xxx, etc.
-    condition: Optional[str] = None  # ACL condition
+    condition: str | None = None  # ACL condition
     parameters: dict[str, Any] = field(default_factory=dict)
 
     def __str__(self) -> str:
@@ -172,7 +172,7 @@ class HttpResponseRule(IRNode):
     """HTTP response rule."""
 
     action: str = ""
-    condition: Optional[str] = None
+    condition: str | None = None
     parameters: dict[str, Any] = field(default_factory=dict)
 
 
@@ -182,7 +182,7 @@ class Bind(IRNode):
 
     address: str = ""  # "*:80", "127.0.0.1:8080", etc.
     ssl: bool = False
-    ssl_cert: Optional[str] = None
+    ssl_cert: str | None = None
     alpn: list[str] = field(default_factory=list)
     options: dict[str, Any] = field(default_factory=dict)
 
@@ -210,13 +210,13 @@ class Server(IRNode):
     address: str = ""
     port: int = 8080
     check: bool = False
-    check_interval: Optional[str] = None  # inter
+    check_interval: str | None = None  # inter
     rise: int = 2
     fall: int = 3
     weight: int = 1
-    maxconn: Optional[int] = None
+    maxconn: int | None = None
     ssl: bool = False
-    ssl_verify: Optional[str] = None
+    ssl_verify: str | None = None
     backup: bool = False
     disabled: bool = False
     send_proxy: bool = False
@@ -231,7 +231,7 @@ class ServerTemplate(IRNode):
     count: int = 0
     fqdn_pattern: str = ""  # e.g., "api-{id}.example.com"
     port: int = 8080
-    base_server: Optional[Server] = None
+    base_server: Server | None = None
 
 
 @dataclass(frozen=True)
@@ -240,10 +240,10 @@ class HealthCheck(IRNode):
 
     method: str = "GET"
     uri: str = "/"
-    expect_status: Optional[int] = 200
-    expect_string: Optional[str] = None
+    expect_status: int | None = 200
+    expect_string: str | None = None
     headers: dict[str, str] = field(default_factory=dict)
-    interval: Optional[str] = None
+    interval: str | None = None
 
 
 @dataclass(frozen=True)
@@ -260,7 +260,7 @@ class UseBackendRule(IRNode):
     """Use backend rule."""
 
     backend: str = ""
-    condition: Optional[str] = None
+    condition: str | None = None
 
 
 @dataclass(frozen=True)
@@ -274,10 +274,10 @@ class Frontend(IRNode):
     http_request_rules: list[HttpRequestRule] = field(default_factory=list)
     http_response_rules: list[HttpResponseRule] = field(default_factory=list)
     use_backend_rules: list[UseBackendRule] = field(default_factory=list)
-    default_backend: Optional[str] = None
+    default_backend: str | None = None
     options: list[str] = field(default_factory=list)
-    timeout_client: Optional[str] = None
-    maxconn: Optional[int] = None
+    timeout_client: str | None = None
+    maxconn: int | None = None
 
 
 @dataclass(frozen=True)
@@ -289,16 +289,16 @@ class Backend(IRNode):
     balance: BalanceAlgorithm = BalanceAlgorithm.ROUNDROBIN
     servers: list[Server] = field(default_factory=list)
     server_templates: list[ServerTemplate] = field(default_factory=list)
-    health_check: Optional[HealthCheck] = None
+    health_check: HealthCheck | None = None
     options: list[str] = field(default_factory=list)
     http_request_rules: list[HttpRequestRule] = field(default_factory=list)
     http_response_rules: list[HttpResponseRule] = field(default_factory=list)
-    compression: Optional[CompressionConfig] = None
-    cookie: Optional[str] = None
-    timeout_server: Optional[str] = None
-    timeout_connect: Optional[str] = None
-    timeout_check: Optional[str] = None
-    retries: Optional[int] = None
+    compression: CompressionConfig | None = None
+    cookie: str | None = None
+    timeout_server: str | None = None
+    timeout_connect: str | None = None
+    timeout_check: str | None = None
+    retries: int | None = None
 
 
 @dataclass(frozen=True)
@@ -321,7 +321,7 @@ class Variable(IRNode):
 
     name: str = ""
     value: Any = None
-    type_hint: Optional[str] = None
+    type_hint: str | None = None
 
 
 @dataclass(frozen=True)
@@ -367,8 +367,8 @@ class ConfigIR(IRNode):
 
     version: str = "2.0"
     name: str = "haproxy_config"
-    global_config: Optional[GlobalConfig] = None
-    defaults: Optional[DefaultsConfig] = None
+    global_config: GlobalConfig | None = None
+    defaults: DefaultsConfig | None = None
     frontends: list[Frontend] = field(default_factory=list)
     backends: list[Backend] = field(default_factory=list)
     listens: list[Listen] = field(default_factory=list)

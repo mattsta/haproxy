@@ -1,10 +1,22 @@
 """HAProxy native configuration code generator."""
 
-from typing import Optional
 from pathlib import Path
 
-from ..ir.nodes import *
-from ..utils.errors import CodeGenerationError
+from ..ir.nodes import (
+    ACL,
+    Backend,
+    Bind,
+    ConfigIR,
+    DefaultsConfig,
+    Frontend,
+    GlobalConfig,
+    HealthCheck,
+    HttpRequestRule,
+    HttpResponseRule,
+    Listen,
+    Server,
+    ServerTemplate,
+)
 
 
 class HAProxyCodeGenerator:
@@ -14,7 +26,7 @@ class HAProxyCodeGenerator:
         self.indent_str = indent
         self.lua_files: list[str] = []
 
-    def generate(self, ir: ConfigIR, output_path: Optional[Path] = None) -> str:
+    def generate(self, ir: ConfigIR, output_path: Path | None = None) -> str:
         """
         Generate complete HAProxy configuration.
 
@@ -110,7 +122,7 @@ class HAProxyCodeGenerator:
 
         # Stats
         if global_config.stats and global_config.stats.enable:
-            lines.append(self._indent(f"stats socket /var/run/haproxy.sock mode 660 level admin"))
+            lines.append(self._indent("stats socket /var/run/haproxy.sock mode 660 level admin"))
 
         # Tuning
         for key, value in global_config.tuning.items():
@@ -178,18 +190,18 @@ class HAProxyCodeGenerator:
             lines.append(self._indent(self._format_acl(acl)))
 
         # HTTP request rules
-        for rule in frontend.http_request_rules:
-            lines.append(self._indent(self._format_http_request_rule(rule)))
+        for req_rule in frontend.http_request_rules:
+            lines.append(self._indent(self._format_http_request_rule(req_rule)))
 
         # HTTP response rules
-        for rule in frontend.http_response_rules:
-            lines.append(self._indent(self._format_http_response_rule(rule)))
+        for resp_rule in frontend.http_response_rules:
+            lines.append(self._indent(self._format_http_response_rule(resp_rule)))
 
         # Use backend rules
-        for rule in frontend.use_backend_rules:
-            use_line = f"use_backend {rule.backend}"
-            if rule.condition:
-                use_line += f" if {rule.condition}"
+        for backend_rule in frontend.use_backend_rules:
+            use_line = f"use_backend {backend_rule.backend}"
+            if backend_rule.condition:
+                use_line += f" if {backend_rule.condition}"
             lines.append(self._indent(use_line))
 
         # Default backend
@@ -239,12 +251,12 @@ class HAProxyCodeGenerator:
             lines.extend(self._generate_http_check(backend.health_check, indent=True))
 
         # HTTP request rules
-        for rule in backend.http_request_rules:
-            lines.append(self._indent(self._format_http_request_rule(rule)))
+        for req_rule in backend.http_request_rules:
+            lines.append(self._indent(self._format_http_request_rule(req_rule)))
 
         # HTTP response rules
-        for rule in backend.http_response_rules:
-            lines.append(self._indent(self._format_http_response_rule(rule)))
+        for resp_rule in backend.http_response_rules:
+            lines.append(self._indent(self._format_http_response_rule(resp_rule)))
 
         # Compression
         if backend.compression:
@@ -420,29 +432,30 @@ class HAProxyCodeGenerator:
 
     def _format_server_template(self, template: ServerTemplate) -> str:
         """Format server template."""
-        base = template.base_server
         parts = [
             f"server-template {template.prefix} {template.count}",
             f"{template.fqdn_pattern}:{template.port}",
         ]
 
-        if base.check:
-            parts.append("check")
-            if base.check_interval:
-                parts.append(f"inter {base.check_interval}")
-            parts.append(f"rise {base.rise}")
-            parts.append(f"fall {base.fall}")
+        base = template.base_server
+        if base:
+            if base.check:
+                parts.append("check")
+                if base.check_interval:
+                    parts.append(f"inter {base.check_interval}")
+                parts.append(f"rise {base.rise}")
+                parts.append(f"fall {base.fall}")
 
-        if base.weight != 1:
-            parts.append(f"weight {base.weight}")
+            if base.weight != 1:
+                parts.append(f"weight {base.weight}")
 
-        if base.maxconn:
-            parts.append(f"maxconn {base.maxconn}")
+            if base.maxconn:
+                parts.append(f"maxconn {base.maxconn}")
 
-        if base.ssl:
-            parts.append("ssl")
-            if base.ssl_verify:
-                parts.append(f"verify {base.ssl_verify}")
+            if base.ssl:
+                parts.append("ssl")
+                if base.ssl_verify:
+                    parts.append(f"verify {base.ssl_verify}")
 
         return " ".join(parts)
 

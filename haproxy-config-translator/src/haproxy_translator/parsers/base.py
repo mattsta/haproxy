@@ -2,7 +2,7 @@
 
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import Optional
+from typing import ClassVar
 
 from ..ir import ConfigIR
 from ..utils.errors import ParseError
@@ -24,7 +24,7 @@ class ConfigParser(ABC):
         pass
 
     @abstractmethod
-    def parse(self, source: str, filepath: Optional[Path] = None) -> ConfigIR:
+    def parse(self, source: str, filepath: Path | None = None) -> ConfigIR:
         """
         Parse source code into intermediate representation.
 
@@ -76,8 +76,8 @@ class ConfigParser(ABC):
 class ParserRegistry:
     """Registry for all available parsers."""
 
-    _parsers: dict[str, type[ConfigParser]] = {}
-    _extension_map: dict[str, str] = {}
+    _parsers: ClassVar[dict[str, type[ConfigParser]]] = {}
+    _extension_map: ClassVar[dict[str, str]] = {}
 
     @classmethod
     def register(cls, parser_class: type[ConfigParser]) -> None:
@@ -90,7 +90,7 @@ class ParserRegistry:
 
     @classmethod
     def get_parser(
-        cls, format_name: Optional[str] = None, filepath: Optional[Path] = None
+        cls, format_name: str | None = None, filepath: Path | None = None
     ) -> ConfigParser:
         """Get parser by format name or auto-detect from file extension."""
         if format_name:
@@ -106,11 +106,10 @@ class ParserRegistry:
             if ext in cls._extension_map:
                 format_name = cls._extension_map[ext]
                 return cls._parsers[format_name]()
-            else:
-                raise ValueError(
-                    f"Cannot determine parser for file extension: {ext}. "
-                    f"Supported extensions: {', '.join(cls._extension_map.keys())}"
-                )
+            raise ValueError(
+                f"Cannot determine parser for file extension: {ext}. "
+                f"Supported extensions: {', '.join(cls._extension_map.keys())}"
+            )
 
         raise ValueError("Must specify either format_name or filepath")
 

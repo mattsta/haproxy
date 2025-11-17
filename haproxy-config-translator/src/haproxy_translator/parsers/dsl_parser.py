@@ -1,21 +1,21 @@
 """DSL parser using Lark."""
 
-from pathlib import Path
-from typing import Optional
 from importlib import resources
+from pathlib import Path
+from typing import cast
 
 from lark import Lark, LarkError
 
-from .base import ConfigParser
 from ..ir import ConfigIR
-from ..utils.errors import ParseError, SourceLocation
 from ..transformers.dsl_transformer import DSLTransformer
+from ..utils.errors import ParseError, SourceLocation
+from .base import ConfigParser
 
 
 class DSLParser(ConfigParser):
     """Parser for HAProxy DSL format."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         # Load grammar file using importlib.resources
         try:
             # Python 3.9+
@@ -44,7 +44,7 @@ class DSLParser(ConfigParser):
     def file_extensions(self) -> list[str]:
         return [".hap", ".haproxy"]
 
-    def parse(self, source: str, filepath: Optional[Path] = None) -> ConfigIR:
+    def parse(self, source: str, filepath: Path | None = None) -> ConfigIR:
         """Parse DSL source code into IR."""
         try:
             # Parse with Lark
@@ -52,9 +52,7 @@ class DSLParser(ConfigParser):
 
             # Transform to IR
             transformer = DSLTransformer(filepath=str(filepath) if filepath else "<input>")
-            ir = transformer.transform(parse_tree)
-
-            return ir
+            return cast("ConfigIR", transformer.transform(parse_tree))
 
         except LarkError as e:
             # Convert Lark error to ParseError

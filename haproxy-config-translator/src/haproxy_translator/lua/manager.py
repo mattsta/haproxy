@@ -1,12 +1,10 @@
 """Lua script extraction and management."""
 
-from pathlib import Path
-from typing import Optional
-import hashlib
 import dataclasses
+import hashlib
+from pathlib import Path
 
-from ..ir.nodes import ConfigIR, GlobalConfig, LuaScript
-from ..utils.errors import CodeGenerationError
+from ..ir.nodes import ConfigIR, LuaScript
 
 
 class LuaManager:

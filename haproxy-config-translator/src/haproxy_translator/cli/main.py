@@ -2,18 +2,17 @@
 
 import sys
 from pathlib import Path
-from typing import Optional
 
 import click
 from rich.console import Console
-from rich.syntax import Syntax
 from rich.panel import Panel
+from rich.syntax import Syntax
 
-from ..parsers import ParserRegistry
+from .. import __version__
 from ..codegen.haproxy import HAProxyCodeGenerator
 from ..lua.manager import LuaManager
+from ..parsers import ParserRegistry
 from ..utils.errors import TranslatorError
-from .. import __version__
 
 console = Console()
 
@@ -45,12 +44,12 @@ console = Console()
 @click.version_option(version=__version__, prog_name="haproxy-translate")
 def cli(
     config_file: Path,
-    output: Optional[Path],
-    format: Optional[str],
+    output: Path | None,
+    format: str | None,
     validate: bool,
     debug: bool,
     watch: bool,
-    lua_dir: Optional[Path],
+    lua_dir: Path | None,
     list_formats: bool,
     verbose: bool,
 ) -> None:
@@ -90,11 +89,11 @@ def cli(
 
 def _translate_once(
     config_file: Path,
-    output: Optional[Path],
-    format: Optional[str],
+    output: Path | None,
+    format: str | None,
     validate: bool,
     debug: bool,
-    lua_dir: Optional[Path],
+    lua_dir: Path | None,
     verbose: bool,
 ) -> None:
     """Translate configuration once."""
@@ -151,7 +150,7 @@ def _translate_once(
         ir = lua_manager.extract_lua_scripts(ir)
 
     if verbose and lua_manager.script_map:
-        console.print(f"[dim]Extracted Lua scripts:[/dim]")
+        console.print("[dim]Extracted Lua scripts:[/dim]")
         for name, path in lua_manager.get_script_paths().items():
             console.print(f"  - {name}: {path}")
 
@@ -175,15 +174,15 @@ def _translate_once(
 
 def _watch_mode(
     config_file: Path,
-    output: Optional[Path],
-    format: Optional[str],
-    lua_dir: Optional[Path],
+    output: Path | None,
+    format: str | None,
+    lua_dir: Path | None,
     verbose: bool,
 ) -> None:
     """Watch for file changes and regenerate."""
     try:
+        from watchdog.events import FileModifiedEvent, FileSystemEventHandler
         from watchdog.observers import Observer
-        from watchdog.events import FileSystemEventHandler, FileModifiedEvent
     except ImportError:
         console.print(
             "[bold red]Error:[/bold red] Watch mode requires 'watchdog' package. "
@@ -194,7 +193,7 @@ def _watch_mode(
     class ConfigFileHandler(FileSystemEventHandler):
         def __init__(self, file_to_watch: Path):
             self.file_to_watch = file_to_watch.resolve()
-            self.last_modified = 0
+            self.last_modified: float = 0.0
 
         def on_modified(self, event: FileModifiedEvent) -> None:
             if event.src_path == str(self.file_to_watch):
@@ -240,7 +239,6 @@ def _list_formats() -> None:
     console.print("\n[bold]Available Input Formats:[/bold]\n")
 
     formats = ParserRegistry.list_formats()
-    extensions = ParserRegistry.list_extensions()
 
     for format_name in formats:
         parser = ParserRegistry.get_parser(format_name=format_name)

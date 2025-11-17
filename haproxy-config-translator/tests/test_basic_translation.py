@@ -1,10 +1,9 @@
 """Basic end-to-end translation test."""
 
 import pytest
-from pathlib import Path
 
-from haproxy_translator.parsers import DSLParser
 from haproxy_translator.codegen.haproxy import HAProxyCodeGenerator
+from haproxy_translator.parsers import DSLParser
 
 
 def test_basic_dsl_to_haproxy():

@@ -8,6 +8,6 @@ ParserRegistry.register(DSLParser)
 
 __all__ = [
     "ConfigParser",
-    "ParserRegistry",
     "DSLParser",
+    "ParserRegistry",
 ]

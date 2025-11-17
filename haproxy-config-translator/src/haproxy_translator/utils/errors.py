@@ -1,7 +1,6 @@
 """Error classes for HAProxy translator."""
 
 from dataclasses import dataclass
-from typing import Optional
 
 
 @dataclass
@@ -20,7 +19,7 @@ class SourceLocation:
 class TranslatorError(Exception):
     """Base exception for translator errors."""
 
-    def __init__(self, message: str, location: Optional[SourceLocation] = None):
+    def __init__(self, message: str, location: SourceLocation | None = None):
         self.message = message
         self.location = location
         super().__init__(self._format_message())
@@ -46,7 +45,7 @@ class ValidationError(TranslatorError):
 class ValidationWarning:
     """Warning during validation (non-fatal)."""
 
-    def __init__(self, message: str, location: Optional[SourceLocation] = None):
+    def __init__(self, message: str, location: SourceLocation | None = None):
         self.message = message
         self.location = location
 

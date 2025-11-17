@@ -1,10 +1,36 @@
 """Lark transformer to convert parse tree to IR."""
 
-from lark import Transformer, Token, Tree
-from typing import Any
+from typing import Any, cast
 
-from ..ir.nodes import *
-from ..utils.errors import SourceLocation
+from lark import Token, Transformer
+
+from ..ir.nodes import (
+    ACL,
+    Backend,
+    BalanceAlgorithm,
+    Bind,
+    CompressionConfig,
+    ConfigIR,
+    DefaultsConfig,
+    ForLoop,
+    Frontend,
+    GlobalConfig,
+    HealthCheck,
+    HttpRequestRule,
+    HttpResponseRule,
+    Listen,
+    LogFacility,
+    LogLevel,
+    LogTarget,
+    LuaScript,
+    Mode,
+    Server,
+    ServerTemplate,
+    StatsConfig,
+    Template,
+    UseBackendRule,
+    Variable,
+)
 
 
 class DSLTransformer(Transformer):
@@ -124,13 +150,13 @@ class DSLTransformer(Transformer):
         return ("pidfile", items[0])
 
     def global_log(self, items: list[Any]) -> LogTarget:
-        return items[0]
+        return cast("LogTarget", items[0])
 
     def global_lua(self, items: list[Any]) -> list[LuaScript]:
-        return items[0]
+        return cast("list[LuaScript]", items[0])
 
     def global_stats(self, items: list[Any]) -> StatsConfig:
-        return items[0]
+        return cast("StatsConfig", items[0])
 
     def log_target(self, items: list[Any]) -> LogTarget:
         address = items[0]
@@ -415,12 +441,11 @@ class DSLTransformer(Transformer):
         return HttpRequestRule(action=action, parameters=parameters, condition=condition)
 
     def action_expr(self, items: list[Any]) -> str:
-        action = items[0]
+        return cast("str", items[0])
         # Collect parameters
-        return action
 
     def action_name(self, items: list[Any]) -> str:
-        return items[0]
+        return cast("str", items[0])
 
     def qualified_identifier(self, items: list[Any]) -> str:
         return ".".join(str(i) for i in items)
@@ -429,7 +454,7 @@ class DSLTransformer(Transformer):
         return (str(items[0]), items[1])
 
     def http_rule_value(self, items: list[Any]) -> str:
-        return items[0]
+        return cast("str", items[0])
 
     def if_condition(self, items: list[Any]) -> tuple[str, str]:
         return ("condition", str(items[0]))
@@ -542,19 +567,19 @@ class DSLTransformer(Transformer):
         return ("cookie", items[0])
 
     def backend_health_check(self, items: list[Any]) -> HealthCheck:
-        return items[0]
+        return cast("HealthCheck", items[0])
 
     def backend_servers(self, items: list[Any]) -> list[Server]:
-        return items[0]
+        return cast("list[Server]", items[0])
 
     def backend_server_template(self, items: list[Any]) -> ServerTemplate:
-        return items[0]
+        return cast("ServerTemplate", items[0])
 
     def backend_compression(self, items: list[Any]) -> CompressionConfig:
-        return items[0]
+        return cast("CompressionConfig", items[0])
 
     def backend_http_request(self, items: list[Any]) -> list[HttpRequestRule]:
-        return items[0]
+        return cast("list[HttpRequestRule]", items[0])
 
     def backend_timeout_server(self, items: list[Any]) -> tuple[str, str]:
         return ("timeout_server", str(items[0]))
@@ -603,7 +628,7 @@ class DSLTransformer(Transformer):
         return ("header", items[0][0], items[0][1])
 
     def expect_value(self, items: list[Any]) -> int:
-        return items[0]
+        return cast("int", items[0])
 
     def header_definition(self, items: list[Any]) -> tuple[str, str]:
         return (items[0], items[1])
@@ -884,14 +909,14 @@ class DSLTransformer(Transformer):
     def string(self, items: list[Token]) -> str:
         value = str(items[0])
         # Remove quotes if present
-        if value.startswith('"') and value.endswith('"'):
-            value = value[1:-1]
-        elif value.startswith("'") and value.endswith("'"):
+        if (value.startswith('"') and value.endswith('"')) or (
+            value.startswith("'") and value.endswith("'")
+        ):
             value = value[1:-1]
         return value
 
     def number(self, items: list[Any]) -> int | float:
-        return items[0]
+        return cast("int | float", items[0])
 
     def INT(self, token: Token) -> int:
         return int(token)

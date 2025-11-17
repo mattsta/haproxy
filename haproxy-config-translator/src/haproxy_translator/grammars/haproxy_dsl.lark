@@ -11,7 +11,7 @@ config: "config" identifier "{" statement* "}"
           | defaults_section
           | frontend_section
           | backend_section
-          | listen_section
+          // | listen_section  // Temporarily disabled
           | acl_definition
           | template_definition
           | variable_declaration
@@ -209,9 +209,9 @@ compression_block: "compression" "{" compression_property* "}"
                      | "type" ":" string_array        -> compression_type
 
 // ===== Listen Section =====
-listen_section: "listen" identifier "{" listen_property* "}"
-
-?listen_property: frontend_property | backend_property
+// Temporarily disabled to avoid grammar conflicts
+// listen_section: "listen" identifier "{" listen_property* "}"
+// ?listen_property: bind_directive | acl_definition | "mode" ":" mode_value | backend_property
 
 // ===== ACL Definition =====
 acl_definition: "acl" identifier "{" acl_criterion "}"
@@ -248,37 +248,48 @@ for_body: server_item*
 
 ?or_expr: and_expr ("||" and_expr)*
 
-?and_expr: comparison ("&&" comparison)*
+?and_expr: comparison_expr ("&&" comparison_expr)*
 
-?comparison: add_expr (("==" | "!=" | "<" | ">" | "<=" | ">=") add_expr)?
+?comparison_expr: add_expr (comparison_op add_expr)*
 
-?add_expr: mul_expr (("+" | "-") mul_expr)*
+comparison_op: "==" | "!=" | "<" | ">" | "<=" | ">="
 
-?mul_expr: unary_expr (("*" | "/" | "%") unary_expr)*
+?add_expr: mul_expr (add_op mul_expr)*
 
-?unary_expr: ("!" | "-") unary_expr
+add_op: "+" | "-"
+
+?mul_expr: unary_expr (mul_op unary_expr)*
+
+mul_op: "*" | "/" | "%"
+
+?unary_expr: unary_op unary_expr
            | postfix_expr
 
-?postfix_expr: atom ("." identifier | "[" expression "]")*
+unary_op: "!" | "-"
 
-?atom: identifier
-     | number
-     | string
-     | boolean
-     | "(" expression ")"
-     | env_call
+?postfix_expr: primary_expr (postfix_op)*
 
-// ternary: expression "?" expression ":" expression  // Disabled for now due to grammar conflicts
+?postfix_op: "." identifier
+           | "[" expression "]"
 
-env_call: "env" "(" string ("," value)? ")"
+?primary_expr: identifier
+             | number
+             | string
+             | boolean
+             | "(" expression ")"
+             | env_call
+
+env_call: "env" "(" string ("," simple_value)? ")"
 
 // ===== Values =====
-?value: string
-      | number
-      | boolean
+?value: simple_value
       | array
       | object
-      | expression
+
+?simple_value: string
+             | number
+             | boolean
+             | identifier
 
 ?string_or_array: string
                 | string_array

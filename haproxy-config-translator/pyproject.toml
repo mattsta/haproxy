@@ -102,6 +102,24 @@ ignore = [
     "PLR2004",  # magic values ok in tests
     "S101",     # assert ok in tests
 ]
+"src/haproxy_translator/transformers/dsl_transformer.py" = [
+    "N802",     # Lark transformer methods must match grammar terminals (uppercase)
+    "PLR0912",  # Complex transformer methods
+    "PLR0915",  # Many statements in transformer methods
+    "C901",     # Complex transformer methods
+    "PLC0415",  # Lazy imports for os module in env_call
+]
+"src/haproxy_translator/cli/main.py" = [
+    "PLR0912",  # CLI functions can have many branches
+    "PLR0913",  # CLI functions can have many arguments
+    "PLC0415",  # Lazy imports for watchdog (optional dependency) and time
+]
+"src/haproxy_translator/codegen/haproxy.py" = [
+    "PLR0912",  # Complex code generation functions have many branches
+]
+"src/haproxy_translator/lua/manager.py" = [
+    "PLC0415",  # Lazy import for re module in sanitize function
+]
 
 [tool.ruff.lint.isort]
 known-first-party = ["haproxy_translator"]
@@ -131,6 +149,8 @@ pretty = true
 module = [
     "lark.*",
     "watchdog.*",
+    "click.*",
+    "rich.*",
 ]
 ignore_missing_imports = true
 
