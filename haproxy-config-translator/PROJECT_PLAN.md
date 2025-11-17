@@ -6,19 +6,21 @@ Complete implementation plan for a production-ready HAProxy configuration transl
 
 ## Project Status
 
-- **Phase**: Transformation Layer Implementation (Phase 3)
-- **Version**: 0.1.0
+- **Phase**: Transformation Layer & Validation (Phase 3-4)
+- **Version**: 0.3.0
 - **Target**: Production-ready v1.0.0
-- **Last Updated**: 2025-11-17
+- **Last Updated**: 2025-11-17 (Session 2)
 
 ### Recent Accomplishments ✅
-- ✅ All 45 parser tests passing
-- ✅ 61% code coverage achieved
+- ✅ 105 tests passing (was 45)
+- ✅ 69% code coverage (was 61%)
+- ✅ Template expansion transformer (8 tests)
+- ✅ Variable resolution transformer (8/11 tests passing)
+- ✅ Loop unrolling transformer (11 tests)
+- ✅ Semantic validator (10/12 tests passing)
+- ✅ Code generator unit tests (17 tests)
+- ✅ TIME_UNIT grammar fix with regression tests
 - ✅ Parser switched from LALR to Earley (handles ambiguity)
-- ✅ Inline server syntax working
-- ✅ Duration parsing fixed (TIME_UNIT priority)
-- ✅ Template property parsing working
-- ✅ Boolean support: true/false, yes/no, on/off, 1/0
 - ✅ All ruff and mypy checks passing
 
 ---
