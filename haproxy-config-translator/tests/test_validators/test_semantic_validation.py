@@ -208,7 +208,7 @@ class TestSemanticValidation:
         validator = SemanticValidator(ir)
 
         # Should not raise error, but should generate warning
-        result = validator.validate()
+        validator.validate()
         assert len(validator.warnings) > 0
         assert any("no servers defined" in w for w in validator.warnings)
 
@@ -234,7 +234,7 @@ class TestSemanticValidation:
         ir = parser.parse(source)
         validator = SemanticValidator(ir)
 
-        result = validator.validate()
+        validator.validate()
         assert len(validator.warnings) > 0
         assert any("no bind directives" in w for w in validator.warnings)
 

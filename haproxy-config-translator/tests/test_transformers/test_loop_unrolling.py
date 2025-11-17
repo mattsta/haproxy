@@ -4,7 +4,6 @@ import pytest
 
 from haproxy_translator.parsers import DSLParser
 from haproxy_translator.transformers.loop_unroller import LoopUnroller
-from haproxy_translator.utils.errors import ParseError
 
 
 class TestLoopUnrolling:

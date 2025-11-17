@@ -97,7 +97,7 @@ end)
             ),
         )
 
-        result = manager.extract_lua_scripts(ir)
+        manager.extract_lua_scripts(ir)
 
         # Should generate hash-based filename
         assert len(manager.script_map) == 1
@@ -155,7 +155,7 @@ end)
             ),
         )
 
-        result = manager.extract_lua_scripts(ir)
+        manager.extract_lua_scripts(ir)
 
         # Read generated file
         lua_file = manager.script_map["rate_limiter"]
@@ -199,7 +199,7 @@ end)
             ),
         )
 
-        result = manager.extract_lua_scripts(ir)
+        manager.extract_lua_scripts(ir)
 
         # Should have 3 scripts in map
         assert len(manager.script_map) == 3
