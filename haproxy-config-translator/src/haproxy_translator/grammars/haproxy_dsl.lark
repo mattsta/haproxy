@@ -309,7 +309,8 @@ object_pair: (identifier | string) ":" value
 
 // ===== Primitives =====
 // Terminals defined with priority hints
-TIME_UNIT.2: "ms" | "s" | "m" | "h" | "d"
+// Use word boundaries to prevent matching TIME_UNIT as part of identifiers
+TIME_UNIT.2: /(?:ms|[smhd])\b/
 BOOLEAN.2: "true" | "false" | "yes" | "no" | "on" | "off" | "1" | "0"
 INT: /\d+/
 FLOAT: /\d+\.\d+/

@@ -657,11 +657,15 @@ class DSLTransformer(Transformer):
         ssl = False
         ssl_verify = None
         backup = False
+        template_spreads = []
 
         for prop in properties:
             if isinstance(prop, tuple):
                 key, value = prop
-                if key == "address":
+                if key == "__template_spread__":
+                    # Store template spread for later expansion
+                    template_spreads.append(value)
+                elif key == "address":
                     address = value
                 elif key == "port":
                     port = value
@@ -683,19 +687,11 @@ class DSLTransformer(Transformer):
                     ssl_verify = value
                 elif key == "backup":
                     backup = value
-            elif isinstance(prop, dict):
-                # Template spread - merge properties
-                for key, value in prop.items():
-                    if key == "check":
-                        check = value
-                    elif key == "inter":
-                        check_interval = value
-                    elif key == "rise":
-                        rise = value
-                    elif key == "fall":
-                        fall = value
-                    elif key == "maxconn":
-                        maxconn = value
+
+        # Build metadata with template spreads if any
+        metadata = {}
+        if template_spreads:
+            metadata["template_spreads"] = template_spreads
 
         return Server(
             name=name,
@@ -710,6 +706,7 @@ class DSLTransformer(Transformer):
             ssl=ssl,
             ssl_verify=ssl_verify,
             backup=backup,
+            metadata=metadata,
         )
 
     def server_inline(self, items: list[Any]) -> Server:
@@ -772,11 +769,10 @@ class DSLTransformer(Transformer):
     def server_backup(self, items: list[Any]) -> tuple[str, bool]:
         return ("backup", items[0])
 
-    def server_template_spread(self, items: list[Any]) -> dict[str, Any]:
+    def server_template_spread(self, items: list[Any]) -> tuple[str, str]:
+        """Return template spread as metadata marker."""
         template_name = str(items[0])
-        if template_name in self.templates:
-            return self.templates[template_name].parameters
-        return {}
+        return ("__template_spread__", template_name)
 
     def server_template_block(self, items: list[Any]) -> ServerTemplate:
         name = str(items[0])
