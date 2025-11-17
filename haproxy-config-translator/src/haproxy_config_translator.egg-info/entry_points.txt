@@ -1,0 +1,2 @@
+[console_scripts]
+haproxy-translate = haproxy_translator.cli.main:cli

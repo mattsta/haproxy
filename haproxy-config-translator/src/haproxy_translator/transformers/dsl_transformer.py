@@ -1,0 +1,935 @@
+"""Lark transformer to convert parse tree to IR."""
+
+from lark import Transformer, Token, Tree
+from typing import Any
+
+from ..ir.nodes import *
+from ..utils.errors import SourceLocation
+
+
+class DSLTransformer(Transformer):
+    """Transform Lark parse tree to ConfigIR."""
+
+    def __init__(self, filepath: str = "<input>"):
+        self.filepath = filepath
+        self.variables: dict[str, Variable] = {}
+        self.templates: dict[str, Template] = {}
+
+    # ===== Top Level =====
+    def config(self, items: list[Any]) -> ConfigIR:
+        """Transform top-level config."""
+        name = str(items[0])
+        statements = items[1:]
+
+        global_config = None
+        defaults = None
+        frontends = []
+        backends = []
+        listens = []
+        imports = []
+
+        for stmt in statements:
+            if isinstance(stmt, GlobalConfig):
+                global_config = stmt
+            elif isinstance(stmt, DefaultsConfig):
+                defaults = stmt
+            elif isinstance(stmt, Frontend):
+                frontends.append(stmt)
+            elif isinstance(stmt, Backend):
+                backends.append(stmt)
+            elif isinstance(stmt, Listen):
+                listens.append(stmt)
+            elif isinstance(stmt, Variable):
+                self.variables[stmt.name] = stmt
+            elif isinstance(stmt, Template):
+                self.templates[stmt.name] = stmt
+            elif isinstance(stmt, str) and stmt.startswith("import:"):
+                imports.append(stmt[7:])
+
+        return ConfigIR(
+            name=name,
+            global_config=global_config,
+            defaults=defaults,
+            frontends=frontends,
+            backends=backends,
+            listens=listens,
+            variables=self.variables,
+            templates=self.templates,
+            imports=imports,
+        )
+
+    # ===== Global Section =====
+    def global_section(self, items: list[Any]) -> GlobalConfig:
+        """Transform global section."""
+        daemon = True
+        maxconn = 2000
+        user = None
+        group = None
+        chroot = None
+        pidfile = None
+        log_targets = []
+        lua_scripts = []
+        stats = None
+
+        for item in items:
+            if isinstance(item, tuple):
+                key, value = item
+                if key == "daemon":
+                    daemon = value
+                elif key == "maxconn":
+                    maxconn = value
+                elif key == "user":
+                    user = value
+                elif key == "group":
+                    group = value
+                elif key == "chroot":
+                    chroot = value
+                elif key == "pidfile":
+                    pidfile = value
+            elif isinstance(item, LogTarget):
+                log_targets.append(item)
+            elif isinstance(item, list) and all(isinstance(x, LuaScript) for x in item):
+                lua_scripts.extend(item)
+            elif isinstance(item, StatsConfig):
+                stats = item
+
+        return GlobalConfig(
+            daemon=daemon,
+            maxconn=maxconn,
+            user=user,
+            group=group,
+            chroot=chroot,
+            pidfile=pidfile,
+            log_targets=log_targets,
+            lua_scripts=lua_scripts,
+            stats=stats,
+        )
+
+    def global_daemon(self, items: list[Any]) -> tuple[str, bool]:
+        return ("daemon", items[0])
+
+    def global_maxconn(self, items: list[Any]) -> tuple[str, int]:
+        return ("maxconn", items[0])
+
+    def global_user(self, items: list[Any]) -> tuple[str, str]:
+        return ("user", items[0])
+
+    def global_group(self, items: list[Any]) -> tuple[str, str]:
+        return ("group", items[0])
+
+    def global_chroot(self, items: list[Any]) -> tuple[str, str]:
+        return ("chroot", items[0])
+
+    def global_pidfile(self, items: list[Any]) -> tuple[str, str]:
+        return ("pidfile", items[0])
+
+    def global_log(self, items: list[Any]) -> LogTarget:
+        return items[0]
+
+    def global_lua(self, items: list[Any]) -> list[LuaScript]:
+        return items[0]
+
+    def global_stats(self, items: list[Any]) -> StatsConfig:
+        return items[0]
+
+    def log_target(self, items: list[Any]) -> LogTarget:
+        address = items[0]
+        facility = LogFacility(items[1])
+        level = LogLevel(items[2])
+        return LogTarget(address=address, facility=facility, level=level)
+
+    def stats_section(self, items: list[Any]) -> StatsConfig:
+        enable = True
+        uri = "/stats"
+        auth = None
+
+        for item in items:
+            if isinstance(item, tuple):
+                key, value = item
+                if key == "enable":
+                    enable = value
+                elif key == "uri":
+                    uri = value
+                elif key == "auth":
+                    auth = value
+
+        return StatsConfig(enable=enable, uri=uri, auth=auth)
+
+    def stats_enable(self, items: list[Any]) -> tuple[str, bool]:
+        return ("enable", items[0])
+
+    def stats_uri(self, items: list[Any]) -> tuple[str, str]:
+        return ("uri", items[0])
+
+    def stats_auth(self, items: list[Any]) -> tuple[str, str]:
+        return ("auth", items[0])
+
+    def lua_section(self, items: list[Any]) -> list[LuaScript]:
+        scripts = []
+        for item in items:
+            if isinstance(item, LuaScript):
+                scripts.append(item)
+        return scripts
+
+    def lua_load(self, items: list[Any]) -> LuaScript:
+        path = items[0]
+        return LuaScript(source_type="file", content=path)
+
+    def lua_script(self, items: list[Any]) -> LuaScript:
+        name = str(items[0])
+        code = str(items[-1])  # Last item is always LUA_CODE
+
+        # Check if there are parameters (if len > 2, params are in the middle)
+        parameters = {}
+        if len(items) > 2:
+            # Parse parameters
+            param_items = items[1:-1]
+            for i in range(0, len(param_items), 2):
+                param_name = str(param_items[i])
+                param_value = str(param_items[i + 1]) if i + 1 < len(param_items) else ""
+                parameters[param_name] = param_value
+
+        return LuaScript(name=name, source_type="inline", content=code, parameters=parameters)
+
+    # ===== Defaults Section =====
+    def defaults_section(self, items: list[Any]) -> DefaultsConfig:
+        mode = Mode.HTTP
+        retries = 3
+        timeout_connect = "5s"
+        timeout_client = "50s"
+        timeout_server = "50s"
+        timeout_check = None
+        log = "global"
+        options = []
+
+        for item in items:
+            if isinstance(item, tuple):
+                key, value = item
+                if key == "mode":
+                    mode = Mode(value)
+                elif key == "retries":
+                    retries = value
+                elif key == "log":
+                    log = value
+                elif key == "option":
+                    if isinstance(value, list):
+                        options.extend(value)
+                    else:
+                        options.append(value)
+                elif key == "timeout":
+                    for timeout_key, timeout_value in value.items():
+                        if timeout_key == "connect":
+                            timeout_connect = timeout_value
+                        elif timeout_key == "client":
+                            timeout_client = timeout_value
+                        elif timeout_key == "server":
+                            timeout_server = timeout_value
+                        elif timeout_key == "check":
+                            timeout_check = timeout_value
+
+        return DefaultsConfig(
+            mode=mode,
+            retries=retries,
+            timeout_connect=timeout_connect,
+            timeout_client=timeout_client,
+            timeout_server=timeout_server,
+            timeout_check=timeout_check,
+            log=log,
+            options=options,
+        )
+
+    def defaults_mode(self, items: list[Any]) -> tuple[str, str]:
+        return ("mode", items[0])
+
+    def defaults_retries(self, items: list[Any]) -> tuple[str, int]:
+        return ("retries", items[0])
+
+    def defaults_log(self, items: list[Any]) -> tuple[str, str]:
+        return ("log", items[0])
+
+    def defaults_option(self, items: list[Any]) -> tuple[str, Any]:
+        return ("option", items[0])
+
+    def defaults_timeout(self, items: list[Any]) -> tuple[str, dict[str, str]]:
+        return ("timeout", items[0])
+
+    def timeout_block(self, items: list[Any]) -> dict[str, str]:
+        timeouts = {}
+        for item in items:
+            if isinstance(item, tuple):
+                timeouts[item[0]] = item[1]
+        return timeouts
+
+    def timeout_item(self, items: list[Any]) -> tuple[str, str]:
+        name = str(items[0])
+        duration = str(items[1])
+        return (name, duration)
+
+    # ===== Frontend Section =====
+    def frontend_section(self, items: list[Any]) -> Frontend:
+        name = str(items[0])
+        properties = items[1:]
+
+        mode = Mode.HTTP
+        binds = []
+        acls = []
+        http_request_rules = []
+        http_response_rules = []
+        use_backend_rules = []
+        default_backend = None
+        options = []
+        timeout_client = None
+        maxconn = None
+
+        for prop in properties:
+            if isinstance(prop, Bind):
+                binds.append(prop)
+            elif isinstance(prop, ACL):
+                acls.append(prop)
+            elif isinstance(prop, list) and all(isinstance(x, ACL) for x in prop):
+                acls.extend(prop)
+            elif isinstance(prop, HttpRequestRule):
+                http_request_rules.append(prop)
+            elif isinstance(prop, list) and all(isinstance(x, HttpRequestRule) for x in prop):
+                http_request_rules.extend(prop)
+            elif isinstance(prop, HttpResponseRule):
+                http_response_rules.append(prop)
+            elif isinstance(prop, list) and all(isinstance(x, HttpResponseRule) for x in prop):
+                http_response_rules.extend(prop)
+            elif isinstance(prop, UseBackendRule):
+                use_backend_rules.append(prop)
+            elif isinstance(prop, list) and all(isinstance(x, UseBackendRule) for x in prop):
+                use_backend_rules.extend(prop)
+            elif isinstance(prop, tuple):
+                key, value = prop
+                if key == "mode":
+                    mode = Mode(value)
+                elif key == "default_backend":
+                    default_backend = value
+                elif key == "option":
+                    if isinstance(value, list):
+                        options.extend(value)
+                    else:
+                        options.append(value)
+                elif key == "timeout_client":
+                    timeout_client = value
+                elif key == "maxconn":
+                    maxconn = value
+
+        return Frontend(
+            name=name,
+            mode=mode,
+            binds=binds,
+            acls=acls,
+            http_request_rules=http_request_rules,
+            http_response_rules=http_response_rules,
+            use_backend_rules=use_backend_rules,
+            default_backend=default_backend,
+            options=options,
+            timeout_client=timeout_client,
+            maxconn=maxconn,
+        )
+
+    def frontend_mode(self, items: list[Any]) -> tuple[str, str]:
+        return ("mode", items[0])
+
+    def frontend_default_backend(self, items: list[Any]) -> tuple[str, str]:
+        return ("default_backend", str(items[0]))
+
+    def frontend_option(self, items: list[Any]) -> tuple[str, Any]:
+        return ("option", items[0])
+
+    def frontend_timeout_client(self, items: list[Any]) -> tuple[str, str]:
+        return ("timeout_client", str(items[0]))
+
+    def frontend_maxconn(self, items: list[Any]) -> tuple[str, int]:
+        return ("maxconn", items[0])
+
+    def bind_directive(self, items: list[Any]) -> Bind:
+        address = str(items[0])
+        ssl = False
+        ssl_cert = None
+        alpn = []
+        options = {}
+
+        for item in items[1:]:
+            if isinstance(item, dict):
+                # SSL block
+                ssl = True
+                for key, value in item.items():
+                    if key == "cert":
+                        ssl_cert = value
+                    elif key == "alpn":
+                        alpn = value
+                    else:
+                        options[key] = value
+            elif isinstance(item, tuple):
+                key, value = item
+                options[key] = value
+
+        return Bind(address=address, ssl=ssl, ssl_cert=ssl_cert, alpn=alpn, options=options)
+
+    def ssl_block(self, items: list[Any]) -> dict[str, Any]:
+        ssl_opts = {}
+        for item in items:
+            if isinstance(item, tuple):
+                ssl_opts[item[0]] = item[1]
+        return ssl_opts
+
+    def ssl_cert(self, items: list[Any]) -> tuple[str, str]:
+        return ("cert", items[0])
+
+    def ssl_alpn(self, items: list[Any]) -> tuple[str, list[str]]:
+        return ("alpn", items[0])
+
+    def ssl_generic(self, items: list[Any]) -> tuple[str, Any]:
+        return (str(items[0]), items[1])
+
+    def bind_generic_option(self, items: list[Any]) -> tuple[str, Any]:
+        return (str(items[0]), items[1])
+
+    def http_request_block(self, items: list[Any]) -> list[HttpRequestRule]:
+        return items
+
+    def http_response_block(self, items: list[Any]) -> list[HttpResponseRule]:
+        return items
+
+    def http_rule(self, items: list[Any]) -> HttpRequestRule:
+        action = str(items[0])
+        parameters = {}
+        condition = None
+
+        for item in items[1:]:
+            if isinstance(item, tuple):
+                if item[0] == "condition":
+                    condition = item[1]
+                else:
+                    parameters[item[0]] = item[1]
+            elif isinstance(item, str):
+                # Positional value
+                if "header" not in parameters:
+                    parameters["header"] = item
+                else:
+                    parameters["value"] = item
+
+        return HttpRequestRule(action=action, parameters=parameters, condition=condition)
+
+    def action_expr(self, items: list[Any]) -> str:
+        action = items[0]
+        # Collect parameters
+        return action
+
+    def action_name(self, items: list[Any]) -> str:
+        return items[0]
+
+    def qualified_identifier(self, items: list[Any]) -> str:
+        return ".".join(str(i) for i in items)
+
+    def http_rule_param(self, items: list[Any]) -> tuple[str, Any]:
+        return (str(items[0]), items[1])
+
+    def http_rule_value(self, items: list[Any]) -> str:
+        return items[0]
+
+    def if_condition(self, items: list[Any]) -> tuple[str, str]:
+        return ("condition", str(items[0]))
+
+    def condition_expr(self, items: list[Any]) -> str:
+        return str(items[0])
+
+    def use_acl_directive(self, items: list[Any]) -> list[ACL]:
+        acl_names = items[0]
+        # Return placeholder ACLs - they should be resolved later
+        return [ACL(name=name, criterion="") for name in acl_names]
+
+    def routing_block(self, items: list[Any]) -> list[UseBackendRule]:
+        return items
+
+    def route_to(self, items: list[Any]) -> UseBackendRule:
+        backend = str(items[0])
+        condition = items[1][1] if len(items) > 1 and isinstance(items[1], tuple) else None
+        return UseBackendRule(backend=backend, condition=condition)
+
+    def route_default(self, items: list[Any]) -> tuple[str, str]:
+        return ("default_backend", str(items[0]))
+
+    def single_use_backend(self, items: list[Any]) -> UseBackendRule:
+        backend = str(items[0])
+        condition = items[1][1] if len(items) > 1 and isinstance(items[1], tuple) else None
+        return UseBackendRule(backend=backend, condition=condition)
+
+    # ===== Backend Section =====
+    def backend_section(self, items: list[Any]) -> Backend:
+        name = str(items[0])
+        properties = items[1:]
+
+        mode = Mode.HTTP
+        balance = BalanceAlgorithm.ROUNDROBIN
+        servers = []
+        server_templates = []
+        health_check = None
+        options = []
+        http_request_rules = []
+        compression = None
+        cookie = None
+        timeout_server = None
+        timeout_connect = None
+        timeout_check = None
+        retries = None
+
+        for prop in properties:
+            if isinstance(prop, Server):
+                servers.append(prop)
+            elif isinstance(prop, list) and all(isinstance(x, Server) for x in prop):
+                servers.extend(prop)
+            elif isinstance(prop, ServerTemplate):
+                server_templates.append(prop)
+            elif isinstance(prop, HealthCheck):
+                health_check = prop
+            elif isinstance(prop, CompressionConfig):
+                compression = prop
+            elif isinstance(prop, list) and all(isinstance(x, HttpRequestRule) for x in prop):
+                http_request_rules.extend(prop)
+            elif isinstance(prop, tuple):
+                key, value = prop
+                if key == "mode":
+                    mode = Mode(value)
+                elif key == "balance":
+                    balance = BalanceAlgorithm(value)
+                elif key == "option":
+                    if isinstance(value, list):
+                        options.extend(value)
+                    else:
+                        options.append(value)
+                elif key == "cookie":
+                    cookie = value
+                elif key == "timeout_server":
+                    timeout_server = value
+                elif key == "timeout_connect":
+                    timeout_connect = value
+                elif key == "timeout_check":
+                    timeout_check = value
+                elif key == "retries":
+                    retries = value
+
+        return Backend(
+            name=name,
+            mode=mode,
+            balance=balance,
+            servers=servers,
+            server_templates=server_templates,
+            health_check=health_check,
+            options=options,
+            http_request_rules=http_request_rules,
+            compression=compression,
+            cookie=cookie,
+            timeout_server=timeout_server,
+            timeout_connect=timeout_connect,
+            timeout_check=timeout_check,
+            retries=retries,
+        )
+
+    def backend_mode(self, items: list[Any]) -> tuple[str, str]:
+        return ("mode", items[0])
+
+    def backend_balance(self, items: list[Any]) -> tuple[str, str]:
+        return ("balance", items[0])
+
+    def backend_option(self, items: list[Any]) -> tuple[str, Any]:
+        return ("option", items[0])
+
+    def backend_cookie(self, items: list[Any]) -> tuple[str, str]:
+        return ("cookie", items[0])
+
+    def backend_health_check(self, items: list[Any]) -> HealthCheck:
+        return items[0]
+
+    def backend_servers(self, items: list[Any]) -> list[Server]:
+        return items[0]
+
+    def backend_server_template(self, items: list[Any]) -> ServerTemplate:
+        return items[0]
+
+    def backend_compression(self, items: list[Any]) -> CompressionConfig:
+        return items[0]
+
+    def backend_http_request(self, items: list[Any]) -> list[HttpRequestRule]:
+        return items[0]
+
+    def backend_timeout_server(self, items: list[Any]) -> tuple[str, str]:
+        return ("timeout_server", str(items[0]))
+
+    def backend_timeout_connect(self, items: list[Any]) -> tuple[str, str]:
+        return ("timeout_connect", str(items[0]))
+
+    def backend_timeout_check(self, items: list[Any]) -> tuple[str, str]:
+        return ("timeout_check", str(items[0]))
+
+    def backend_retries(self, items: list[Any]) -> tuple[str, int]:
+        return ("retries", items[0])
+
+    def health_check_block(self, items: list[Any]) -> HealthCheck:
+        method = "GET"
+        uri = "/"
+        expect_status = None
+        headers = {}
+
+        for item in items:
+            if isinstance(item, tuple):
+                key, value = item
+                if key == "method":
+                    method = value
+                elif key == "uri":
+                    uri = value
+                elif key == "expect_status":
+                    expect_status = value
+                elif key.startswith("header_"):
+                    header_name = item[1]
+                    header_value = item[2]
+                    headers[header_name] = header_value
+
+        return HealthCheck(
+            method=method, uri=uri, expect_status=expect_status, headers=headers
+        )
+
+    def hc_method(self, items: list[Any]) -> tuple[str, str]:
+        return ("method", items[0])
+
+    def hc_uri(self, items: list[Any]) -> tuple[str, str]:
+        return ("uri", items[0])
+
+    def hc_expect(self, items: list[Any]) -> tuple[str, int]:
+        return ("expect_status", items[0])
+
+    def hc_header(self, items: list[Any]) -> tuple[str, str, str]:
+        return ("header", items[0][0], items[0][1])
+
+    def expect_value(self, items: list[Any]) -> int:
+        return items[0]
+
+    def header_definition(self, items: list[Any]) -> tuple[str, str]:
+        return (items[0], items[1])
+
+    def servers_block(self, items: list[Any]) -> list[Server]:
+        servers = []
+        for item in items:
+            if isinstance(item, Server):
+                servers.append(item)
+            elif isinstance(item, list):
+                servers.extend(item)
+        return servers
+
+    def server_definition(self, items: list[Any]) -> Server:
+        name = str(items[0])
+        properties = items[1:]
+
+        address = ""
+        port = 8080
+        check = False
+        check_interval = None
+        rise = 2
+        fall = 3
+        weight = 1
+        maxconn = None
+        ssl = False
+        ssl_verify = None
+        backup = False
+
+        for prop in properties:
+            if isinstance(prop, tuple):
+                key, value = prop
+                if key == "address":
+                    address = value
+                elif key == "port":
+                    port = value
+                elif key == "check":
+                    check = value
+                elif key == "inter":
+                    check_interval = value
+                elif key == "rise":
+                    rise = value
+                elif key == "fall":
+                    fall = value
+                elif key == "weight":
+                    weight = value
+                elif key == "maxconn":
+                    maxconn = value
+                elif key == "ssl":
+                    ssl = value
+                elif key == "verify":
+                    ssl_verify = value
+                elif key == "backup":
+                    backup = value
+            elif isinstance(prop, dict):
+                # Template spread - merge properties
+                for key, value in prop.items():
+                    if key == "check":
+                        check = value
+                    elif key == "inter":
+                        check_interval = value
+                    elif key == "rise":
+                        rise = value
+                    elif key == "fall":
+                        fall = value
+                    elif key == "maxconn":
+                        maxconn = value
+
+        return Server(
+            name=name,
+            address=address,
+            port=port,
+            check=check,
+            check_interval=check_interval,
+            rise=rise,
+            fall=fall,
+            weight=weight,
+            maxconn=maxconn,
+            ssl=ssl,
+            ssl_verify=ssl_verify,
+            backup=backup,
+        )
+
+    def server_inline(self, items: list[Any]) -> Server:
+        name = str(items[0])
+        params = items[1:]
+
+        properties = {}
+        for param in params:
+            if isinstance(param, tuple):
+                properties[param[0]] = param[1]
+
+        return Server(
+            name=name,
+            address=properties.get("address", ""),
+            port=properties.get("port", 8080),
+            check=properties.get("check", False),
+            check_interval=properties.get("inter"),
+            rise=properties.get("rise", 2),
+            fall=properties.get("fall", 3),
+            weight=properties.get("weight", 1),
+            maxconn=properties.get("maxconn"),
+            ssl=properties.get("ssl", False),
+            ssl_verify=properties.get("verify"),
+            backup=properties.get("backup", False),
+        )
+
+    def server_inline_param(self, items: list[Any]) -> tuple[str, Any]:
+        return (str(items[0]), items[1])
+
+    def server_address(self, items: list[Any]) -> tuple[str, str]:
+        return ("address", items[0])
+
+    def server_port(self, items: list[Any]) -> tuple[str, int]:
+        return ("port", items[0])
+
+    def server_check(self, items: list[Any]) -> tuple[str, bool]:
+        return ("check", items[0])
+
+    def server_inter(self, items: list[Any]) -> tuple[str, str]:
+        return ("inter", str(items[0]))
+
+    def server_rise(self, items: list[Any]) -> tuple[str, int]:
+        return ("rise", items[0])
+
+    def server_fall(self, items: list[Any]) -> tuple[str, int]:
+        return ("fall", items[0])
+
+    def server_weight(self, items: list[Any]) -> tuple[str, int]:
+        return ("weight", items[0])
+
+    def server_maxconn(self, items: list[Any]) -> tuple[str, int]:
+        return ("maxconn", items[0])
+
+    def server_ssl(self, items: list[Any]) -> tuple[str, bool]:
+        return ("ssl", items[0])
+
+    def server_verify(self, items: list[Any]) -> tuple[str, str]:
+        return ("verify", items[0])
+
+    def server_backup(self, items: list[Any]) -> tuple[str, bool]:
+        return ("backup", items[0])
+
+    def server_template_spread(self, items: list[Any]) -> dict[str, Any]:
+        template_name = str(items[0])
+        if template_name in self.templates:
+            return self.templates[template_name].parameters
+        return {}
+
+    def server_template_block(self, items: list[Any]) -> ServerTemplate:
+        name = str(items[0])
+        range_vals = items[1]
+        properties = items[2:]
+
+        start, end = range_vals
+        count = end - start + 1
+        fqdn_pattern = f"{name}-{{id}}.example.com"
+
+        # Build base server from properties
+        server_props = {}
+        for prop in properties:
+            if isinstance(prop, tuple):
+                server_props[prop[0]] = prop[1]
+
+        base_server = Server(
+            name=name,
+            address=fqdn_pattern,
+            port=server_props.get("port", 8080),
+            check=server_props.get("check", False),
+            check_interval=server_props.get("inter"),
+            rise=server_props.get("rise", 2),
+            fall=server_props.get("fall", 3),
+            weight=server_props.get("weight", 1),
+            maxconn=server_props.get("maxconn"),
+        )
+
+        return ServerTemplate(
+            prefix=name, count=count, fqdn_pattern=fqdn_pattern, port=base_server.port, base_server=base_server
+        )
+
+    def compression_block(self, items: list[Any]) -> CompressionConfig:
+        algo = "gzip"
+        types = []
+
+        for item in items:
+            if isinstance(item, tuple):
+                key, value = item
+                if key == "algo":
+                    algo = value
+                elif key == "type":
+                    types = value
+
+        return CompressionConfig(algo=algo, types=types)
+
+    def compression_algo(self, items: list[Any]) -> tuple[str, str]:
+        return ("algo", items[0])
+
+    def compression_type(self, items: list[Any]) -> tuple[str, list[str]]:
+        return ("type", items[0])
+
+    # ===== ACL =====
+    def acl_definition(self, items: list[Any]) -> ACL:
+        name = str(items[0])
+        criterion_items = items[1:]
+
+        if criterion_items:
+            criterion = str(criterion_items[0])
+            values = [str(v) for v in criterion_items[1:]]
+        else:
+            criterion = ""
+            values = []
+
+        return ACL(name=name, criterion=criterion, values=values)
+
+    def acl_criterion(self, items: list[Any]) -> list[Any]:
+        return items
+
+    # ===== Template =====
+    def template_definition(self, items: list[Any]) -> Template:
+        name = str(items[0])
+        properties = {}
+
+        for item in items[1:]:
+            if isinstance(item, tuple):
+                properties[item[0]] = item[1]
+
+        return Template(name=name, parameters=properties, applies_to="server")
+
+    def template_spread(self, items: list[Any]) -> str:
+        return str(items[0])
+
+    # ===== Variable =====
+    def variable_declaration(self, items: list[Any]) -> Variable:
+        name = str(items[0])
+        value = items[1]
+        return Variable(name=name, value=value)
+
+    # ===== Import =====
+    def import_statement(self, items: list[Any]) -> str:
+        return f"import:{items[0]}"
+
+    # ===== Control Flow =====
+    def for_statement(self, items: list[Any]) -> ForLoop:
+        var_name = str(items[0])
+        iterable = items[1]
+        body = items[2:]
+
+        return ForLoop(variable=var_name, iterable=iterable, body=body)
+
+    def for_iterable(self, items: list[Any]) -> Any:
+        return items[0]
+
+    def for_body(self, items: list[Any]) -> list[Any]:
+        return items
+
+    def range_expr(self, items: list[Any]) -> tuple[int, int]:
+        return (items[0], items[1])
+
+    # ===== Expressions =====
+    def expression(self, items: list[Any]) -> Any:
+        return items[0] if items else None
+
+    def env_call(self, items: list[Any]) -> str:
+        var_name = items[0]
+        default = items[1] if len(items) > 1 else ""
+        import os
+        return os.environ.get(var_name, default)
+
+    # ===== Primitives =====
+    def identifier(self, items: list[Token]) -> str:
+        return str(items[0])
+
+    def string(self, items: list[Token]) -> str:
+        value = str(items[0])
+        # Remove quotes if present
+        if value.startswith('"') and value.endswith('"'):
+            value = value[1:-1]
+        elif value.startswith("'") and value.endswith("'"):
+            value = value[1:-1]
+        return value
+
+    def number(self, items: list[Any]) -> int | float:
+        return items[0]
+
+    def INT(self, token: Token) -> int:
+        return int(token)
+
+    def FLOAT(self, token: Token) -> float:
+        return float(token)
+
+    def boolean(self, items: list[Token]) -> bool:
+        return str(items[0]) == "true"
+
+    def duration(self, items: list[Any]) -> str:
+        return f"{items[0]}{items[1]}"
+
+    def string_array(self, items: list[Any]) -> list[str]:
+        return items[0] if items else []
+
+    def string_list(self, items: list[Any]) -> list[str]:
+        return items
+
+    def identifier_array(self, items: list[Any]) -> list[str]:
+        return items[0] if items else []
+
+    def identifier_list(self, items: list[Any]) -> list[str]:
+        return items
+
+    def array(self, items: list[Any]) -> list[Any]:
+        return items[0] if items else []
+
+    def value_list(self, items: list[Any]) -> list[Any]:
+        return items
+
+    def object(self, items: list[Any]) -> dict[str, Any]:
+        if not items:
+            return {}
+        return dict(items[0])
+
+    def object_pair_list(self, items: list[Any]) -> list[tuple[str, Any]]:
+        return items
+
+    def object_pair(self, items: list[Any]) -> tuple[str, Any]:
+        return (str(items[0]), items[1])
+
+    def LUA_CODE(self, token: Token) -> str:
+        return str(token).strip()

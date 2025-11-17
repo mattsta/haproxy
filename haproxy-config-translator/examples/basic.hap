@@ -1,0 +1,92 @@
+// Basic HAProxy DSL Configuration Example
+// Demonstrates fundamental features: variables, templates, frontends, backends
+
+config basic_loadbalancer {
+  version: "2.0"
+
+  // Variables for configuration
+  let backend_port = 8080
+  let ssl_cert = "/etc/ssl/haproxy.pem"
+  let max_connections = 4096
+
+  // Reusable template for server defaults
+  template server_defaults {
+    check: true
+    inter: 3s
+    rise: 2
+    fall: 3
+    maxconn: 100
+  }
+
+  global {
+    daemon: true
+    maxconn: max_connections
+    log "/dev/log" local0 info
+  }
+
+  defaults {
+    mode: http
+    retries: 3
+    timeout: {
+      connect: 5s
+      client: 50s
+      server: 50s
+    }
+    log: global
+    option: [httplog, dontlognull]
+  }
+
+  // Simple ACL
+  acl is_health {
+    path /health
+  }
+
+  frontend http_front {
+    bind *:80
+    bind *:443 ssl {
+      cert: ssl_cert
+      alpn: [h2, http/1.1]
+    }
+
+    http-request {
+      return status:200 if is_health
+      set-header "X-Forwarded-Proto" "https"
+    }
+
+    default_backend: web_backend
+  }
+
+  backend web_backend {
+    balance: roundrobin
+    option: [httpchk, forwardfor]
+
+    health-check {
+      method: GET
+      uri: "/health"
+      expect: status 200
+    }
+
+    servers {
+      server web1 {
+        address: "192.168.1.10"
+        port: backend_port
+        @server_defaults
+        weight: 100
+      }
+
+      server web2 {
+        address: "192.168.1.11"
+        port: backend_port
+        @server_defaults
+        weight: 100
+      }
+
+      server web3 {
+        address: "192.168.1.12"
+        port: backend_port
+        @server_defaults
+        weight: 100
+      }
+    }
+  }
+}

@@ -1,0 +1,298 @@
+// Advanced HAProxy DSL Configuration Example
+// Demonstrates: Lua functions, loops, conditionals, complex routing
+
+config advanced_loadbalancer {
+  version: "2.0"
+
+  // Environment-aware variables
+  let environment = "production"
+  let backend_port = 8080
+  let api_port = 8081
+  let ssl_cert = "/etc/ssl/haproxy.pem"
+  let max_rate = 100
+
+  // Templates
+  template production_server_defaults {
+    check: true
+    inter: 2s
+    rise: 3
+    fall: 2
+    maxconn: 500
+  }
+
+  template api_server_defaults {
+    check: true
+    inter: 3s
+    rise: 2
+    fall: 3
+    maxconn: 200
+  }
+
+  global {
+    daemon: true
+    maxconn: 10000
+    user: haproxy
+    group: haproxy
+    log "/dev/log" local0 info
+    log "/dev/log" local1 notice
+
+    // Inline Lua scripts with first-class support
+    lua {
+      // Custom authentication function
+      script custom_auth {
+        core.register_action("custom_auth", {"http-req"}, function(txn)
+          local token = txn.http:req_get_headers()["Authorization"][0]
+
+          if not token then
+            txn:set_var("req.auth_failed", true)
+            return core.DENY
+          end
+
+          -- Check Bearer token format
+          if token:match("^Bearer%s+%w+") then
+            txn:set_var("req.authenticated", true)
+            return core.DONE
+          end
+
+          txn:set_var("req.auth_failed", true)
+          return core.DENY
+        end)
+      }
+
+      // Rate limiting function
+      script rate_limiter {
+        core.register_fetches("rate_limit_check", function(txn, backend)
+          local src_ip = txn.sf:src()
+          local rate = txn.sc:get_gpc0(0)
+
+          -- Log the rate check
+          core.log(core.info, "Rate check for " .. src_ip .. ": " .. tostring(rate))
+
+          if rate > 100 then
+            return "blocked"
+          end
+
+          return "allowed"
+        end)
+      }
+
+      // Custom routing logic
+      script smart_router {
+        core.register_fetches("get_backend_name", function(txn)
+          local path = txn.sf:path()
+          local method = txn.sf:method()
+
+          -- Route based on path and method
+          if path:match("^/api/v2/") then
+            return "api_v2_backend"
+          elseif path:match("^/api/") then
+            return "api_backend"
+          elseif path:match("^/static/") then
+            return "cdn_backend"
+          else
+            return "web_backend"
+          end
+        end)
+      }
+    }
+  }
+
+  defaults {
+    mode: http
+    retries: 3
+    timeout: {
+      connect: 5s
+      client: 50s
+      server: 50s
+      check: 5s
+    }
+    log: global
+    option: [httplog, dontlognull, http-server-close]
+  }
+
+  // ACL definitions
+  acl is_api {
+    path_beg "/api/"
+  }
+
+  acl is_api_v2 {
+    path_beg "/api/v2/"
+  }
+
+  acl is_static {
+    path_beg "/static/"
+  }
+
+  acl is_admin {
+    path_beg "/admin/"
+  }
+
+  acl rate_limited {
+    lua.rate_limit_check(api_backend) -m str "blocked"
+  }
+
+  acl is_authenticated {
+    var(req.authenticated) -m bool true
+  }
+
+  frontend https_front {
+    bind *:443 ssl {
+      cert: ssl_cert
+      alpn: [h2, http/1.1]
+    }
+
+    maxconn: 8000
+
+    http-request {
+      // Deny rate-limited requests
+      deny status:429 if rate_limited
+
+      // Require authentication for admin paths
+      lua.custom_auth if is_admin
+
+      // Add security headers
+      set-header "X-Forwarded-Proto" "https"
+      set-header "X-Frame-Options" "SAMEORIGIN"
+      set-header "X-Content-Type-Options" "nosniff"
+
+      // Add request ID for tracing
+      set-header "X-Request-ID" "%[uuid()]"
+    }
+
+    // Routing with priority
+    route {
+      to api_v2_backend if is_api_v2
+      to api_backend if is_api
+      to cdn_backend if is_static
+      to admin_backend if is_admin is_authenticated
+      default: web_backend
+    }
+  }
+
+  frontend http_front {
+    bind *:80
+
+    http-request {
+      // Redirect HTTP to HTTPS
+      redirect scheme https code 301
+    }
+  }
+
+  // Web backend with generated servers using loop
+  backend web_backend {
+    balance: roundrobin
+    option: [httpchk, forwardfor, http-server-close]
+    cookie: "SERVERID insert indirect nocache"
+
+    health-check {
+      method: GET
+      uri: "/health"
+      expect: status 200
+    }
+
+    servers {
+      // Generate 5 web servers dynamically
+      for i in 1..5 {
+        server "web${i}" {
+          address: "10.0.1.${10 + i}"
+          port: backend_port
+          @production_server_defaults
+          weight: 100
+        }
+      }
+    }
+  }
+
+  // API backend with server template
+  backend api_backend {
+    balance: leastconn
+    option: [httpchk, forwardfor]
+    retries: 2
+
+    health-check {
+      method: POST
+      uri: "/api/health"
+      header "Content-Type" "application/json"
+      expect: status 200
+    }
+
+    // Server template for auto-scaling
+    server-template api[1..10] {
+      address: "api-{id}.internal.example.com"
+      port: api_port
+      @api_server_defaults
+    }
+  }
+
+  // API v2 backend
+  backend api_v2_backend {
+    balance: leastconn
+    option: [httpchk, forwardfor]
+
+    health-check {
+      method: GET
+      uri: "/v2/health"
+      expect: status 200
+    }
+
+    servers {
+      for i in 1..3 {
+        server "apiv2${i}" {
+          address: "10.0.2.${10 + i}"
+          port: 8082
+          @api_server_defaults
+          weight: 50
+        }
+      }
+    }
+  }
+
+  // CDN/Static backend with compression
+  backend cdn_backend {
+    balance: roundrobin
+
+    compression {
+      algo: gzip
+      type: [text/html, text/css, application/javascript, application/json]
+    }
+
+    servers {
+      server cdn1 {
+        address: "cdn1.example.com"
+        port: 443
+        ssl: true
+        verify: "required"
+      }
+
+      server cdn2 {
+        address: "cdn2.example.com"
+        port: 443
+        ssl: true
+        verify: "required"
+      }
+    }
+  }
+
+  // Admin backend (restricted)
+  backend admin_backend {
+    balance: leastconn
+    option: [httpchk]
+
+    health-check {
+      method: GET
+      uri: "/admin/health"
+      expect: status 200
+    }
+
+    servers {
+      server admin1 {
+        address: "10.0.3.10"
+        port: 9000
+        check: true
+        inter: 5s
+        rise: 2
+        fall: 3
+      }
+    }
+  }
+}

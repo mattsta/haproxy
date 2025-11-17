@@ -1,0 +1,321 @@
+// HAProxy DSL Grammar for Lark Parser
+// Modern configuration language for HAProxy with variables, templates, loops, and Lua support
+
+?start: config
+
+// Top-level configuration
+config: "config" identifier "{" statement* "}"
+
+// Statements (order matters for some)
+?statement: global_section
+          | defaults_section
+          | frontend_section
+          | backend_section
+          | listen_section
+          | acl_definition
+          | template_definition
+          | variable_declaration
+          | import_statement
+          | if_statement
+          | for_statement
+
+// ===== Global Section =====
+global_section: "global" "{" global_property* "}"
+
+?global_property: "daemon" ":" boolean                 -> global_daemon
+                | "maxconn" ":" number                 -> global_maxconn
+                | "user" ":" string                    -> global_user
+                | "group" ":" string                   -> global_group
+                | "chroot" ":" string                  -> global_chroot
+                | "pidfile" ":" string                 -> global_pidfile
+                | log_target                           -> global_log
+                | lua_section                          -> global_lua
+                | stats_section                        -> global_stats
+
+log_target: "log" string log_facility log_level
+
+log_facility: "local0" | "local1" | "local2" | "local3" | "local4" | "local5" | "local6" | "local7" | "user" | "daemon"
+
+log_level: "emerg" | "alert" | "crit" | "err" | "warning" | "notice" | "info" | "debug"
+
+stats_section: "stats" "{" stats_property* "}"
+
+?stats_property: "enable" ":" boolean -> stats_enable
+               | "uri" ":" string     -> stats_uri
+               | "auth" ":" string    -> stats_auth
+
+// Lua subsection
+lua_section: "lua" "{" lua_item* "}"
+
+?lua_item: lua_load
+         | lua_script
+
+lua_load: "load" string
+
+lua_script: "script" identifier "{" LUA_CODE "}"
+          | "script" identifier "(" lua_param_list ")" "{" LUA_CODE "}"
+
+lua_param_list: lua_param ("," lua_param)*
+lua_param: identifier ":" template_var
+
+template_var: TEMPLATE_VAR
+
+LUA_CODE: /([^}]|\}(?!\s*\n))+/  // Match everything until closing brace
+
+TEMPLATE_VAR: /\$\{[a-zA-Z_][a-zA-Z0-9_]*\}/
+
+// ===== Defaults Section =====
+defaults_section: "defaults" "{" defaults_property* "}"
+
+?defaults_property: "mode" ":" mode_value              -> defaults_mode
+                  | "retries" ":" number               -> defaults_retries
+                  | "log" ":" string                   -> defaults_log
+                  | "option" ":" string_or_array       -> defaults_option
+                  | timeout_block                      -> defaults_timeout
+
+timeout_block: "timeout" "{" timeout_item+ "}"
+
+timeout_item: identifier ":" duration
+
+duration: number TIME_UNIT
+TIME_UNIT: "ms" | "s" | "m" | "h" | "d"
+
+mode_value: "http" | "tcp"
+
+// ===== Frontend Section =====
+frontend_section: "frontend" identifier "{" frontend_property* "}"
+
+?frontend_property: bind_directive
+                  | "mode" ":" mode_value                  -> frontend_mode
+                  | acl_definition
+                  | use_acl_directive
+                  | http_request_block
+                  | http_response_block
+                  | routing_block
+                  | use_backend_rule
+                  | "default_backend" ":" identifier       -> frontend_default_backend
+                  | "option" ":" string_or_array           -> frontend_option
+                  | "timeout_client" ":" duration          -> frontend_timeout_client
+                  | "maxconn" ":" number                   -> frontend_maxconn
+
+bind_directive: "bind" bind_address bind_option*
+
+bind_address: HOST_PORT | string
+
+HOST_PORT: /[a-zA-Z0-9.*:-]+/
+
+?bind_option: ssl_block
+            | identifier value  -> bind_generic_option
+
+ssl_block: "ssl" "{" ssl_property* "}"
+
+?ssl_property: "cert" ":" string           -> ssl_cert
+             | "alpn" ":" string_array     -> ssl_alpn
+             | identifier ":" value        -> ssl_generic
+
+use_acl_directive: "use" "acl" ":" identifier_array
+
+http_request_block: "http-request" "{" http_rule* "}"
+http_response_block: "http-response" "{" http_rule* "}"
+
+http_rule: action_expr if_condition?
+
+action_expr: action_name http_rule_params*
+
+action_name: qualified_identifier  // Allow "lua.function_name"
+
+qualified_identifier: identifier ("." identifier)*
+
+?http_rule_params: identifier ":" value  -> http_rule_param
+                 | string                -> http_rule_value
+
+if_condition: "if" condition_expr
+
+condition_expr: identifier  // ACL name or expression
+
+routing_block: "route" "{" route_rule* "}"
+
+?route_rule: "to" identifier if_condition?     -> route_to
+           | "default" ":" identifier          -> route_default
+
+use_backend_rule: "use_backend" "{" use_backend_item* "}"
+                | "use_backend" identifier if_condition?  -> single_use_backend
+
+use_backend_item: "backend" ":" identifier if_condition?
+
+// ===== Backend Section =====
+backend_section: "backend" identifier "{" backend_property* "}"
+
+?backend_property: "mode" ":" mode_value                    -> backend_mode
+                 | "balance" ":" balance_algo               -> backend_balance
+                 | "option" ":" string_or_array             -> backend_option
+                 | "cookie" ":" string                      -> backend_cookie
+                 | health_check_block                       -> backend_health_check
+                 | servers_block                            -> backend_servers
+                 | server_template_block                    -> backend_server_template
+                 | compression_block                        -> backend_compression
+                 | http_request_block                       -> backend_http_request
+                 | http_response_block                      -> backend_http_response
+                 | "timeout_server" ":" duration            -> backend_timeout_server
+                 | "timeout_connect" ":" duration           -> backend_timeout_connect
+                 | "timeout_check" ":" duration             -> backend_timeout_check
+                 | "retries" ":" number                     -> backend_retries
+
+balance_algo: "roundrobin" | "leastconn" | "source" | "uri" | "url_param" | "random"
+
+health_check_block: "health-check" "{" health_check_property* "}"
+
+?health_check_property: "method" ":" string         -> hc_method
+                      | "uri" ":" string            -> hc_uri
+                      | "expect" ":" expect_value   -> hc_expect
+                      | header_definition           -> hc_header
+
+expect_value: "status" number
+
+header_definition: "header" string string
+
+servers_block: "servers" "{" server_item* "}"
+
+?server_item: server_definition
+            | for_statement
+
+server_definition: "server" identifier "{" server_property* "}"
+                 | "server" identifier server_inline_param+  -> server_inline
+
+server_inline_param: identifier ":" value
+
+?server_property: "address" ":" string              -> server_address
+                | "port" ":" number                 -> server_port
+                | "check" ":" boolean               -> server_check
+                | "inter" ":" duration              -> server_inter
+                | "rise" ":" number                 -> server_rise
+                | "fall" ":" number                 -> server_fall
+                | "weight" ":" number               -> server_weight
+                | "maxconn" ":" number              -> server_maxconn
+                | "ssl" ":" boolean                 -> server_ssl
+                | "verify" ":" string               -> server_verify
+                | "backup" ":" boolean              -> server_backup
+                | template_spread                   -> server_template_spread
+
+template_spread: "@" identifier
+
+server_template_block: "server-template" identifier range_expr "{" server_property* "}"
+
+range_expr: "[" number ".." number "]"
+
+compression_block: "compression" "{" compression_property* "}"
+
+?compression_property: "algo" ":" string              -> compression_algo
+                     | "type" ":" string_array        -> compression_type
+
+// ===== Listen Section =====
+listen_section: "listen" identifier "{" listen_property* "}"
+
+?listen_property: frontend_property | backend_property
+
+// ===== ACL Definition =====
+acl_definition: "acl" identifier "{" acl_criterion "}"
+
+acl_criterion: identifier (string | number)*
+
+// ===== Template Definition =====
+template_definition: "template" identifier "{" template_property+ "}"
+
+?template_property: identifier ":" value
+
+// ===== Variable Declaration =====
+variable_declaration: "let" identifier "=" expression
+
+// ===== Import =====
+import_statement: "import" string
+
+// ===== Control Flow =====
+if_statement: "if" expression "{" statement* "}" else_clause?
+
+else_clause: "else" "{" statement* "}"
+           | "else" if_statement
+
+for_statement: "for" identifier "in" for_iterable "{" for_body "}"
+
+for_iterable: range_expr
+            | identifier
+            | array
+
+for_body: server_item*
+
+// ===== Expressions =====
+?expression: or_expr
+
+?or_expr: and_expr ("||" and_expr)*
+
+?and_expr: comparison ("&&" comparison)*
+
+?comparison: add_expr (("==" | "!=" | "<" | ">" | "<=" | ">=") add_expr)?
+
+?add_expr: mul_expr (("+" | "-") mul_expr)*
+
+?mul_expr: unary_expr (("*" | "/" | "%") unary_expr)*
+
+?unary_expr: ("!" | "-") unary_expr
+           | postfix_expr
+
+?postfix_expr: atom ("." identifier | "[" expression "]")*
+
+?atom: identifier
+     | number
+     | string
+     | boolean
+     | "(" expression ")"
+     | env_call
+
+// ternary: expression "?" expression ":" expression  // Disabled for now due to grammar conflicts
+
+env_call: "env" "(" string ("," value)? ")"
+
+// ===== Values =====
+?value: string
+      | number
+      | boolean
+      | array
+      | object
+      | expression
+
+?string_or_array: string
+                | string_array
+
+string_array: "[" [string_list] "]"
+string_list: string ("," string)*
+
+identifier_array: "[" [identifier_list] "]"
+identifier_list: identifier ("," identifier)*
+
+array: "[" [value_list] "]"
+value_list: value ("," value)*
+
+object: "{" [object_pair_list] "}"
+object_pair_list: object_pair ("," object_pair)*
+object_pair: (identifier | string) ":" value
+
+// ===== Primitives =====
+identifier: /[a-zA-Z_][a-zA-Z0-9_]*/
+
+string: ESCAPED_STRING | INTERPOLATED_STRING
+
+INTERPOLATED_STRING: /"[^"]*\$\{[^}]+\}[^"]*"/  // String with ${var}
+
+number: INT | FLOAT
+
+INT: /\d+/
+FLOAT: /\d+\.\d+/
+
+boolean: "true" | "false"
+
+// ===== Comments and Whitespace =====
+%import common.ESCAPED_STRING
+%import common.WS
+%import common.CPP_COMMENT    // C++ style comments //
+%import common.C_COMMENT      // C style comments /* */
+
+%ignore WS
+%ignore CPP_COMMENT
+%ignore C_COMMENT
