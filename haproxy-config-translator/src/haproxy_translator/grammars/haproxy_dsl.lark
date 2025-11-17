@@ -85,7 +85,10 @@ timeout_item: identifier ":" duration
 
 duration: number TIME_UNIT
 
-mode_value: "http" | "tcp"
+MODE_HTTP: "http"
+MODE_TCP: "tcp"
+
+mode_value: MODE_HTTP | MODE_TCP
 
 // ===== Frontend Section =====
 frontend_section: "frontend" identifier "{" frontend_property* "}"

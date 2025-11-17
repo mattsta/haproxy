@@ -405,6 +405,15 @@ class DSLTransformer(Transformer):
                 use_backend_rules.append(prop)
             elif isinstance(prop, list) and all(isinstance(x, UseBackendRule) for x in prop):
                 use_backend_rules.extend(prop)
+            elif isinstance(prop, list):
+                # Handle routing_block which returns mixed list of UseBackendRule and tuples
+                for item in prop:
+                    if isinstance(item, UseBackendRule):
+                        use_backend_rules.append(item)
+                    elif isinstance(item, tuple):
+                        key, value = item
+                        if key == "default_backend":
+                            default_backend = value
             elif isinstance(prop, tuple):
                 key, value = prop
                 if key == "mode":

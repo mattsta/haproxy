@@ -60,7 +60,6 @@ class TestSemanticValidation:
         with pytest.raises(ValidationError, match="default_backend 'nonexistent' does not exist"):
             parser.parse(source)
 
-    @pytest.mark.skip(reason="route block not yet converted to use_backend_rules by parser")
     def test_invalid_use_backend_reference(self, parser):
         """Test error when use_backend references non-existent backend."""
         source = """
@@ -83,11 +82,9 @@ class TestSemanticValidation:
             }
         }
         """
-        ir = parser.parse(source)
-        validator = SemanticValidator(ir)
-
+        # Validation is now integrated into parser
         with pytest.raises(ValidationError, match="non-existent backend 'nonexistent'"):
-            validator.validate()
+            parser.parse(source)
 
     def test_duplicate_server_names(self, parser):
         """Test error when backend has duplicate server names."""
@@ -112,7 +109,6 @@ class TestSemanticValidation:
         with pytest.raises(ValidationError, match="duplicate server names: web1"):
             parser.parse(source)
 
-    @pytest.mark.skip(reason="frontend mode parsing defaults to HTTP, parser limitation")
     def test_http_option_in_tcp_mode(self, parser):
         """Test error when HTTP option used in TCP mode."""
         source = """
@@ -129,11 +125,9 @@ class TestSemanticValidation:
             }
         }
         """
-        ir = parser.parse(source)
-        validator = SemanticValidator(ir)
-
+        # Validation is now integrated into parser
         with pytest.raises(ValidationError, match="HTTP option 'httplog' used in TCP mode"):
-            validator.validate()
+            parser.parse(source)
 
     def test_invalid_health_check_method(self, parser):
         """Test error when health check has invalid HTTP method."""
