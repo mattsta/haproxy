@@ -1,0 +1,69 @@
+// Simple Load Balancer
+// Basic round-robin load balancing across multiple web servers
+
+config simple_loadbalancer {
+    version: "2.0"
+
+    global {
+        daemon: true
+        maxconn: 2000
+        log "/dev/log" local0 info
+    }
+
+    defaults {
+        mode: http
+        retries: 3
+        timeout: {
+            connect: 5s
+            client: 30s
+            server: 30s
+        }
+        option: ["httplog", "dontlognull"]
+    }
+
+    frontend web {
+        bind *:80
+        mode: http
+        default_backend: web_servers
+    }
+
+    backend web_servers {
+        balance: roundrobin
+        option: ["httpchk"]
+
+        health-check {
+            method: "GET"
+            uri: "/health"
+            expect: status 200
+        }
+
+        servers {
+            server web1 {
+                address: "10.0.1.1"
+                port: 8080
+                check: true
+                inter: 3s
+                rise: 2
+                fall: 3
+            }
+
+            server web2 {
+                address: "10.0.1.2"
+                port: 8080
+                check: true
+                inter: 3s
+                rise: 2
+                fall: 3
+            }
+
+            server web3 {
+                address: "10.0.1.3"
+                port: 8080
+                check: true
+                inter: 3s
+                rise: 2
+                fall: 3
+            }
+        }
+    }
+}

@@ -1,0 +1,98 @@
+// Dynamic Server Scaling
+// Uses variables, templates, and loops for scalable configuration
+
+config dynamic_scaling {
+    version: "2.0"
+
+    // Configuration variables
+    let num_servers = env("NUM_SERVERS", "10")
+    let base_ip = env("BASE_IP", "10.0.1")
+    let backend_port = env("BACKEND_PORT", "8080")
+    let max_connections = env("MAX_CONN", "4096")
+
+    // Reusable server template
+    template server_defaults {
+        check: true
+        inter: 3s
+        rise: 2
+        fall: 3
+        maxconn: 200
+        weight: 100
+    }
+
+    global {
+        daemon: true
+        maxconn: max_connections
+        log "/dev/log" local0 info
+    }
+
+    defaults {
+        mode: http
+        retries: 3
+        timeout: {
+            connect: 5s
+            client: 50s
+            server: 50s
+            check: 10s
+        }
+        log: "global"
+        option: ["httplog", "dontlognull"]
+    }
+
+    frontend web {
+        bind *:80
+        mode: http
+        maxconn: max_connections
+
+        acl {
+            is_api path_beg "/api/"
+        }
+
+        use_backend {
+            backend: api_servers if is_api
+        }
+
+        default_backend: web_servers
+    }
+
+    // Web servers - dynamically generated
+    backend web_servers {
+        balance: roundrobin
+        option: ["httpchk"]
+
+        health-check {
+            method: "GET"
+            uri: "/health"
+            expect: status 200
+        }
+
+        servers {
+            // Generate servers using loop
+            for i in [1..${num_servers}] {
+                server "web${i}" {
+                    address: "${base_ip}.${i}"
+                    port: backend_port
+                    @server_defaults
+                }
+            }
+        }
+    }
+
+    // API servers - using server-template
+    backend api_servers {
+        balance: leastconn
+        option: ["httpchk"]
+
+        health-check {
+            method: "GET"
+            uri: "/api/health"
+            expect: status 200
+        }
+
+        server-template api[1..5] {
+            fqdn: "api-{id}.example.com"
+            port: backend_port
+            @server_defaults
+        }
+    }
+}

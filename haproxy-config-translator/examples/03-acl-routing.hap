@@ -1,0 +1,170 @@
+// ACL-Based Routing
+// Route requests to different backends based on path and headers
+
+config acl_routing {
+    version: "2.0"
+
+    defaults {
+        mode: http
+        retries: 3
+        timeout: {
+            connect: 5s
+            client: 50s
+            server: 50s
+        }
+        option: ["httplog"]
+    }
+
+    frontend web {
+        bind *:80
+
+        // Define ACLs using block syntax
+        acl {
+            is_api path_beg "/api/"
+            is_admin path_beg "/admin/"
+            is_static path_beg "/static/" "/images/" "/css/" "/js/"
+            is_websocket hdr(Upgrade) -i WebSocket
+            has_auth hdr(Authorization) -m found
+            is_internal src 10.0.0.0/8 192.168.0.0/16
+        }
+
+        // Security rules
+        http-request {
+            deny deny_status: 403 if is_admin !has_auth
+            deny deny_status: 403 if is_admin !is_internal
+        }
+
+        // Routing rules
+        use_backend {
+            backend: api_backend if is_api
+            backend: admin_backend if is_admin
+            backend: static_backend if is_static
+            backend: websocket_backend if is_websocket
+        }
+
+        default_backend: web_backend
+    }
+
+    // API backend - least connections for long-running requests
+    backend api_backend {
+        balance: leastconn
+        option: ["httpchk"]
+
+        health-check {
+            method: "GET"
+            uri: "/api/health"
+            expect: status 200
+        }
+
+        http-request {
+            set-header "X-Backend" "api"
+        }
+
+        servers {
+            server api1 {
+                address: "10.0.1.1"
+                port: 8080
+                check: true
+                maxconn: 200
+            }
+
+            server api2 {
+                address: "10.0.1.2"
+                port: 8080
+                check: true
+                maxconn: 200
+            }
+        }
+    }
+
+    // Admin backend - restricted access
+    backend admin_backend {
+        balance: roundrobin
+
+        servers {
+            server admin {
+                address: "10.0.2.1"
+                port: 8080
+                check: true
+            }
+        }
+    }
+
+    // Static content backend
+    backend static_backend {
+        balance: roundrobin
+        option: ["httpchk"]
+
+        compression {
+            algo: "gzip"
+            type: [
+                "text/css",
+                "text/javascript",
+                "application/javascript"
+            ]
+        }
+
+        servers {
+            server cdn1 {
+                address: "10.0.3.1"
+                port: 80
+                check: true
+            }
+
+            server cdn2 {
+                address: "10.0.3.2"
+                port: 80
+                check: true
+            }
+        }
+    }
+
+    // WebSocket backend
+    backend websocket_backend {
+        balance: leastconn
+        option: ["httpchk"]
+
+        // WebSocket-specific timeouts
+        timeout_server: 3600s
+
+        servers {
+            server ws1 {
+                address: "10.0.4.1"
+                port: 8080
+                check: true
+            }
+
+            server ws2 {
+                address: "10.0.4.2"
+                port: 8080
+                check: true
+            }
+        }
+    }
+
+    // Default web backend
+    backend web_backend {
+        balance: roundrobin
+        option: ["httpchk", "forwardfor"]
+
+        health-check {
+            method: "GET"
+            uri: "/health"
+            expect: status 200
+        }
+
+        servers {
+            server web1 {
+                address: "10.0.5.1"
+                port: 8080
+                check: true
+            }
+
+            server web2 {
+                address: "10.0.5.2"
+                port: 8080
+                check: true
+            }
+        }
+    }
+}

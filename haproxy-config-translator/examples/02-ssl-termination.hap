@@ -1,0 +1,101 @@
+// SSL Termination Load Balancer
+// HTTPS frontend with SSL termination, plain HTTP to backends
+
+config ssl_termination {
+    version: "2.0"
+
+    let cert_path = env("SSL_CERT_PATH", "/etc/haproxy/certs/site.pem")
+
+    global {
+        daemon: true
+        maxconn: 4096
+        log "/dev/log" local0 info
+
+        // SSL configuration
+        ssl-default-bind-ciphers: "ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384"
+        ssl-default-bind-options: [
+            "ssl-min-ver TLSv1.2",
+            "no-tls-tickets"
+        ]
+    }
+
+    defaults {
+        mode: http
+        retries: 3
+        timeout: {
+            connect: 5s
+            client: 50s
+            server: 50s
+        }
+        log: "global"
+        option: ["httplog", "dontlognull", "http-server-close"]
+    }
+
+    // HTTP frontend - redirect to HTTPS
+    frontend http {
+        bind *:80
+        mode: http
+
+        http-request {
+            redirect scheme: https code: 301
+        }
+    }
+
+    // HTTPS frontend - SSL termination
+    frontend https {
+        bind *:443 ssl {
+            cert: cert_path
+            alpn: ["h2", "http/1.1"]
+        }
+
+        mode: http
+
+        // Add forwarding headers
+        http-request {
+            set-header "X-Forwarded-Proto" "https"
+            set-header "X-Forwarded-For" "%[src]"
+        }
+
+        // Security headers
+        http-response {
+            set-header "Strict-Transport-Security" "max-age=31536000; includeSubDomains"
+            set-header "X-Frame-Options" "DENY"
+            set-header "X-Content-Type-Options" "nosniff"
+        }
+
+        default_backend: web_servers
+    }
+
+    backend web_servers {
+        balance: roundrobin
+        option: ["httpchk", "forwardfor"]
+
+        health-check {
+            method: "GET"
+            uri: "/health"
+            expect: status 200
+        }
+
+        servers {
+            server web1 {
+                address: "10.0.1.1"
+                port: 80
+                check: true
+                inter: 5s
+                rise: 2
+                fall: 3
+                maxconn: 500
+            }
+
+            server web2 {
+                address: "10.0.1.2"
+                port: 80
+                check: true
+                inter: 5s
+                rise: 2
+                fall: 3
+                maxconn: 500
+            }
+        }
+    }
+}

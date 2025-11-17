@@ -1,0 +1,124 @@
+// Multi-Environment Configuration
+// Uses conditionals to adapt configuration based on environment
+
+config multi_environment {
+    version: "2.0"
+
+    // Environment detection
+    let environment = env("ENVIRONMENT", "development")
+    let is_prod = environment == "production"
+    let is_staging = environment == "staging"
+    let is_dev = environment == "development"
+
+    // Environment-specific variables
+    let max_conn = is_prod ? 10000 : (is_staging ? 1000 : 100)
+    let num_servers = is_prod ? 10 : (is_staging ? 3 : 1)
+    let log_level = is_prod ? "info" : "debug"
+
+    global {
+        daemon: is_prod
+        maxconn: max_conn
+        log "/dev/log" local0 ${log_level}
+    }
+
+    defaults {
+        mode: http
+        retries: is_prod ? 3 : 1
+        timeout: {
+            connect: 5s
+            client: is_prod ? 50s : 10s
+            server: is_prod ? 50s : 10s
+            check: is_prod ? 10s : 5s
+        }
+        option: ["httplog"]
+    }
+
+    frontend web {
+        bind *:80
+        default_backend: app_servers
+    }
+
+    // Production configuration
+    if is_prod {
+        backend app_servers {
+            balance: leastconn
+            option: ["httpchk", "forwardfor"]
+
+            health-check {
+                method: "GET"
+                uri: "/health"
+                expect: status 200
+            }
+
+            compression {
+                algo: "gzip"
+                type: ["text/html", "text/plain", "application/json"]
+            }
+
+            servers {
+                for i in [1..10] {
+                    server "prod${i}" {
+                        address: "10.0.1.${i}"
+                        port: 8080
+                        check: true
+                        inter: 5s
+                        rise: 3
+                        fall: 2
+                        maxconn: 500
+                    }
+                }
+
+                // Backup server
+                server backup {
+                    address: "10.0.2.1"
+                    port: 8080
+                    check: true
+                    backup: true
+                }
+            }
+        }
+    }
+
+    // Staging configuration
+    if is_staging {
+        backend app_servers {
+            balance: roundrobin
+            option: ["httpchk"]
+
+            health-check {
+                method: "GET"
+                uri: "/health"
+                expect: status 200
+            }
+
+            servers {
+                for i in [1..3] {
+                    server "staging${i}" {
+                        address: "10.1.1.${i}"
+                        port: 8080
+                        check: true
+                        inter: 3s
+                        rise: 2
+                        fall: 2
+                        maxconn: 100
+                    }
+                }
+            }
+        }
+    }
+
+    // Development configuration
+    if is_dev {
+        backend app_servers {
+            balance: roundrobin
+
+            servers {
+                server dev {
+                    address: "localhost"
+                    port: 8080
+                    check: false
+                }
+            }
+        }
+    }
+}

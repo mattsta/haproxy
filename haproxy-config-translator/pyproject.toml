@@ -162,10 +162,6 @@ python_functions = "test_*"
 python_classes = "Test*"
 addopts = [
     "-v",
-    "--cov=haproxy_translator",
-    "--cov-report=html",
-    "--cov-report=term",
-    "--cov-report=xml",
     "--strict-markers",
     "--tb=short",
 ]
@@ -173,6 +169,7 @@ markers = [
     "slow: marks tests as slow (deselect with '-m \"not slow\"')",
     "integration: marks tests as integration tests",
     "unit: marks tests as unit tests",
+    "xfail: marks tests as expected to fail",
 ]
 
 [tool.coverage.run]
