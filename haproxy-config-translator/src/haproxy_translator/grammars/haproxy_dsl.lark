@@ -32,6 +32,8 @@ global_section: "global" "{" global_property* "}"
                 | log_target                           -> global_log
                 | lua_section                          -> global_lua
                 | stats_section                        -> global_stats
+                | "ssl-default-bind-ciphers" ":" string       -> global_ssl_default_bind_ciphers
+                | "ssl-default-bind-options" ":" string_array -> global_ssl_default_bind_options
 
 log_target: "log" string log_facility log_level
 
@@ -124,9 +126,11 @@ HOST_PORT: /[a-zA-Z0-9.*:-]+/
 
 ssl_block: "ssl" "{" ssl_property* "}"
 
-?ssl_property: "cert" ":" string           -> ssl_cert
-             | "alpn" ":" string_array     -> ssl_alpn
-             | identifier ":" value        -> ssl_generic
+?ssl_property: "cert" ":" string                 -> ssl_cert
+             | "alpn" ":" string_array           -> ssl_alpn
+             | SSL_PROPERTY_NAME ":" value       -> ssl_generic
+
+SSL_PROPERTY_NAME: /[a-zA-Z_][a-zA-Z0-9_-]*/
 
 use_acl_directive: "use" "acl" ":" identifier_array
 

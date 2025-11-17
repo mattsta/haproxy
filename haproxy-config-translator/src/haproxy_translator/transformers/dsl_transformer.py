@@ -110,6 +110,8 @@ class DSLTransformer(Transformer):
         log_targets = []
         lua_scripts = []
         stats = None
+        ssl_default_bind_ciphers = None
+        ssl_default_bind_options = []
 
         for item in items:
             if isinstance(item, tuple):
@@ -126,6 +128,10 @@ class DSLTransformer(Transformer):
                     chroot = value
                 elif key == "pidfile":
                     pidfile = value
+                elif key == "ssl_default_bind_ciphers":
+                    ssl_default_bind_ciphers = value
+                elif key == "ssl_default_bind_options":
+                    ssl_default_bind_options = value
             elif isinstance(item, LogTarget):
                 log_targets.append(item)
             elif isinstance(item, list) and all(isinstance(x, LuaScript) for x in item):
@@ -143,6 +149,8 @@ class DSLTransformer(Transformer):
             log_targets=log_targets,
             lua_scripts=lua_scripts,
             stats=stats,
+            ssl_default_bind_ciphers=ssl_default_bind_ciphers,
+            ssl_default_bind_options=ssl_default_bind_options,
         )
 
     def global_daemon(self, items: list[Any]) -> tuple[str, bool]:
@@ -171,6 +179,12 @@ class DSLTransformer(Transformer):
 
     def global_stats(self, items: list[Any]) -> StatsConfig:
         return cast("StatsConfig", items[0])
+
+    def global_ssl_default_bind_ciphers(self, items: list[Any]) -> tuple[str, str]:
+        return ("ssl_default_bind_ciphers", items[0])
+
+    def global_ssl_default_bind_options(self, items: list[Any]) -> tuple[str, list[str]]:
+        return ("ssl_default_bind_options", items[0])
 
     def log_target(self, items: list[Any]) -> LogTarget:
         address = items[0]
