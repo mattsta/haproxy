@@ -492,6 +492,7 @@ class DSLTransformer(Transformer):
         balance = BalanceAlgorithm.ROUNDROBIN
         servers = []
         server_templates = []
+        server_loops = []  # Collect for loops
         health_check = None
         options = []
         http_request_rules = []
@@ -505,8 +506,15 @@ class DSLTransformer(Transformer):
         for prop in properties:
             if isinstance(prop, Server):
                 servers.append(prop)
-            elif isinstance(prop, list) and all(isinstance(x, Server) for x in prop):
-                servers.extend(prop)
+            elif isinstance(prop, ForLoop):
+                server_loops.append(prop)
+            elif isinstance(prop, list):
+                # Handle mixed lists of servers and loops
+                for item in prop:
+                    if isinstance(item, Server):
+                        servers.append(item)
+                    elif isinstance(item, ForLoop):
+                        server_loops.append(item)
             elif isinstance(prop, ServerTemplate):
                 server_templates.append(prop)
             elif isinstance(prop, HealthCheck):
@@ -537,6 +545,11 @@ class DSLTransformer(Transformer):
                 elif key == "retries":
                     retries = value
 
+        # Build metadata with server loops if any
+        metadata = {}
+        if server_loops:
+            metadata["server_loops"] = server_loops
+
         return Backend(
             name=name,
             mode=mode,
@@ -552,6 +565,7 @@ class DSLTransformer(Transformer):
             timeout_connect=timeout_connect,
             timeout_check=timeout_check,
             retries=retries,
+            metadata=metadata,
         )
 
     def backend_mode(self, items: list[Any]) -> tuple[str, str]:
@@ -633,14 +647,16 @@ class DSLTransformer(Transformer):
     def header_definition(self, items: list[Any]) -> tuple[str, str]:
         return (items[0], items[1])
 
-    def servers_block(self, items: list[Any]) -> list[Server]:
-        servers = []
+    def servers_block(self, items: list[Any]) -> list[Server | ForLoop]:
+        """Return list of servers and/or for loops."""
+        result = []
         for item in items:
-            if isinstance(item, Server):
-                servers.append(item)
+            if isinstance(item, (Server, ForLoop)):
+                result.append(item)
             elif isinstance(item, list):
-                servers.extend(item)
-        return servers
+                # Extend with list items (handles nested structures)
+                result.extend(item)
+        return result
 
     def server_definition(self, items: list[Any]) -> Server:
         name = str(items[0])
