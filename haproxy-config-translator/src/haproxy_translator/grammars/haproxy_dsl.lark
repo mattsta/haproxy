@@ -146,18 +146,34 @@ TCP_REQUEST_CONNECTION.5: "connection"
 TCP_REQUEST_CONTENT.5: "content"
 TCP_REQUEST_INSPECT_DELAY.5: "inspect-delay"
 
-tcp_request_rule: tcp_request_type action_name if_condition
+tcp_request_rule: tcp_request_type action_name tcp_action_param+ if_condition
+                | tcp_request_type action_name tcp_action_param+
+                | tcp_request_type action_name if_condition
                 | tcp_request_type action_name
 
 tcp_request_type: TCP_REQUEST_CONNECTION | TCP_REQUEST_CONTENT | TCP_REQUEST_INSPECT_DELAY
 
-tcp_response_rule: tcp_response_type action_name if_condition
+tcp_response_rule: tcp_response_type action_name tcp_action_param+ if_condition
+                 | tcp_response_type action_name tcp_action_param+
+                 | tcp_response_type action_name if_condition
                  | tcp_response_type action_name
 
 tcp_response_type: TCP_REQUEST_CONTENT | TCP_REQUEST_INSPECT_DELAY
 
+// TCP action param should not match TCP keywords or "if" - use a restricted identifier
+TCP_ACTION_KEYWORD.10: /(?!connection\b|content\b|inspect-delay\b|if\b)[a-zA-Z_][a-zA-Z0-9_]*/
+
+tcp_action_param.10: duration | TCP_ACTION_KEYWORD | number
+
 // ===== Stick Table and Rules =====
 stick_table_block: "stick-table" "{" stick_table_property* "}"
+
+// Use priority 5 for stick-table type keywords to prevent ambiguity
+STICK_TYPE_IP.5: "ip"
+STICK_TYPE_IPV6.5: "ipv6"
+STICK_TYPE_INTEGER.5: "integer"
+STICK_TYPE_STRING.5: "string"
+STICK_TYPE_BINARY.5: "binary"
 
 ?stick_table_property: "type" ":" stick_table_type     -> stick_table_type_prop
                      | "size" ":" number                -> stick_table_size
@@ -166,7 +182,7 @@ stick_table_block: "stick-table" "{" stick_table_property* "}"
                      | "peers" ":" identifier           -> stick_table_peers
                      | "store" ":" string_array         -> stick_table_store
 
-stick_table_type: "ip" | "ipv6" | "integer" | "string" | "binary"
+stick_table_type: STICK_TYPE_IP | STICK_TYPE_IPV6 | STICK_TYPE_INTEGER | STICK_TYPE_STRING | STICK_TYPE_BINARY
 
 stick_rule: stick_rule_type pattern if_condition?
 
@@ -175,7 +191,15 @@ stick_rule_type: "stick" "on"              -> stick_on
                | "stick" "store-request"   -> stick_store_request
                | "stick" "store-response"  -> stick_store_response
 
-pattern: string | identifier
+pattern: function_call | string | qualified_identifier | identifier
+
+function_call: identifier "(" function_args? ")"
+
+function_args: function_arg ("," function_arg)*
+
+function_arg: string | FUNCTION_ARG_NAME | identifier
+
+FUNCTION_ARG_NAME: /[a-zA-Z_][a-zA-Z0-9_-]*/
 
 action_name: qualified_identifier  // Allow "lua.function_name"
 

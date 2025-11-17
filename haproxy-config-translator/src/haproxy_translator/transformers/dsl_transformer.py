@@ -1307,10 +1307,14 @@ class DSLTransformer(Transformer):
 
     def stick_table_type(self, items: list[Token]) -> str:
         """Extract stick-table type from grammar alternatives."""
-        return str(items[0]) if items else "ip"
+        if items:
+            # Extract the token value and convert to lowercase string
+            return str(items[0]).strip('"').lower()
+        return "ip"
 
     def stick_table_type_prop(self, items: list[Any]) -> tuple[str, str]:
-        return ("type", items[0])
+        # items[0] should be the result of stick_table_type transformer
+        return ("type", str(items[0]))
 
     def stick_table_size(self, items: list[Any]) -> tuple[str, int]:
         return ("size", int(items[0]))
@@ -1326,6 +1330,23 @@ class DSLTransformer(Transformer):
 
     def stick_table_store(self, items: list[Any]) -> tuple[str, list[str]]:
         return ("store", items[0] if isinstance(items[0], list) else [str(items[0])])
+
+    def function_arg(self, items: list[Any]) -> str:
+        """Transform a single function argument."""
+        return str(items[0]) if items else ""
+
+    def function_args(self, items: list[Any]) -> str:
+        """Transform function arguments to comma-separated string."""
+        if not items:
+            return ""
+        # Join all arguments with commas
+        return ",".join(str(item) for item in items)
+
+    def function_call(self, items: list[Any]) -> str:
+        """Transform function call pattern like hdr(X-User-ID)."""
+        func_name = str(items[0])
+        args = str(items[1]) if len(items) > 1 else ""
+        return f"{func_name}({args})"
 
     def pattern(self, items: list[Any]) -> str:
         """Extract pattern value (string or identifier)."""
@@ -1391,12 +1412,18 @@ class DSLTransformer(Transformer):
         condition = None
         parameters = {}
 
-        # Parse remaining items for condition (grammar only supports if_condition, no params)
+        # Parse remaining items for parameters and condition
         for item in items[2:]:
             if isinstance(item, tuple):
                 # Check if this is an if_condition tuple
                 if item[0] == "condition":
                     condition = item[1]
+            elif isinstance(item, str):
+                # This is a tcp_action_param (duration or value)
+                # Store it in parameters with a generic key
+                if "params" not in parameters:
+                    parameters["params"] = []
+                parameters["params"].append(item)
 
         return TcpRequestRule(
             rule_type=rule_type,
@@ -1404,6 +1431,10 @@ class DSLTransformer(Transformer):
             condition=condition,
             parameters=parameters,
         )
+
+    def tcp_action_param(self, items: list[Any]) -> str:
+        """Transform tcp action parameter (duration or value)."""
+        return str(items[0]) if items else ""
 
     def if_condition(self, items: list[Any]) -> tuple[str, str]:
         """Transform if condition to a tuple marking it as a condition."""
@@ -1434,11 +1465,11 @@ class DSLTransformer(Transformer):
                 # Check if this is an if_condition tuple
                 if item[0] == "condition":
                     condition = item[1]
-                else:
-                    key, value = item
-                    parameters[key] = value
             elif isinstance(item, str):
-                condition = item
+                # This is a tcp_action_param (duration or value)
+                if "params" not in parameters:
+                    parameters["params"] = []
+                parameters["params"].append(item)
 
         return TcpResponseRule(
             rule_type=rule_type,

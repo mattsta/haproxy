@@ -586,25 +586,33 @@ class HAProxyCodeGenerator:
     def _format_tcp_request_rule(self, tcp_req: "TcpRequestRule") -> str:
         """Format tcp-request rule."""
         parts = [f"tcp-request {tcp_req.rule_type} {tcp_req.action}"]
-        
+
         # Add parameters
         for key, value in tcp_req.parameters.items():
-            parts.append(f"{key} {value}")
-        
+            if key == "params" and isinstance(value, list):
+                # Params list should be appended directly without key
+                parts.extend(value)
+            else:
+                parts.append(f"{key} {value}")
+
         if tcp_req.condition:
             parts.append(f"if {tcp_req.condition}")
-        
+
         return " ".join(parts)
 
     def _format_tcp_response_rule(self, tcp_resp: "TcpResponseRule") -> str:
         """Format tcp-response rule."""
         parts = [f"tcp-response {tcp_resp.rule_type} {tcp_resp.action}"]
-        
+
         # Add parameters
         for key, value in tcp_resp.parameters.items():
-            parts.append(f"{key} {value}")
-        
+            if key == "params" and isinstance(value, list):
+                # Params list should be appended directly without key
+                parts.extend(value)
+            else:
+                parts.append(f"{key} {value}")
+
         if tcp_resp.condition:
             parts.append(f"if {tcp_resp.condition}")
-        
+
         return " ".join(parts)
