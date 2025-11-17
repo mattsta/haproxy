@@ -53,11 +53,43 @@ class VariableResolver:
         )
 
     def _resolve_variable_values(self) -> dict[str, Variable]:
-        """Resolve env() calls and variable references in variable values."""
-        resolved = {}
-        for name, var in self.variables.items():
-            resolved_value = self._resolve_value(var.value)
-            resolved[name] = replace(var, value=resolved_value)
+        """Resolve env() calls and variable references in variable values.
+
+        Performs multiple passes to resolve nested variable references.
+        For example: port=8080, addr="10.0.1.1:${port}" -> addr="10.0.1.1:8080"
+        """
+        # Start with original variables
+        resolved = dict(self.variables)
+
+        # Keep resolving until no more changes occur (max 10 passes to prevent infinite loops)
+        max_passes = 10
+        for _ in range(max_passes):
+            changed = False
+            new_resolved = {}
+
+            for name, var in resolved.items():
+                # Temporarily update self.variables to use partially resolved values
+                old_variables = self.variables
+                self.variables = resolved
+
+                try:
+                    resolved_value = self._resolve_value(var.value)
+                    new_resolved[name] = replace(var, value=resolved_value)
+
+                    # Check if value changed
+                    if resolved_value != var.value:
+                        changed = True
+                finally:
+                    self.variables = old_variables
+
+            resolved = new_resolved
+
+            # If nothing changed, we're done
+            if not changed:
+                break
+
+        # Update self.variables with final resolved values for use in config resolution
+        self.variables = resolved
         return resolved
 
     def _resolve_value(self, value: Any) -> Any:

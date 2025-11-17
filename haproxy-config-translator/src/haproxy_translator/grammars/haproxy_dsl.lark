@@ -86,6 +86,7 @@ frontend_section: "frontend" identifier "{" frontend_property* "}"
 
 ?frontend_property: bind_directive
                   | "mode" ":" mode_value                  -> frontend_mode
+                  | acl_block
                   | acl_definition
                   | use_acl_directive
                   | http_request_block
@@ -99,7 +100,11 @@ frontend_section: "frontend" identifier "{" frontend_property* "}"
 
 bind_directive: "bind" bind_address bind_option*
 
-bind_address: HOST_PORT | string
+bind_address: BARE_INTERPOLATION | HOST_PORT | string
+
+// Bare interpolation pattern (matches patterns with ${var} references)
+// Matches: ${var}, ${var}:${port}, host:${port}, ${var}:8080, etc.
+BARE_INTERPOLATION.3: /(?:[a-zA-Z0-9.*:-]*\$\{[^}]+\})+[a-zA-Z0-9.*:-]*/
 
 HOST_PORT: /[a-zA-Z0-9.*:-]+/
 
@@ -213,6 +218,12 @@ compression_block: "compression" "{" compression_property* "}"
 // ?listen_property: bind_directive | acl_definition | "mode" ":" mode_value | backend_property
 
 // ===== ACL Definition =====
+// ACL block containing multiple ACLs
+acl_block: "acl" "{" acl_item+ "}"
+
+acl_item: identifier identifier (string | number)*
+
+// Single ACL definition
 acl_definition: "acl" identifier "{" acl_criterion "}"
 
 acl_criterion: identifier (string | number)*

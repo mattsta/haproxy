@@ -846,6 +846,17 @@ class DSLTransformer(Transformer):
         return ("type", items[0])
 
     # ===== ACL =====
+    def acl_block(self, items: list[Any]) -> list[ACL]:
+        """Transform ACL block containing multiple ACLs."""
+        return [item for item in items if isinstance(item, ACL)]
+
+    def acl_item(self, items: list[Any]) -> ACL:
+        """Transform single ACL item: name criterion values..."""
+        name = str(items[0])
+        criterion = str(items[1]) if len(items) > 1 else ""
+        values = [str(v) for v in items[2:]]
+        return ACL(name=name, criterion=criterion, values=values)
+
     def acl_definition(self, items: list[Any]) -> ACL:
         name = str(items[0])
 

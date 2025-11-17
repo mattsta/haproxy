@@ -1,7 +1,6 @@
 LICENSE
 README.md
 pyproject.toml
-setup.py
 src/haproxy_config_translator.egg-info/PKG-INFO
 src/haproxy_config_translator.egg-info/SOURCES.txt
 src/haproxy_config_translator.egg-info/dependency_links.txt
@@ -24,7 +23,11 @@ src/haproxy_translator/parsers/base.py
 src/haproxy_translator/parsers/dsl_parser.py
 src/haproxy_translator/transformers/__init__.py
 src/haproxy_translator/transformers/dsl_transformer.py
+src/haproxy_translator/transformers/loop_unroller.py
+src/haproxy_translator/transformers/template_expander.py
+src/haproxy_translator/transformers/variable_resolver.py
 src/haproxy_translator/utils/__init__.py
 src/haproxy_translator/utils/errors.py
 src/haproxy_translator/validators/__init__.py
+src/haproxy_translator/validators/semantic.py
 tests/test_basic_translation.py
