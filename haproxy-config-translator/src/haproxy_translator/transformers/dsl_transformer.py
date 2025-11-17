@@ -53,6 +53,7 @@ class DSLTransformer(Transformer):
         backends = []
         listens = []
         imports = []
+        lua_scripts = []
 
         for stmt in statements:
             if isinstance(stmt, GlobalConfig):
@@ -65,6 +66,14 @@ class DSLTransformer(Transformer):
                 backends.append(stmt)
             elif isinstance(stmt, Listen):
                 listens.append(stmt)
+            elif isinstance(stmt, list):
+                # lua_section returns a list of LuaScript objects
+                for item in stmt:
+                    if isinstance(item, LuaScript):
+                        lua_scripts.append(item)
+            elif isinstance(stmt, LuaScript):
+                # Single lua script
+                lua_scripts.append(stmt)
             elif isinstance(stmt, Variable):
                 self.variables[stmt.name] = stmt
             elif isinstance(stmt, Template):
@@ -79,6 +88,7 @@ class DSLTransformer(Transformer):
             frontends=frontends,
             backends=backends,
             listens=listens,
+            lua_scripts=lua_scripts,
             variables=self.variables,
             templates=self.templates,
             imports=imports,

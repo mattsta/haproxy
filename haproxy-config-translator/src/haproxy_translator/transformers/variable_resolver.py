@@ -15,6 +15,7 @@ from ..ir.nodes import (
     GlobalConfig,
     HealthCheck,
     Listen,
+    LuaScript,
     Server,
     Variable,
 )
@@ -41,6 +42,7 @@ class VariableResolver:
         resolved_frontends = [self._resolve_frontend(f) for f in self.config.frontends]
         resolved_backends = [self._resolve_backend(b) for b in self.config.backends]
         resolved_listens = [self._resolve_listen(listen) for listen in self.config.listens]
+        resolved_lua_scripts = [self._resolve_lua_script(script) for script in self.config.lua_scripts]
 
         return replace(
             self.config,
@@ -50,6 +52,7 @@ class VariableResolver:
             frontends=resolved_frontends,
             backends=resolved_backends,
             listens=resolved_listens,
+            lua_scripts=resolved_lua_scripts,
         )
 
     def _resolve_variable_values(self) -> dict[str, Variable]:
@@ -229,6 +232,23 @@ class VariableResolver:
         """Resolve variables in health check."""
         resolved_uri = str(self._resolve_value(health_check.uri))
         return replace(health_check, uri=resolved_uri)
+
+    def _resolve_lua_script(self, script: "LuaScript") -> "LuaScript":
+        """Resolve variables in Lua script."""
+        # Resolve content (file path or inline code might have variables)
+        resolved_content = self._resolve_value(script.content)
+
+        # Resolve parameters (template parameters might have variables)
+        resolved_parameters = {
+            key: self._resolve_value(value)
+            for key, value in script.parameters.items()
+        }
+
+        return replace(
+            script,
+            content=resolved_content,
+            parameters=resolved_parameters,
+        )
 
 
 def resolve_env_variable(var_name: str, default: Any = None) -> Any:

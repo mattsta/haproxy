@@ -387,6 +387,7 @@ class ConfigIR(IRNode):
     frontends: list[Frontend] = field(default_factory=list)
     backends: list[Backend] = field(default_factory=list)
     listens: list[Listen] = field(default_factory=list)
+    lua_scripts: list[LuaScript] = field(default_factory=list)
 
     # DSL-specific features
     variables: dict[str, Variable] = field(default_factory=dict)

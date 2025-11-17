@@ -24,7 +24,18 @@ class LuaManager:
         Returns:
             Updated IR with file references instead of inline scripts
         """
-        if not ir.global_config or not ir.global_config.lua_scripts:
+        # Collect lua scripts from both top-level and global config
+        all_lua_scripts = []
+
+        # Get scripts from top-level lua_scripts
+        if ir.lua_scripts:
+            all_lua_scripts.extend(ir.lua_scripts)
+
+        # Get scripts from global config (if they're also there)
+        if ir.global_config and ir.global_config.lua_scripts:
+            all_lua_scripts.extend(ir.global_config.lua_scripts)
+
+        if not all_lua_scripts:
             return ir
 
         # Create output directory
@@ -32,7 +43,7 @@ class LuaManager:
 
         updated_scripts = []
 
-        for script in ir.global_config.lua_scripts:
+        for script in all_lua_scripts:
             if script.source_type == "inline":
                 # Generate file for inline script
                 filepath = self._generate_lua_file(script)
@@ -49,10 +60,19 @@ class LuaManager:
                 if script.content:
                     self.script_map[script.name or "unnamed"] = Path(script.content)
 
-        # Update global config with new scripts
-        updated_global = dataclasses.replace(ir.global_config, lua_scripts=updated_scripts)
+        # Update both locations with file references
+        updated_ir = ir
 
-        return dataclasses.replace(ir, global_config=updated_global)
+        # Update top-level lua_scripts
+        if ir.lua_scripts:
+            updated_ir = dataclasses.replace(updated_ir, lua_scripts=updated_scripts)
+
+        # Update global config lua_scripts if they exist
+        if ir.global_config and ir.global_config.lua_scripts:
+            updated_global = dataclasses.replace(ir.global_config, lua_scripts=updated_scripts)
+            updated_ir = dataclasses.replace(updated_ir, global_config=updated_global)
+
+        return updated_ir
 
     def _generate_lua_file(self, script: LuaScript) -> Path:
         """Generate Lua file from inline script."""

@@ -44,9 +44,22 @@ class HAProxyCodeGenerator:
         lines.append(f"# Version: {ir.version}")
         lines.append("")
 
+        # Merge top-level lua_scripts into global config (HAProxy requires lua-load in global section)
+        global_config = ir.global_config
+        if ir.lua_scripts and len(ir.lua_scripts) > 0:
+            if global_config:
+                # Add top-level lua scripts to global config's lua_scripts
+                import dataclasses
+                all_lua_scripts = list(ir.lua_scripts) + list(global_config.lua_scripts)
+                global_config = dataclasses.replace(global_config, lua_scripts=all_lua_scripts)
+            else:
+                # Create a minimal global config with just lua scripts
+                from ..ir.nodes import GlobalConfig as GC
+                global_config = GC(lua_scripts=list(ir.lua_scripts))
+
         # Generate global section
-        if ir.global_config:
-            lines.extend(self._generate_global(ir.global_config))
+        if global_config:
+            lines.extend(self._generate_global(global_config))
             lines.append("")
 
         # Generate defaults section
