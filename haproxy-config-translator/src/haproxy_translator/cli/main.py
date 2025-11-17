@@ -162,9 +162,7 @@ def _translate_once(
 
     # Output
     if output:
-        console.print(
-            f"[bold green]✓[/bold green] Configuration written to: [cyan]{output}[/cyan]"
-        )
+        console.print(f"[bold green]✓[/bold green] Configuration written to: [cyan]{output}[/cyan]")
         if lua_manager.script_map:
             console.print(
                 f"[bold green]✓[/bold green] Lua scripts written to: [cyan]{lua_output_dir / 'lua'}[/cyan]"

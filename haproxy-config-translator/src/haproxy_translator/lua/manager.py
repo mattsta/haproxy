@@ -52,9 +52,7 @@ class LuaManager:
                     self.script_map[script.name or "unnamed"] = Path(script.content)
 
         # Update global config with new scripts
-        updated_global = dataclasses.replace(
-            ir.global_config, lua_scripts=updated_scripts
-        )
+        updated_global = dataclasses.replace(ir.global_config, lua_scripts=updated_scripts)
 
         return dataclasses.replace(ir, global_config=updated_global)
 

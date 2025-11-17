@@ -248,9 +248,7 @@ class HAProxyCodeGenerator:
 
         # Compression
         if backend.compression:
-            lines.append(
-                self._indent(f"compression algo {backend.compression.algo}")
-            )
+            lines.append(self._indent(f"compression algo {backend.compression.algo}"))
             if backend.compression.types:
                 types_str = " ".join(backend.compression.types)
                 lines.append(self._indent(f"compression type {types_str}"))

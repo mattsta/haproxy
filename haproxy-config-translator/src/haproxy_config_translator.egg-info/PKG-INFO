@@ -29,9 +29,11 @@ Requires-Dist: watchdog>=3.0.0
 Provides-Extra: dev
 Requires-Dist: pytest>=7.4.3; extra == "dev"
 Requires-Dist: pytest-cov>=4.1.0; extra == "dev"
+Requires-Dist: pytest-xdist>=3.5.0; extra == "dev"
 Requires-Dist: black>=23.12.0; extra == "dev"
 Requires-Dist: ruff>=0.1.8; extra == "dev"
 Requires-Dist: mypy>=1.7.1; extra == "dev"
+Requires-Dist: types-PyYAML>=6.0.12; extra == "dev"
 Provides-Extra: hcl
 Requires-Dist: python-hcl2>=4.3.2; extra == "hcl"
 Dynamic: license-file

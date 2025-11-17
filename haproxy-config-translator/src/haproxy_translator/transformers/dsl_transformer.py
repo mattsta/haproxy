@@ -588,9 +588,7 @@ class DSLTransformer(Transformer):
                     header_value = item[2]
                     headers[header_name] = header_value
 
-        return HealthCheck(
-            method=method, uri=uri, expect_status=expect_status, headers=headers
-        )
+        return HealthCheck(method=method, uri=uri, expect_status=expect_status, headers=headers)
 
     def hc_method(self, items: list[Any]) -> tuple[str, str]:
         return ("method", items[0])
@@ -783,7 +781,11 @@ class DSLTransformer(Transformer):
         )
 
         return ServerTemplate(
-            prefix=name, count=count, fqdn_pattern=fqdn_pattern, port=base_server.port, base_server=base_server
+            prefix=name,
+            count=count,
+            fqdn_pattern=fqdn_pattern,
+            port=base_server.port,
+            base_server=base_server,
         )
 
     def compression_block(self, items: list[Any]) -> CompressionConfig:
@@ -872,6 +874,7 @@ class DSLTransformer(Transformer):
         var_name = items[0]
         default = items[1] if len(items) > 1 else ""
         import os
+
         return os.environ.get(var_name, default)
 
     # ===== Primitives =====

@@ -19,7 +19,9 @@ class DSLParser(ConfigParser):
         # Load grammar file using importlib.resources
         try:
             # Python 3.9+
-            grammar_file = resources.files("haproxy_translator").joinpath("grammars/haproxy_dsl.lark")
+            grammar_file = resources.files("haproxy_translator").joinpath(
+                "grammars/haproxy_dsl.lark"
+            )
             grammar = grammar_file.read_text()
         except AttributeError:
             # Python 3.7-3.8 fallback
