@@ -836,10 +836,11 @@ class DSLTransformer(Transformer):
     # ===== ACL =====
     def acl_definition(self, items: list[Any]) -> ACL:
         name = str(items[0])
-        criterion_items = items[1:]
 
-        if criterion_items:
-            criterion = str(criterion_items[0])
+        # items[1] is the result of acl_criterion, which is a list
+        if len(items) > 1 and isinstance(items[1], list):
+            criterion_items = items[1]
+            criterion = str(criterion_items[0]) if criterion_items else ""
             values = [str(v) for v in criterion_items[1:]]
         else:
             criterion = ""
@@ -906,6 +907,27 @@ class DSLTransformer(Transformer):
     def identifier(self, items: list[Token]) -> str:
         return str(items[0])
 
+    # Enum value extractors - extract string from grammar alternatives
+    def mode_value(self, items: list[Token]) -> str:
+        """Extract mode string from grammar alternatives."""
+        return str(items[0]) if items else "http"
+
+    def balance_algo(self, items: list[Token]) -> str:
+        """Extract balance algorithm string from grammar alternatives."""
+        return str(items[0]) if items else "roundrobin"
+
+    def log_facility(self, items: list[Token]) -> str:
+        """Extract log facility string from grammar alternatives."""
+        return str(items[0]) if items else "local0"
+
+    def log_level(self, items: list[Token]) -> str:
+        """Extract log level string from grammar alternatives."""
+        return str(items[0]) if items else "info"
+
+    def bind_address(self, items: list[Any]) -> str:
+        """Extract bind address string."""
+        return str(items[0]) if items else "*:80"
+
     def string(self, items: list[Token]) -> str:
         value = str(items[0])
         # Remove quotes if present
@@ -925,7 +947,15 @@ class DSLTransformer(Transformer):
         return float(token)
 
     def boolean(self, items: list[Token]) -> bool:
-        return str(items[0]) == "true"
+        # Handle multiple boolean representations: true/false, yes/no, on/off, 1/0
+        if items:
+            value = str(items[0]).lower()
+            return value in ("true", "yes", "on", "1")
+        return False
+
+    def BOOLEAN(self, token: Token) -> str:
+        """Pass through BOOLEAN token value."""
+        return str(token)
 
     def duration(self, items: list[Any]) -> str:
         return f"{items[0]}{items[1]}"

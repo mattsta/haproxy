@@ -1,9 +1,9 @@
 """Test Lark grammar rules for HAProxy DSL."""
 
 import pytest
-from lark import Lark, UnexpectedInput
 
 from haproxy_translator.parsers.dsl_parser import DSLParser
+from haproxy_translator.utils.errors import ParseError
 
 
 @pytest.fixture
@@ -377,7 +377,7 @@ class TestParsingErrors:
             invalid syntax here
         }
         """
-        with pytest.raises(Exception):  # Will raise ParseError
+        with pytest.raises(ParseError):
             parser.parse(source)
 
     def test_missing_braces(self, parser):
@@ -388,13 +388,13 @@ class TestParsingErrors:
                 maxconn: 1000
         }
         """
-        with pytest.raises(Exception):
+        with pytest.raises(ParseError):
             parser.parse(source)
 
     def test_empty_config(self, parser):
         """Test that completely empty config fails."""
         source = ""
-        with pytest.raises(Exception):
+        with pytest.raises(ParseError):
             parser.parse(source)
 
 

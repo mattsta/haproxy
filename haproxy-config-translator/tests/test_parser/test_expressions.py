@@ -337,9 +337,9 @@ class TestQualifiedIdentifiers:
         }
         """
         ir = parser.parse(source)
-        frontend = ir.frontends[0]
-        # Check that http-request rules exist
+        # Check that http-request rules exist in the frontend
         # The exact structure depends on transformer implementation
+        assert len(ir.frontends) > 0
 
 
 if __name__ == "__main__":

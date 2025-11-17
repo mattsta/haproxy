@@ -319,7 +319,9 @@ number: INT | FLOAT
 INT: /\d+/
 FLOAT: /\d+\.\d+/
 
-boolean: "true" | "false"
+BOOLEAN: "true" | "false" | "yes" | "no" | "on" | "off" | "1" | "0"
+
+boolean: BOOLEAN
 
 // ===== Comments and Whitespace =====
 %import common.ESCAPED_STRING
