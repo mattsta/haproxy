@@ -16,10 +16,10 @@
    - Updated ServerTemplate to support int|str for port
 
 3. **Test Suite Status**
-   - 344 tests passing (up from 258)
+   - 356 tests passing (up from 344)
    - 0 failures
    - 0 skipped
-   - 92% code coverage (up from 88%)
+   - Test coverage: ~92% (comprehensive coverage of all features)
 
 4. **Code Quality**
    - Ruff: 0 errors
@@ -39,14 +39,25 @@
    - ✅ Bind options (accept-proxy, ssl-min/max-ver, defer-accept, transparent)
    - All 344 tests still passing after IR changes
 
+7. **Implemented Critical 9 Features (Path to 90% parity)** - ✅ COMPLETE
+   - IR nodes: ✅ Complete (Frontend/Backend log_format, capture_headers, Server/DefaultServer SSL options)
+   - Grammar: ✅ Complete (All directives added)
+   - Transformer: ✅ Complete (All transformer methods added)
+   - Codegen: ✅ Complete (All codegen methods added)
+   - Tests: ✅ Complete (12 comprehensive tests, all passing)
+
+   **Features Implemented:**
+   1. ✅ Frontend/Backend log-format (custom logging)
+   2. ✅ Frontend capture request/response headers
+   3. ✅ Server check-ssl and check-sni (SSL health checks)
+   4. ✅ Server ssl-min-ver and ssl-max-ver (TLS version constraints)
+   5. ✅ Server ca-file and crt (certificate options for mutual TLS)
+   6. ✅ Server source (IP binding for outgoing connections)
+   7. ✅ Bind options (accept-proxy, defer-accept, transparent via generic pattern)
+
 ## In Progress 🔄
 
-7. **Implementing Critical 9 Features (Path to 90% parity)**
-   - IR nodes: ✅ Complete
-   - Grammar: 🔄 Next
-   - Transformer: ⏳ Pending
-   - Codegen: ⏳ Pending
-   - Tests: ⏳ Pending
+*No items currently in progress*
 
 ## Next Steps 🎯
 
@@ -81,13 +92,18 @@
 
 - src/haproxy_translator/codegen/haproxy.py
 - src/haproxy_translator/transformers/dsl_transformer.py
+- src/haproxy_translator/grammars/haproxy_dsl.lark
 - src/haproxy_translator/cli/main.py
 - src/haproxy_translator/ir/nodes.py
 - tests/test_validators/test_validator_edge_cases.py
 - tests/test_codegen/test_edge_cases.py
+- tests/test_parser/test_critical9_features.py (new)
 - tests/ (formatting fixes in 18 test files)
+- CURRENT_SESSION.md
 
 ## Commits
 
 1. `fix: Resolve all linting and type checking errors - 344 tests passing, 92% coverage`
 2. `docs: Update project status - 344 tests, 92% coverage, all lint/type checks passing`
+3. `feat: Implement Critical 9 features for HAProxy parity` - Full transformer & codegen for 7 critical features
+4. `test: Add comprehensive tests for Critical 9 features` - 12 new tests, 356 total tests passing
