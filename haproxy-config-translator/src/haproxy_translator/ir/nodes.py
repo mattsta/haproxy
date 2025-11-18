@@ -317,6 +317,9 @@ class HealthCheck(IRNode):
     uri: str = "/"
     expect_status: int | None = 200
     expect_string: str | None = None
+    expect_rstatus: str | None = None  # Regex status pattern
+    expect_rstring: str | None = None  # Regex string pattern
+    expect_negate: bool = False  # Negate the expectation (!status, !string)
     headers: dict[str, str] = field(default_factory=dict)
     interval: str | None = None
 

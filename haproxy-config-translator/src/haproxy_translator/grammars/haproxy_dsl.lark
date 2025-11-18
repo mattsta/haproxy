@@ -278,7 +278,14 @@ health_check_block: "health-check" "{" health_check_property* "}"
                       | "expect" ":" expect_value   -> hc_expect
                       | header_definition           -> hc_header
 
-expect_value: "status" number
+expect_value: "status" number                       -> expect_status
+            | "string" string                       -> expect_string
+            | "rstatus" string                      -> expect_rstatus
+            | "rstring" string                      -> expect_rstring
+            | "!" "status" number                   -> expect_not_status
+            | "!" "string" string                   -> expect_not_string
+            | "!" "rstatus" string                  -> expect_not_rstatus
+            | "!" "rstring" string                  -> expect_not_rstring
 
 header_definition: "header" string string
 

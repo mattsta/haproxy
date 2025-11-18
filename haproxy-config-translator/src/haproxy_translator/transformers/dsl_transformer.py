@@ -989,6 +989,10 @@ class DSLTransformer(Transformer):
         method = "GET"
         uri = "/"
         expect_status = None
+        expect_string = None
+        expect_rstatus = None
+        expect_rstring = None
+        expect_negate = False
         headers = {}
 
         for item in items:
@@ -999,13 +1003,45 @@ class DSLTransformer(Transformer):
                 elif key == "uri":
                     uri = value
                 elif key == "expect_status":
-                    expect_status = value
+                    # Check if negated: value is tuple (True, status_code)
+                    if isinstance(value, tuple):
+                        expect_negate = value[0]
+                        expect_status = value[1]
+                    else:
+                        expect_status = value
+                elif key == "expect_string":
+                    if isinstance(value, tuple):
+                        expect_negate = value[0]
+                        expect_string = value[1]
+                    else:
+                        expect_string = value
+                elif key == "expect_rstatus":
+                    if isinstance(value, tuple):
+                        expect_negate = value[0]
+                        expect_rstatus = value[1]
+                    else:
+                        expect_rstatus = value
+                elif key == "expect_rstring":
+                    if isinstance(value, tuple):
+                        expect_negate = value[0]
+                        expect_rstring = value[1]
+                    else:
+                        expect_rstring = value
                 elif key.startswith("header_"):
                     header_name = item[1]
                     header_value = item[2]
                     headers[header_name] = header_value
 
-        return HealthCheck(method=method, uri=uri, expect_status=expect_status, headers=headers)
+        return HealthCheck(
+            method=method,
+            uri=uri,
+            expect_status=expect_status,
+            expect_string=expect_string,
+            expect_rstatus=expect_rstatus,
+            expect_rstring=expect_rstring,
+            expect_negate=expect_negate,
+            headers=headers
+        )
 
     def hc_method(self, items: list[Any]) -> tuple[str, str]:
         return ("method", items[0])
@@ -1013,14 +1049,36 @@ class DSLTransformer(Transformer):
     def hc_uri(self, items: list[Any]) -> tuple[str, str]:
         return ("uri", items[0])
 
-    def hc_expect(self, items: list[Any]) -> tuple[str, int]:
-        return ("expect_status", items[0])
+    def hc_expect(self, items: list[Any]) -> tuple[str, Any]:
+        """Handle expect value (status, string, rstatus, rstring, negated)."""
+        return items[0]
 
     def hc_header(self, items: list[Any]) -> tuple[str, str, str]:
         return ("header", items[0][0], items[0][1])
 
-    def expect_value(self, items: list[Any]) -> int:
-        return cast("int", items[0])
+    def expect_status(self, items: list[Any]) -> tuple[str, int]:
+        return ("expect_status", items[0])
+
+    def expect_string(self, items: list[Any]) -> tuple[str, str]:
+        return ("expect_string", items[0])
+
+    def expect_rstatus(self, items: list[Any]) -> tuple[str, str]:
+        return ("expect_rstatus", items[0])
+
+    def expect_rstring(self, items: list[Any]) -> tuple[str, str]:
+        return ("expect_rstring", items[0])
+
+    def expect_not_status(self, items: list[Any]) -> tuple[str, tuple[bool, int]]:
+        return ("expect_status", (True, items[0]))
+
+    def expect_not_string(self, items: list[Any]) -> tuple[str, tuple[bool, str]]:
+        return ("expect_string", (True, items[0]))
+
+    def expect_not_rstatus(self, items: list[Any]) -> tuple[str, tuple[bool, str]]:
+        return ("expect_rstatus", (True, items[0]))
+
+    def expect_not_rstring(self, items: list[Any]) -> tuple[str, tuple[bool, str]]:
+        return ("expect_rstring", (True, items[0]))
 
     def header_definition(self, items: list[Any]) -> tuple[str, str]:
         return (items[0], items[1])

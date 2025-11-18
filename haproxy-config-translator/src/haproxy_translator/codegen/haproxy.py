@@ -407,11 +407,17 @@ class HAProxyCodeGenerator:
 
         lines.append(ind(check_line))
 
-        # Expect
+        # Expect - build the expectation line
+        negate_prefix = "! " if health_check.expect_negate else ""
+
         if health_check.expect_status:
-            lines.append(ind(f"http-check expect status {health_check.expect_status}"))
+            lines.append(ind(f"http-check expect {negate_prefix}status {health_check.expect_status}"))
         elif health_check.expect_string:
-            lines.append(ind(f"http-check expect string {health_check.expect_string}"))
+            lines.append(ind(f"http-check expect {negate_prefix}string {health_check.expect_string}"))
+        elif health_check.expect_rstatus:
+            lines.append(ind(f"http-check expect {negate_prefix}rstatus {health_check.expect_rstatus}"))
+        elif health_check.expect_rstring:
+            lines.append(ind(f"http-check expect {negate_prefix}rstring {health_check.expect_rstring}"))
 
         return lines
 
