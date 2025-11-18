@@ -1279,6 +1279,7 @@ class DSLTransformer(Transformer):
         crt = None
         source = None
         template_spreads = []
+        options = {}  # Collect additional server options
 
         for prop in properties:
             if isinstance(prop, tuple):
@@ -1332,6 +1333,11 @@ class DSLTransformer(Transformer):
                     crt = value
                 elif key == "source":
                     source = value
+                else:
+                    # Collect all other options into the options dict
+                    # Convert underscores to hyphens for HAProxy syntax
+                    haproxy_key = key.replace("_", "-")
+                    options[haproxy_key] = value
 
         # Build metadata with template spreads if any
         metadata = {}
@@ -1363,6 +1369,7 @@ class DSLTransformer(Transformer):
             ca_file=ca_file,
             crt=crt,
             source=source,
+            options=options,
             metadata=metadata,
         )
 
@@ -1467,6 +1474,97 @@ class DSLTransformer(Transformer):
 
     def server_source(self, items: list[Any]) -> tuple[str, str]:
         return ("source", items[0])
+
+    # New server options
+    def server_id(self, items: list[Any]) -> tuple[str, int]:
+        return ("id", items[0])
+
+    def server_cookie(self, items: list[Any]) -> tuple[str, str]:
+        return ("cookie", items[0])
+
+    def server_disabled(self, items: list[Any]) -> tuple[str, bool]:
+        return ("disabled", items[0])
+
+    def server_enabled(self, items: list[Any]) -> tuple[str, bool]:
+        return ("enabled", items[0])
+
+    def server_minconn(self, items: list[Any]) -> tuple[str, int]:
+        return ("minconn", items[0])
+
+    def server_maxqueue(self, items: list[Any]) -> tuple[str, int]:
+        return ("maxqueue", items[0])
+
+    def server_init_addr(self, items: list[Any]) -> tuple[str, str]:
+        return ("init_addr", items[0])
+
+    def server_max_reuse(self, items: list[Any]) -> tuple[str, int]:
+        return ("max_reuse", items[0])
+
+    def server_pool_max_conn(self, items: list[Any]) -> tuple[str, int]:
+        return ("pool_max_conn", items[0])
+
+    def server_pool_purge_delay(self, items: list[Any]) -> tuple[str, str]:
+        return ("pool_purge_delay", str(items[0]))
+
+    def server_resolvers(self, items: list[Any]) -> tuple[str, str]:
+        return ("resolvers", items[0])
+
+    def server_resolve_prefer(self, items: list[Any]) -> tuple[str, str]:
+        return ("resolve_prefer", items[0])
+
+    def server_error_limit(self, items: list[Any]) -> tuple[str, int]:
+        return ("error_limit", items[0])
+
+    def server_observe(self, items: list[Any]) -> tuple[str, str]:
+        return ("observe", items[0])
+
+    def server_on_error(self, items: list[Any]) -> tuple[str, str]:
+        return ("on_error", items[0])
+
+    def server_on_marked_down(self, items: list[Any]) -> tuple[str, str]:
+        return ("on_marked_down", items[0])
+
+    def server_on_marked_up(self, items: list[Any]) -> tuple[str, str]:
+        return ("on_marked_up", items[0])
+
+    def server_proto(self, items: list[Any]) -> tuple[str, str]:
+        return ("proto", items[0])
+
+    def server_redir(self, items: list[Any]) -> tuple[str, str]:
+        return ("redir", items[0])
+
+    def server_tfo(self, items: list[Any]) -> tuple[str, bool]:
+        return ("tfo", items[0])
+
+    def server_track(self, items: list[Any]) -> tuple[str, str]:
+        return ("track", items[0])
+
+    def server_usesrc(self, items: list[Any]) -> tuple[str, str]:
+        return ("usesrc", items[0])
+
+    def server_namespace(self, items: list[Any]) -> tuple[str, str]:
+        return ("namespace", items[0])
+
+    def server_agent_check(self, items: list[Any]) -> tuple[str, bool]:
+        return ("agent_check", items[0])
+
+    def server_agent_port(self, items: list[Any]) -> tuple[str, int]:
+        return ("agent_port", items[0])
+
+    def server_agent_addr(self, items: list[Any]) -> tuple[str, str]:
+        return ("agent_addr", items[0])
+
+    def server_agent_inter(self, items: list[Any]) -> tuple[str, str]:
+        return ("agent_inter", str(items[0]))
+
+    def server_agent_send(self, items: list[Any]) -> tuple[str, str]:
+        return ("agent_send", items[0])
+
+    def server_check_proto(self, items: list[Any]) -> tuple[str, str]:
+        return ("check_proto", items[0])
+
+    def server_check_send_proxy(self, items: list[Any]) -> tuple[str, bool]:
+        return ("check_send_proxy", items[0])
 
     def server_template_spread(self, items: list[Any]) -> tuple[str, str]:
         """Return template spread as metadata marker."""

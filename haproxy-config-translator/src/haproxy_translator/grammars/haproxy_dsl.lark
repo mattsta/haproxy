@@ -339,6 +339,8 @@ server_inline_param: identifier ":" value
                 | "fall" ":" number                 -> server_fall
                 | "weight" ":" number               -> server_weight
                 | "maxconn" ":" number              -> server_maxconn
+                | "minconn" ":" number              -> server_minconn
+                | "maxqueue" ":" number             -> server_maxqueue
                 | "ssl" ":" boolean                 -> server_ssl
                 | "verify" ":" string               -> server_verify
                 | "sni" ":" string                  -> server_sni
@@ -354,6 +356,34 @@ server_inline_param: identifier ":" value
                 | "ca-file" ":" string              -> server_ca_file
                 | "crt" ":" string                  -> server_crt
                 | "source" ":" string               -> server_source
+                | "id" ":" number                   -> server_id
+                | "cookie" ":" string               -> server_cookie
+                | "disabled" ":" boolean            -> server_disabled
+                | "enabled" ":" boolean             -> server_enabled
+                | "init-addr" ":" string            -> server_init_addr
+                | "max-reuse" ":" number            -> server_max_reuse
+                | "pool-max-conn" ":" number        -> server_pool_max_conn
+                | "pool-purge-delay" ":" duration   -> server_pool_purge_delay
+                | "resolvers" ":" string            -> server_resolvers
+                | "resolve-prefer" ":" string       -> server_resolve_prefer
+                | "error-limit" ":" number          -> server_error_limit
+                | "observe" ":" string              -> server_observe
+                | "on-error" ":" string             -> server_on_error
+                | "on-marked-down" ":" string       -> server_on_marked_down
+                | "on-marked-up" ":" string         -> server_on_marked_up
+                | "proto" ":" string                -> server_proto
+                | "redir" ":" string                -> server_redir
+                | "tfo" ":" boolean                 -> server_tfo
+                | "track" ":" string                -> server_track
+                | "usesrc" ":" string               -> server_usesrc
+                | "namespace" ":" string            -> server_namespace
+                | "agent-check" ":" boolean         -> server_agent_check
+                | "agent-port" ":" number           -> server_agent_port
+                | "agent-addr" ":" string           -> server_agent_addr
+                | "agent-inter" ":" duration        -> server_agent_inter
+                | "agent-send" ":" string           -> server_agent_send
+                | "check-proto" ":" string          -> server_check_proto
+                | "check-send-proxy" ":" boolean    -> server_check_send_proxy
                 | template_spread                   -> server_template_spread
 
 template_spread: "@" identifier
