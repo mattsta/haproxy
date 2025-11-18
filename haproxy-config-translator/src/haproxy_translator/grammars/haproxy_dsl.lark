@@ -118,6 +118,9 @@ frontend_section: "frontend" identifier "{" frontend_property* "}"
                   | "timeout_tarpit" ":" duration          -> frontend_timeout_tarpit
                   | "monitor_uri" ":" string               -> frontend_monitor_uri
                   | "maxconn" ":" number                   -> frontend_maxconn
+                  | "log-format" ":" string                -> frontend_log_format
+                  | "capture" "request" "header" string number  -> frontend_capture_request_header
+                  | "capture" "response" "header" string number -> frontend_capture_response_header
 
 bind_directive: "bind" bind_address bind_option*
 
@@ -266,6 +269,7 @@ backend_section: "backend" identifier "{" backend_property* "}"
                  | "timeout_tunnel" ":" duration            -> backend_timeout_tunnel
                  | "timeout_server_fin" ":" duration        -> backend_timeout_server_fin
                  | "retries" ":" number                     -> backend_retries
+                 | "log-format" ":" string                  -> backend_log_format
 
 balance_algo: BALANCE_ROUNDROBIN | BALANCE_LEASTCONN | BALANCE_SOURCE | BALANCE_URI | BALANCE_URL_PARAM | BALANCE_RANDOM | BALANCE_STATIC_RR | BALANCE_FIRST | BALANCE_HDR | BALANCE_RDP_COOKIE
 
