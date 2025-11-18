@@ -181,6 +181,9 @@ global_section: "global" "{" global_property* "}"
                 | "wurfl-cache-size" ":" number                           -> global_wurfl_cache_size
                 | "wurfl-engine-mode" ":" string                          -> global_wurfl_engine_mode
                 | "wurfl-useragent-priority" ":" string                   -> global_wurfl_useragent_priority
+                // Compression Tuning (Final Phase - 2 directives)
+                | "tune.zlib.memlevel" ":" number                         -> global_tune_zlib_memlevel
+                | "tune.zlib.windowsize" ":" number                       -> global_tune_zlib_windowsize
                 | "setenv" string string               -> global_setenv
                 | "presetenv" string string            -> global_presetenv
                 | "resetenv" string                    -> global_resetenv

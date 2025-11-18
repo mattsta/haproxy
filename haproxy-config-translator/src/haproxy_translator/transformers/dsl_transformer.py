@@ -1065,6 +1065,13 @@ class DSLTransformer(Transformer):
     def global_wurfl_useragent_priority(self, items: list[Any]) -> tuple[str, str]:
         return ("wurfl_useragent_priority", items[0])
 
+    # Compression Tuning (Final Phase - 2 directives)
+    def global_tune_zlib_memlevel(self, items: list[Any]) -> tuple[str, int]:
+        return ("tune_zlib_memlevel", items[0])
+
+    def global_tune_zlib_windowsize(self, items: list[Any]) -> tuple[str, int]:
+        return ("tune_zlib_windowsize", items[0])
+
     def log_target(self, items: list[Any]) -> LogTarget:
         address = items[0]
         facility = LogFacility(items[1])
