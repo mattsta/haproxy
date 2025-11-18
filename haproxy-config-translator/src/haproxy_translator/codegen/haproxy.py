@@ -113,6 +113,16 @@ class HAProxyCodeGenerator:
         if global_config.pidfile:
             lines.append(self._indent(f"pidfile {global_config.pidfile}"))
 
+        # Performance tuning
+        if "nbthread" in global_config.tuning:
+            lines.append(self._indent(f"nbthread {global_config.tuning['nbthread']}"))
+
+        if "maxsslconn" in global_config.tuning:
+            lines.append(self._indent(f"maxsslconn {global_config.tuning['maxsslconn']}"))
+
+        if "ulimit_n" in global_config.tuning:
+            lines.append(self._indent(f"ulimit-n {global_config.tuning['ulimit_n']}"))
+
         # Log targets
         for log in global_config.log_targets:
             log_line = f"log {log.address} {log.facility.value} {log.level.value}"

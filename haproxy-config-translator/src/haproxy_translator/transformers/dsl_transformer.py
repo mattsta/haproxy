@@ -113,6 +113,7 @@ class DSLTransformer(Transformer):
         stats = None
         ssl_default_bind_ciphers = None
         ssl_default_bind_options = []
+        tuning = {}
 
         for item in items:
             if isinstance(item, tuple):
@@ -133,6 +134,8 @@ class DSLTransformer(Transformer):
                     ssl_default_bind_ciphers = value
                 elif key == "ssl_default_bind_options":
                     ssl_default_bind_options = value
+                elif key in ("nbthread", "maxsslconn", "ulimit_n"):
+                    tuning[key] = value
             elif isinstance(item, LogTarget):
                 log_targets.append(item)
             elif isinstance(item, list) and all(isinstance(x, LuaScript) for x in item):
@@ -150,6 +153,7 @@ class DSLTransformer(Transformer):
             log_targets=log_targets,
             lua_scripts=lua_scripts,
             stats=stats,
+            tuning=tuning,
             ssl_default_bind_ciphers=ssl_default_bind_ciphers,
             ssl_default_bind_options=ssl_default_bind_options,
         )
@@ -186,6 +190,15 @@ class DSLTransformer(Transformer):
 
     def global_ssl_default_bind_options(self, items: list[Any]) -> tuple[str, list[str]]:
         return ("ssl_default_bind_options", items[0])
+
+    def global_nbthread(self, items: list[Any]) -> tuple[str, int]:
+        return ("nbthread", items[0])
+
+    def global_maxsslconn(self, items: list[Any]) -> tuple[str, int]:
+        return ("maxsslconn", items[0])
+
+    def global_ulimit_n(self, items: list[Any]) -> tuple[str, int]:
+        return ("ulimit_n", items[0])
 
     def log_target(self, items: list[Any]) -> LogTarget:
         address = items[0]

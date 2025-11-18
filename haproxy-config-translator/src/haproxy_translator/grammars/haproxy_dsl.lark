@@ -25,6 +25,9 @@ global_section: "global" "{" global_property* "}"
 
 ?global_property: "daemon" ":" boolean                 -> global_daemon
                 | "maxconn" ":" number                 -> global_maxconn
+                | "nbthread" ":" number                -> global_nbthread
+                | "maxsslconn" ":" number              -> global_maxsslconn
+                | "ulimit-n" ":" number                -> global_ulimit_n
                 | "user" ":" string                    -> global_user
                 | "group" ":" string                   -> global_group
                 | "chroot" ":" string                  -> global_chroot
