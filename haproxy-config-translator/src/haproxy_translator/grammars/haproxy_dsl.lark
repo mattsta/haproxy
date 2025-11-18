@@ -128,7 +128,9 @@ BARE_INTERPOLATION.3: /(?:[a-zA-Z0-9.*:-]*\$\{[^}]+\})+[a-zA-Z0-9.*:-]*/
 HOST_PORT: /[a-zA-Z0-9.*:-]+/
 
 ?bind_option: ssl_block
-            | identifier value  -> bind_generic_option
+            | BIND_OPTION_NAME value  -> bind_generic_option
+
+BIND_OPTION_NAME: /[a-zA-Z_][a-zA-Z0-9_-]*/
 
 ssl_block: "ssl" "{" ssl_property* "}"
 
