@@ -1,0 +1,212 @@
+/**
+ * Phase 3 Features Example - Memory, CPU, and System Integration
+ *
+ * This example demonstrates all 16 Phase 3 global directives:
+ *
+ * Memory Tuning (4 directives):
+ * - tune.memory.pool-allocator: Choose memory allocator (dlmalloc, je, jemalloc)
+ * - tune.memory.fail-alloc: Control behavior on allocation failure
+ * - tune.buffers.limit: Set maximum memory for buffers (bytes)
+ * - tune.buffers.reserve: Set reserved memory for buffers (bytes)
+ *
+ * System Integration (6 directives):
+ * - uid: User ID to run as
+ * - gid: Group ID to run as
+ * - node: Node name for distributed setups
+ * - description: Human-readable description
+ * - hard-stop-after: Grace period before hard-stop
+ * - external-check: Enable external health check programs
+ *
+ * CPU and Performance (3 directives):
+ * - cpu-map: Pin processes/threads to CPU cores
+ * - tune.fd.edge-triggered: Use edge-triggered epoll
+ * - tune.comp.maxlevel: Maximum compression level
+ *
+ * System Security (3 directives):
+ * - setcap: Linux capabilities for privilege management
+ * - set-dumpable: Allow core dumps
+ * - unix-bind: Unix socket permissions
+ */
+
+config phase3_production {
+    global {
+        // Basic process settings
+        daemon: true
+        maxconn: 100000
+        log "/dev/log" local0 info
+
+        // System Integration - Identity and Description
+        uid: 1001
+        gid: 1001
+        node: "lb-production-node-01"
+        description: "High-Performance Production Load Balancer - Phase 3 Features"
+
+        // System Integration - Process Control
+        hard-stop-after: "60s"  // Wait 60s for graceful shutdown before hard stop
+        external-check: true    // Enable external health check programs
+
+        // Memory Tuning - Advanced Allocation
+        tune.memory.pool-allocator: "je"  // Use jemalloc for better performance
+        tune.memory.fail-alloc: "on"      // Fail-fast on allocation errors
+        tune.buffers.limit: 2147483648    // 2GB max memory for buffers
+        tune.buffers.reserve: 268435456   // 256MB reserved for critical operations
+
+        // CPU Performance - Process/Thread Affinity
+        cpu-map "auto:1/1-4" "0-3"   // Map processes 1-4 to CPU cores 0-3
+        cpu-map "auto:5-8" "4-7"     // Map processes 5-8 to CPU cores 4-7
+
+        // CPU Performance - I/O and Compression
+        tune.fd.edge-triggered: true  // Use edge-triggered epoll (better performance)
+        tune.comp.maxlevel: 6         // Balance compression ratio vs CPU usage
+
+        // System Security - Capabilities
+        setcap: "cap_net_bind_service,cap_net_raw=+ep"  // Allow binding to privileged ports + raw sockets
+        set-dumpable: true                               // Enable core dumps for debugging
+        unix-bind: "mode 660 user haproxy group haproxy" // Unix socket permissions
+
+        // SSL/TLS (from Phase 1)
+        ssl-default-bind-ciphers: "ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256"
+        ssl-default-bind-options: ["no-sslv3", "no-tlsv10", "no-tlsv11"]
+    }
+
+    defaults {
+        mode: http
+        timeout: {
+            connect: 5s
+            client: 50s
+            server: 50s
+        }
+        log: "global"
+        option: ["httplog", "dontlognull"]
+    }
+
+    /**
+     * Frontend: HTTPS with HTTP/2
+     * Demonstrates external health checks enabled at global level
+     */
+    frontend https_optimized {
+        bind *:443 ssl {
+            cert: "/etc/ssl/certs/production.pem"
+            alpn: ["h2", "http/1.1"]
+            ssl-min-ver: "TLSv1.2"
+            ssl-max-ver: "TLSv1.3"
+        }
+
+        // ACLs for routing
+        acl {
+            is_api path_beg "/api/"
+            is_static path_beg "/static/" "/assets/"
+            is_admin path_beg "/admin/"
+        }
+
+        // Routing rules
+        use_backend {
+            backend: admin_servers if is_admin
+            backend: api_servers if is_api
+            backend: static_servers if is_static
+        }
+
+        default_backend: web_servers
+    }
+
+    /**
+     * Backend: API Servers
+     * Benefits from memory and CPU tuning
+     */
+    backend api_servers {
+        balance: leastconn
+
+        // External health checks (enabled globally)
+        option: ["external-check"]
+
+        // Compression (limited by tune.comp.maxlevel)
+        compression {
+            algo: "gzip"
+            type: ["text/html", "text/css", "text/javascript", "application/json"]
+        }
+
+        servers {
+            server api1 {
+                address: "10.0.1.10"
+                port: 8080
+                check: true
+                maxconn: 5000
+            }
+
+            server api2 {
+                address: "10.0.1.11"
+                port: 8080
+                check: true
+                maxconn: 5000
+            }
+
+            server api3 {
+                address: "10.0.1.12"
+                port: 8080
+                check: true
+                maxconn: 5000
+                backup: true
+            }
+        }
+    }
+
+    /**
+     * Backend: Static Content
+     * Fast delivery with minimal processing
+     */
+    backend static_servers {
+        balance: roundrobin
+
+        servers {
+            server static1 {
+                address: "10.0.2.10"
+                port: 8081
+                check: true
+            }
+
+            server static2 {
+                address: "10.0.2.11"
+                port: 8081
+                check: true
+            }
+        }
+    }
+
+    /**
+     * Backend: Admin Interface
+     * Secure backend for administrative tasks
+     */
+    backend admin_servers {
+        balance: roundrobin
+
+        servers {
+            server admin1 {
+                address: "10.0.3.10"
+                port: 9000
+                check: true
+            }
+        }
+    }
+
+    /**
+     * Backend: Web Servers
+     * General purpose backend
+     */
+    backend web_servers {
+        balance: roundrobin
+
+        servers {
+            server web1 {
+                address: "10.0.4.10"
+                port: 80
+                check: true
+            }
+
+            server web2 {
+                address: "10.0.4.11"
+                port: 80
+                check: true
+            }
+        }
+    }
+}

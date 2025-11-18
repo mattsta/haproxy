@@ -106,11 +106,17 @@ class DSLTransformer(Transformer):
         daemon = True
         user = None
         group = None
+        uid = None
+        gid = None
         chroot = None
         pidfile = None
         nbproc = None
         master_worker = None
         mworker_max_reloads = None
+        node = None
+        description = None
+        hard_stop_after = None
+        external_check = None
 
         # Connection limits
         maxconn = 2000
@@ -144,6 +150,12 @@ class DSLTransformer(Transformer):
         env_vars = {}
         reset_env_vars = []
         unset_env_vars = []
+
+        # System configuration (Phase 3)
+        setcap = None
+        set_dumpable = None
+        unix_bind = None
+        cpu_map = {}
 
         # Lua scripts
         lua_scripts = []
@@ -211,6 +223,27 @@ class DSLTransformer(Transformer):
                     master_worker = value
                 elif key == "mworker_max_reloads":
                     mworker_max_reloads = value
+                elif key == "uid":
+                    uid = value
+                elif key == "gid":
+                    gid = value
+                elif key == "node":
+                    node = value
+                elif key == "description":
+                    description = value
+                elif key == "hard_stop_after":
+                    hard_stop_after = value
+                elif key == "external_check":
+                    external_check = value
+                elif key == "setcap":
+                    setcap = value
+                elif key == "set_dumpable":
+                    set_dumpable = value
+                elif key == "unix_bind":
+                    unix_bind = value
+                elif key == "cpu_map":
+                    # cpu_map returns tuple (process/thread, cpu_list)
+                    cpu_map[value[0]] = value[1]
                 elif key == "setenv":
                     env_vars[value[0]] = value[1]
                 elif key == "presetenv":
@@ -261,11 +294,17 @@ class DSLTransformer(Transformer):
             daemon=daemon,
             user=user,
             group=group,
+            uid=uid,
+            gid=gid,
             chroot=chroot,
             pidfile=pidfile,
             nbproc=nbproc,
             master_worker=master_worker,
             mworker_max_reloads=mworker_max_reloads,
+            node=node,
+            description=description,
+            hard_stop_after=hard_stop_after,
+            external_check=external_check,
             # Connection limits
             maxconn=maxconn,
             maxconnrate=maxconnrate,
@@ -294,6 +333,11 @@ class DSLTransformer(Transformer):
             env_vars=env_vars,
             reset_env_vars=reset_env_vars,
             unset_env_vars=unset_env_vars,
+            # System configuration (Phase 3)
+            setcap=setcap,
+            set_dumpable=set_dumpable,
+            unix_bind=unix_bind,
+            cpu_map=cpu_map,
             # Lua scripts
             lua_scripts=lua_scripts,
             # Stats
@@ -496,6 +540,59 @@ class DSLTransformer(Transformer):
 
     def global_tune_http_logurilen(self, items: list[Any]) -> tuple[str, int]:
         return ("tune_http_logurilen", items[0])
+
+    # Phase 3 - Memory tuning directives
+    def global_tune_memory_pool_allocator(self, items: list[Any]) -> tuple[str, str]:
+        return ("tune_memory_pool_allocator", items[0])
+
+    def global_tune_memory_fail_alloc(self, items: list[Any]) -> tuple[str, str]:
+        return ("tune_memory_fail_alloc", items[0])
+
+    def global_tune_buffers_limit(self, items: list[Any]) -> tuple[str, int]:
+        return ("tune_buffers_limit", items[0])
+
+    def global_tune_buffers_reserve(self, items: list[Any]) -> tuple[str, int]:
+        return ("tune_buffers_reserve", items[0])
+
+    # Phase 3 - Performance tuning
+    def global_tune_fd_edge_triggered(self, items: list[Any]) -> tuple[str, bool]:
+        return ("tune_fd_edge_triggered", items[0])
+
+    def global_tune_comp_maxlevel(self, items: list[Any]) -> tuple[str, int]:
+        return ("tune_comp_maxlevel", items[0])
+
+    # Phase 3 - System integration
+    def global_uid(self, items: list[Any]) -> tuple[str, int]:
+        return ("uid", items[0])
+
+    def global_gid(self, items: list[Any]) -> tuple[str, int]:
+        return ("gid", items[0])
+
+    def global_setcap(self, items: list[Any]) -> tuple[str, str]:
+        return ("setcap", items[0])
+
+    def global_set_dumpable(self, items: list[Any]) -> tuple[str, bool]:
+        return ("set_dumpable", items[0])
+
+    def global_unix_bind(self, items: list[Any]) -> tuple[str, str]:
+        return ("unix_bind", items[0])
+
+    def global_cpu_map(self, items: list[Any]) -> tuple[str, tuple[str, str]]:
+        # cpu-map process/thread cpu_list
+        return ("cpu_map", (items[0], items[1]))
+
+    # Phase 3 - Advanced options
+    def global_hard_stop_after(self, items: list[Any]) -> tuple[str, str]:
+        return ("hard_stop_after", items[0])
+
+    def global_node(self, items: list[Any]) -> tuple[str, str]:
+        return ("node", items[0])
+
+    def global_description(self, items: list[Any]) -> tuple[str, str]:
+        return ("description", items[0])
+
+    def global_external_check(self, items: list[Any]) -> tuple[str, bool]:
+        return ("external_check", items[0])
 
     def log_target(self, items: list[Any]) -> LogTarget:
         address = items[0]

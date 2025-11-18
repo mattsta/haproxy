@@ -125,11 +125,30 @@ class HAProxyCodeGenerator:
         if global_config.group:
             lines.append(self._indent(f"group {global_config.group}"))
 
+        if global_config.uid is not None:
+            lines.append(self._indent(f"uid {global_config.uid}"))
+
+        if global_config.gid is not None:
+            lines.append(self._indent(f"gid {global_config.gid}"))
+
         if global_config.chroot:
             lines.append(self._indent(f"chroot {global_config.chroot}"))
 
         if global_config.pidfile:
             lines.append(self._indent(f"pidfile {global_config.pidfile}"))
+
+        if global_config.node:
+            lines.append(self._indent(f"node {global_config.node}"))
+
+        if global_config.description:
+            lines.append(self._indent(f"description {global_config.description}"))
+
+        if global_config.hard_stop_after:
+            lines.append(self._indent(f"hard-stop-after {global_config.hard_stop_after}"))
+
+        if global_config.external_check is not None:
+            if global_config.external_check:
+                lines.append(self._indent("external-check"))
 
         # Connection tuning
         if global_config.maxpipes:
@@ -178,6 +197,19 @@ class HAProxyCodeGenerator:
 
         for var_name in global_config.unset_env_vars:
             lines.append(self._indent(f"unsetenv {var_name}"))
+
+        # System configuration (Phase 3)
+        if global_config.setcap:
+            lines.append(self._indent(f"setcap {global_config.setcap}"))
+
+        if global_config.set_dumpable is not None:
+            lines.append(self._indent(f"set-dumpable"))
+
+        if global_config.unix_bind:
+            lines.append(self._indent(f"unix-bind {global_config.unix_bind}"))
+
+        for process_thread, cpu_list in global_config.cpu_map.items():
+            lines.append(self._indent(f"cpu-map {process_thread} {cpu_list}"))
 
         # Logging configuration
         if global_config.log_tag:

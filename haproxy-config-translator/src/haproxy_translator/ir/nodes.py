@@ -148,11 +148,17 @@ class GlobalConfig(IRNode):
     daemon: bool = True
     user: str | None = None
     group: str | None = None
+    uid: int | None = None
+    gid: int | None = None
     chroot: str | None = None
     pidfile: str | None = None
     nbproc: int | None = None
     master_worker: bool | None = None
     mworker_max_reloads: int | None = None
+    node: str | None = None
+    description: str | None = None
+    hard_stop_after: str | None = None
+    external_check: bool | None = None
 
     # Connection limits
     maxconn: int = 2000
@@ -186,6 +192,12 @@ class GlobalConfig(IRNode):
     env_vars: dict[str, str] = field(default_factory=dict)  # setenv/presetenv
     reset_env_vars: list[str] = field(default_factory=list)  # resetenv
     unset_env_vars: list[str] = field(default_factory=list)  # unsetenv
+
+    # System configuration (Phase 3)
+    setcap: str | None = None
+    set_dumpable: bool | None = None
+    unix_bind: str | None = None
+    cpu_map: dict[str, str] = field(default_factory=dict)  # process/thread -> CPU list
 
     # Lua scripts
     lua_scripts: list[LuaScript] = field(default_factory=list)

@@ -79,6 +79,22 @@ global_section: "global" "{" global_property* "}"
                 | "tune.http.maxhdr" ":" number        -> global_tune_http_maxhdr
                 | "tune.http.cookielen" ":" number     -> global_tune_http_cookielen
                 | "tune.http.logurilen" ":" number     -> global_tune_http_logurilen
+                | "tune.memory.pool-allocator" ":" string   -> global_tune_memory_pool_allocator
+                | "tune.memory.fail-alloc" ":" string       -> global_tune_memory_fail_alloc
+                | "tune.buffers.limit" ":" number           -> global_tune_buffers_limit
+                | "tune.buffers.reserve" ":" number         -> global_tune_buffers_reserve
+                | "tune.fd.edge-triggered" ":" boolean      -> global_tune_fd_edge_triggered
+                | "tune.comp.maxlevel" ":" number           -> global_tune_comp_maxlevel
+                | "uid" ":" number                          -> global_uid
+                | "gid" ":" number                          -> global_gid
+                | "setcap" ":" string                       -> global_setcap
+                | "set-dumpable" ":" boolean                -> global_set_dumpable
+                | "unix-bind" ":" string                    -> global_unix_bind
+                | "cpu-map" string string                   -> global_cpu_map
+                | "hard-stop-after" ":" string              -> global_hard_stop_after
+                | "node" ":" string                         -> global_node
+                | "description" ":" string                  -> global_description
+                | "external-check" ":" boolean              -> global_external_check
                 | "setenv" string string               -> global_setenv
                 | "presetenv" string string            -> global_presetenv
                 | "resetenv" string                    -> global_resetenv
