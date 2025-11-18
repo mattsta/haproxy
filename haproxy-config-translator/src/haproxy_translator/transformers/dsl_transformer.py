@@ -845,6 +845,9 @@ class DSLTransformer(Transformer):
     def backend_http_request(self, items: list[Any]) -> list[HttpRequestRule]:
         return cast("list[HttpRequestRule]", items[0])
 
+    def backend_http_response(self, items: list[Any]) -> list[HttpResponseRule]:
+        return cast("list[HttpResponseRule]", items[0])
+
     def backend_timeout_server(self, items: list[Any]) -> tuple[str, str]:
         return ("timeout_server", str(items[0]))
 

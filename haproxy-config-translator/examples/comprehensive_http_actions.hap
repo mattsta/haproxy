@@ -1,0 +1,285 @@
+// Comprehensive example demonstrating HTTP request/response actions
+// This example showcases all implemented HTTP action types
+
+config comprehensive_http_actions {
+    global {
+        daemon: true
+        maxconn: 2000
+        log "127.0.0.1" local0 info
+    }
+
+    defaults {
+        mode: http
+        log: "global"
+        option: ["httplog", "dontlognull"]
+        timeout: {
+            connect: 5s
+            client: 50s
+            server: 50s
+        }
+    }
+
+    // Frontend demonstrating HTTP request actions
+    frontend web {
+        bind *:80
+        bind *:443 ssl {
+            cert: "/etc/haproxy/certs/server.pem"
+            alpn: ["h2", "http/1.1"]
+        }
+
+        // ACLs for conditional logic
+        acl {
+            is_api path_beg "/api"
+            is_admin path_beg "/admin"
+            is_static path_end ".jpg" ".png" ".css" ".js"
+            is_internal src "10.0.0.0/8" "172.16.0.0/12"
+            has_token hdr_sub "Authorization" "Bearer"
+            is_bad_bot hdr_sub "User-Agent" "BadBot"
+            is_health_check path "/health"
+            is_ssl ssl_fc
+            is_head_request method "HEAD"
+            is_legacy_api path_beg "/v1"
+            needs_resolution hdr "X-Resolve" "-m" "found"
+            is_debug hdr "X-Debug" "-m" "found"
+            has_error_override hdr "X-Override" "-m" "found"
+            is_success status "200-299"
+            has_error status "500-599"
+            is_maintenance hdr "X-Maintenance" "-m" "found"
+            is_cacheable hdr "X-Cache" "-m" "found"
+        }
+
+        // === BASIC HTTP REQUEST ACTIONS ===
+
+        // Return immediate response for health checks
+        http-request {
+            return status: 200 content_type: "text/plain" string: "OK" if is_health_check
+        }
+
+        // Set custom headers
+        http-request {
+            set_header name: "X-Forwarded-Proto" value: "https" if is_ssl
+        }
+
+        http-request {
+            add_header name: "X-Request-ID" value: "%[uuid()]"
+        }
+
+        // Delete unwanted headers
+        http-request {
+            del_header name: "X-Powered-By"
+        }
+
+        // === ADVANCED HTTP REQUEST ACTIONS ===
+
+        // Set variables for later use
+        http-request {
+            set_var var: "txn.user_id" value: "%[urlp(user_id)]" if has_token
+        }
+
+        http-request {
+            set_var var: "txn.request_time" value: "%[date()]"
+        }
+
+        // Replace header values
+        http-request {
+            replace_header name: "Host" match: "old\\.example\\.com" replace: "example.com"
+        }
+
+        http-request {
+            replace_value name: "Cookie" match: "secure=false" replace: "secure=true"
+        }
+
+        // URI manipulation
+        http-request {
+            set_path path: "/v2%[path]" if is_api
+        }
+
+        http-request {
+            set_uri uri: "/api/v2%[path]" if is_legacy_api
+        }
+
+        http-request {
+            set_method method: "GET" if is_head_request
+        }
+
+        // === ACCESS CONTROL ===
+
+        // Tarpit bad bots (delay before rejecting)
+        http-request {
+            tarpit if is_bad_bot
+        }
+
+        // Deny with custom status code
+        http-request {
+            deny deny_status: 403 if is_admin
+        }
+
+        // Allow internal traffic
+        http-request {
+            allow if is_internal
+        }
+
+        // HTTP authentication
+        http-request {
+            auth realm: "Admin Area" if is_admin
+        }
+
+        // === CACHING ===
+
+        // Try to serve from cache
+        http-request {
+            cache_use name: "api_cache" if is_api
+        }
+
+        // === LOGGING AND MONITORING ===
+
+        // Capture headers for logging
+        http-request {
+            capture sample: "%[hdr(User-Agent)]" len: 128
+        }
+
+        http-request {
+            capture sample: "%[hdr(Referer)]" len: 256
+        }
+
+        // Set log level for debugging
+        http-request {
+            set_log_level level: "debug" if is_debug
+        }
+
+        // === ADVANCED FEATURES ===
+
+        // DNS resolution
+        http-request {
+            do_resolve var: "txn.resolved_ip" resolvers: "dns1" str: "%[hdr(host)]" if needs_resolution
+        }
+
+        default_backend: app
+    }
+
+    // Backend demonstrating HTTP response actions
+    backend app {
+        balance: roundrobin
+
+        // === BASIC HTTP RESPONSE ACTIONS ===
+
+        // Set response status
+        http-response {
+            set_status status: 200 if has_error_override
+        }
+
+        // Set response headers
+        http-response {
+            set_header name: "X-Server" value: "HAProxy"
+        }
+
+        http-response {
+            add_header name: "X-Response-Time" value: "%[date()]"
+        }
+
+        http-response {
+            add_header name: "Cache-Control" value: "max-age=3600" if is_static
+        }
+
+        // Delete headers for security
+        http-response {
+            del_header name: "Server"
+        }
+
+        http-response {
+            del_header name: "X-Powered-By"
+        }
+
+        // === ADVANCED HTTP RESPONSE ACTIONS ===
+
+        // Set variables based on response
+        http-response {
+            set_var var: "txn.response_time" value: "%[date()]"
+        }
+
+        http-response {
+            set_var var: "txn.status_code" value: "%[status]"
+        }
+
+        // Unset temporary variables
+        http-response {
+            unset_var var: "txn.temp_data"
+        }
+
+        // Replace response header values
+        http-response {
+            replace_header name: "Location" match: "http://" replace: "https://"
+        }
+
+        http-response {
+            replace_value name: "Set-Cookie" match: "HttpOnly" replace: "HttpOnly; Secure"
+        }
+
+        // === ACCESS CONTROL ===
+
+        // Allow successful responses
+        http-response {
+            allow if is_success
+        }
+
+        // Deny error responses
+        http-response {
+            deny if has_error
+        }
+
+        // Return custom error page
+        http-response {
+            return status: 503 content_type: "text/html" string: "<h1>Service Unavailable</h1>" if is_maintenance
+        }
+
+        // === CACHING ===
+
+        // Store in cache
+        http-response {
+            cache_store name: "api_cache" if is_cacheable
+        }
+
+        // === LOGGING ===
+
+        // Capture response headers
+        http-response {
+            capture sample: "%[hdr(Content-Length)]" len: 10
+        }
+
+        servers {
+            server app1 {
+                address: "10.0.1.10"
+                port: 8080
+                check: true
+                inter: 2s
+                rise: 2
+                fall: 3
+            }
+
+            server app2 {
+                address: "10.0.1.11"
+                port: 8080
+                check: true
+                inter: 2s
+                rise: 2
+                fall: 3
+            }
+
+            server app3 {
+                address: "10.0.1.12"
+                port: 8080
+                check: true
+                inter: 2s
+                rise: 2
+                fall: 3
+                backup: true
+            }
+        }
+
+        health-check {
+            method: "GET"
+            uri: "/health"
+            expect: status 200
+        }
+    }
+}
