@@ -231,6 +231,58 @@ class HAProxyCodeGenerator:
         if global_config.default_path:
             lines.append(self._indent(f"default-path {global_config.default_path}"))
 
+        # HTTP Client Configuration (Phase 4B Part 1)
+        if global_config.httpclient_resolvers_disabled is not None:
+            if global_config.httpclient_resolvers_disabled:
+                lines.append(self._indent("httpclient.resolvers.disabled"))
+
+        if global_config.httpclient_resolvers_id:
+            lines.append(self._indent(f"httpclient.resolvers.id {global_config.httpclient_resolvers_id}"))
+
+        if global_config.httpclient_resolvers_prefer:
+            lines.append(self._indent(f"httpclient.resolvers.prefer {global_config.httpclient_resolvers_prefer}"))
+
+        if global_config.httpclient_retries is not None:
+            lines.append(self._indent(f"httpclient.retries {global_config.httpclient_retries}"))
+
+        if global_config.httpclient_ssl_verify:
+            lines.append(self._indent(f"httpclient.ssl.verify {global_config.httpclient_ssl_verify}"))
+
+        if global_config.httpclient_ssl_ca_file:
+            lines.append(self._indent(f"httpclient.ssl.ca-file {global_config.httpclient_ssl_ca_file}"))
+
+        # Platform-Specific Options (Phase 4B Part 1)
+        if global_config.noepoll is not None:
+            if global_config.noepoll:
+                lines.append(self._indent("noepoll"))
+
+        if global_config.nokqueue is not None:
+            if global_config.nokqueue:
+                lines.append(self._indent("nokqueue"))
+
+        if global_config.nopoll is not None:
+            if global_config.nopoll:
+                lines.append(self._indent("nopoll"))
+
+        if global_config.nosplice is not None:
+            if global_config.nosplice:
+                lines.append(self._indent("nosplice"))
+
+        if global_config.nogetaddrinfo is not None:
+            if global_config.nogetaddrinfo:
+                lines.append(self._indent("nogetaddrinfo"))
+
+        if global_config.noreuseport is not None:
+            if global_config.noreuseport:
+                lines.append(self._indent("noreuseport"))
+
+        if global_config.limited_quic is not None:
+            if global_config.limited_quic:
+                lines.append(self._indent("limited-quic"))
+
+        if global_config.localpeer:
+            lines.append(self._indent(f"localpeer {global_config.localpeer}"))
+
         # Logging configuration
         if global_config.log_tag:
             lines.append(self._indent(f"log-tag {global_config.log_tag}"))

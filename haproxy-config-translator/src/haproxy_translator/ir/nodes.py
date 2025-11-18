@@ -207,6 +207,24 @@ class GlobalConfig(IRNode):
     maxcomprate: int | None = None
     default_path: str | None = None
 
+    # HTTP Client Configuration (Phase 4B Part 1)
+    httpclient_resolvers_disabled: bool | None = None
+    httpclient_resolvers_id: str | None = None
+    httpclient_resolvers_prefer: str | None = None
+    httpclient_retries: int | None = None
+    httpclient_ssl_verify: str | None = None
+    httpclient_ssl_ca_file: str | None = None
+
+    # Platform-Specific Options (Phase 4B Part 1)
+    noepoll: bool | None = None
+    nokqueue: bool | None = None
+    nopoll: bool | None = None
+    nosplice: bool | None = None
+    nogetaddrinfo: bool | None = None
+    noreuseport: bool | None = None
+    limited_quic: bool | None = None
+    localpeer: str | None = None
+
     # Lua scripts
     lua_scripts: list[LuaScript] = field(default_factory=list)
 

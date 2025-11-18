@@ -165,6 +165,24 @@ class DSLTransformer(Transformer):
         maxcomprate = None
         default_path = None
 
+        # HTTP Client Configuration (Phase 4B Part 1)
+        httpclient_resolvers_disabled = None
+        httpclient_resolvers_id = None
+        httpclient_resolvers_prefer = None
+        httpclient_retries = None
+        httpclient_ssl_verify = None
+        httpclient_ssl_ca_file = None
+
+        # Platform-Specific Options (Phase 4B Part 1)
+        noepoll = None
+        nokqueue = None
+        nopoll = None
+        nosplice = None
+        nogetaddrinfo = None
+        noreuseport = None
+        limited_quic = None
+        localpeer = None
+
         # Lua scripts
         lua_scripts = []
 
@@ -256,6 +274,36 @@ class DSLTransformer(Transformer):
                     maxcomprate = value
                 elif key == "default_path":
                     default_path = value
+                # Phase 4B Part 1 - HTTP Client Configuration
+                elif key == "httpclient_resolvers_disabled":
+                    httpclient_resolvers_disabled = value
+                elif key == "httpclient_resolvers_id":
+                    httpclient_resolvers_id = value
+                elif key == "httpclient_resolvers_prefer":
+                    httpclient_resolvers_prefer = value
+                elif key == "httpclient_retries":
+                    httpclient_retries = value
+                elif key == "httpclient_ssl_verify":
+                    httpclient_ssl_verify = value
+                elif key == "httpclient_ssl_ca_file":
+                    httpclient_ssl_ca_file = value
+                # Phase 4B Part 1 - Platform-Specific Options
+                elif key == "noepoll":
+                    noepoll = value
+                elif key == "nokqueue":
+                    nokqueue = value
+                elif key == "nopoll":
+                    nopoll = value
+                elif key == "nosplice":
+                    nosplice = value
+                elif key == "nogetaddrinfo":
+                    nogetaddrinfo = value
+                elif key == "noreuseport":
+                    noreuseport = value
+                elif key == "limited_quic":
+                    limited_quic = value
+                elif key == "localpeer":
+                    localpeer = value
                 elif key == "setcap":
                     setcap = value
                 elif key == "set_dumpable":
@@ -382,6 +430,22 @@ class DSLTransformer(Transformer):
             maxcompcpuusage=maxcompcpuusage,
             maxcomprate=maxcomprate,
             default_path=default_path,
+            # HTTP Client Configuration (Phase 4B Part 1)
+            httpclient_resolvers_disabled=httpclient_resolvers_disabled,
+            httpclient_resolvers_id=httpclient_resolvers_id,
+            httpclient_resolvers_prefer=httpclient_resolvers_prefer,
+            httpclient_retries=httpclient_retries,
+            httpclient_ssl_verify=httpclient_ssl_verify,
+            httpclient_ssl_ca_file=httpclient_ssl_ca_file,
+            # Platform-Specific Options (Phase 4B Part 1)
+            noepoll=noepoll,
+            nokqueue=nokqueue,
+            nopoll=nopoll,
+            nosplice=nosplice,
+            nogetaddrinfo=nogetaddrinfo,
+            noreuseport=noreuseport,
+            limited_quic=limited_quic,
+            localpeer=localpeer,
             # Lua scripts
             lua_scripts=lua_scripts,
             # Stats
@@ -720,6 +784,50 @@ class DSLTransformer(Transformer):
 
     def global_tune_sndbuf_server(self, items: list[Any]) -> tuple[str, int]:
         return ("tune_sndbuf_server", items[0])
+
+    # Phase 4B Part 1 - HTTP Client Configuration directives
+    def global_httpclient_resolvers_disabled(self, items: list[Any]) -> tuple[str, bool]:
+        return ("httpclient_resolvers_disabled", items[0])
+
+    def global_httpclient_resolvers_id(self, items: list[Any]) -> tuple[str, str]:
+        return ("httpclient_resolvers_id", items[0])
+
+    def global_httpclient_resolvers_prefer(self, items: list[Any]) -> tuple[str, str]:
+        return ("httpclient_resolvers_prefer", items[0])
+
+    def global_httpclient_retries(self, items: list[Any]) -> tuple[str, int]:
+        return ("httpclient_retries", items[0])
+
+    def global_httpclient_ssl_verify(self, items: list[Any]) -> tuple[str, str]:
+        return ("httpclient_ssl_verify", items[0])
+
+    def global_httpclient_ssl_ca_file(self, items: list[Any]) -> tuple[str, str]:
+        return ("httpclient_ssl_ca_file", items[0])
+
+    # Phase 4B Part 1 - Platform-Specific Options directives
+    def global_noepoll(self, items: list[Any]) -> tuple[str, bool]:
+        return ("noepoll", items[0])
+
+    def global_nokqueue(self, items: list[Any]) -> tuple[str, bool]:
+        return ("nokqueue", items[0])
+
+    def global_nopoll(self, items: list[Any]) -> tuple[str, bool]:
+        return ("nopoll", items[0])
+
+    def global_nosplice(self, items: list[Any]) -> tuple[str, bool]:
+        return ("nosplice", items[0])
+
+    def global_nogetaddrinfo(self, items: list[Any]) -> tuple[str, bool]:
+        return ("nogetaddrinfo", items[0])
+
+    def global_noreuseport(self, items: list[Any]) -> tuple[str, bool]:
+        return ("noreuseport", items[0])
+
+    def global_limited_quic(self, items: list[Any]) -> tuple[str, bool]:
+        return ("limited_quic", items[0])
+
+    def global_localpeer(self, items: list[Any]) -> tuple[str, str]:
+        return ("localpeer", items[0])
 
     def log_target(self, items: list[Any]) -> LogTarget:
         address = items[0]

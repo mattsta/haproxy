@@ -126,6 +126,22 @@ global_section: "global" "{" global_property* "}"
                 | "tune.rcvbuf.server" ":" number         -> global_tune_rcvbuf_server
                 | "tune.sndbuf.client" ":" number         -> global_tune_sndbuf_client
                 | "tune.sndbuf.server" ":" number         -> global_tune_sndbuf_server
+                // Phase 4B Part 1 - HTTP Client Configuration (6 directives)
+                | "httpclient.resolvers.disabled" ":" boolean     -> global_httpclient_resolvers_disabled
+                | "httpclient.resolvers.id" ":" string            -> global_httpclient_resolvers_id
+                | "httpclient.resolvers.prefer" ":" string        -> global_httpclient_resolvers_prefer
+                | "httpclient.retries" ":" number                 -> global_httpclient_retries
+                | "httpclient.ssl.verify" ":" string              -> global_httpclient_ssl_verify
+                | "httpclient.ssl.ca-file" ":" string             -> global_httpclient_ssl_ca_file
+                // Phase 4B Part 1 - Platform-Specific Options (8 directives)
+                | "noepoll" ":" boolean                           -> global_noepoll
+                | "nokqueue" ":" boolean                          -> global_nokqueue
+                | "nopoll" ":" boolean                            -> global_nopoll
+                | "nosplice" ":" boolean                          -> global_nosplice
+                | "nogetaddrinfo" ":" boolean                     -> global_nogetaddrinfo
+                | "noreuseport" ":" boolean                       -> global_noreuseport
+                | "limited-quic" ":" boolean                      -> global_limited_quic
+                | "localpeer" ":" string                          -> global_localpeer
                 | "setenv" string string               -> global_setenv
                 | "presetenv" string string            -> global_presetenv
                 | "resetenv" string                    -> global_resetenv
