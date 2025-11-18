@@ -154,6 +154,14 @@ global_section: "global" "{" global_property* "}"
                 | "profiling.tasks.on" ":" boolean               -> global_profiling_tasks_on
                 | "profiling.tasks.automatic" ":" boolean        -> global_profiling_tasks_automatic
                 | "profiling.memory.on" ":" boolean              -> global_profiling_memory_on
+                // Phase 4B Part 3 - QUIC/HTTP3 Support (7 directives)
+                | "tune.quic.frontend.conn-tx-buffers.limit" ":" number   -> global_tune_quic_frontend_conn_tx_buffers_limit
+                | "tune.quic.frontend.max-idle-timeout" ":" string        -> global_tune_quic_frontend_max_idle_timeout
+                | "tune.quic.frontend.max-streams-bidi" ":" number        -> global_tune_quic_frontend_max_streams_bidi
+                | "tune.quic.frontend.glitches-threshold" ":" number      -> global_tune_quic_frontend_glitches_threshold
+                | "tune.quic.retry-threshold" ":" number                  -> global_tune_quic_retry_threshold
+                | "tune.quic.socket.owner" ":" string                     -> global_tune_quic_socket_owner
+                | "tune.quic.max-frame-loss" ":" number                   -> global_tune_quic_max_frame_loss
                 | "setenv" string string               -> global_setenv
                 | "presetenv" string string            -> global_presetenv
                 | "resetenv" string                    -> global_resetenv

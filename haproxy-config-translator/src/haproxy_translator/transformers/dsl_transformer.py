@@ -370,8 +370,21 @@ class DSLTransformer(Transformer):
                     if len(parts) >= 3:
                         # parts[0] = "tune", parts[1] = category, rest = directive
 
+                        # Special case for QUIC directives
+                        if parts[1] == "quic":
+                            if len(parts) >= 4 and parts[2] in ("frontend", "socket"):
+                                # tune_quic_frontend_conn_tx_buffers_limit → tune.quic.frontend.conn-tx-buffers.limit
+                                # tune_quic_socket_owner → tune.quic.socket.owner
+                                subcategory = parts[2]
+                                directive_parts = parts[3:]
+                                tune_key = f"tune.quic.{subcategory}.{'-'.join(directive_parts)}"
+                            else:
+                                # tune_quic_retry_threshold → tune.quic.retry-threshold
+                                # tune_quic_max_frame_loss → tune.quic.max-frame-loss
+                                directive_parts = parts[2:]
+                                tune_key = f"tune.quic.{'-'.join(directive_parts)}"
                         # Special case for ocsp-update directives
-                        if len(parts) >= 5 and parts[2:4] == ["ocsp", "update"]:
+                        elif len(parts) >= 5 and parts[2:4] == ["ocsp", "update"]:
                             # tune_ssl_ocsp_update_minthour → tune.ssl.ocsp-update.minthour
                             category = parts[1]
                             suffix = parts[4]
@@ -908,6 +921,28 @@ class DSLTransformer(Transformer):
 
     def global_profiling_memory_on(self, items: list[Any]) -> tuple[str, bool]:
         return ("profiling_memory_on", items[0])
+
+    # Phase 4B Part 3 - QUIC/HTTP3 Support directives
+    def global_tune_quic_frontend_conn_tx_buffers_limit(self, items: list[Any]) -> tuple[str, int]:
+        return ("tune_quic_frontend_conn_tx_buffers_limit", items[0])
+
+    def global_tune_quic_frontend_max_idle_timeout(self, items: list[Any]) -> tuple[str, str]:
+        return ("tune_quic_frontend_max_idle_timeout", items[0])
+
+    def global_tune_quic_frontend_max_streams_bidi(self, items: list[Any]) -> tuple[str, int]:
+        return ("tune_quic_frontend_max_streams_bidi", items[0])
+
+    def global_tune_quic_frontend_glitches_threshold(self, items: list[Any]) -> tuple[str, int]:
+        return ("tune_quic_frontend_glitches_threshold", items[0])
+
+    def global_tune_quic_retry_threshold(self, items: list[Any]) -> tuple[str, int]:
+        return ("tune_quic_retry_threshold", items[0])
+
+    def global_tune_quic_socket_owner(self, items: list[Any]) -> tuple[str, str]:
+        return ("tune_quic_socket_owner", items[0])
+
+    def global_tune_quic_max_frame_loss(self, items: list[Any]) -> tuple[str, int]:
+        return ("tune_quic_max_frame_loss", items[0])
 
     def log_target(self, items: list[Any]) -> LogTarget:
         address = items[0]
