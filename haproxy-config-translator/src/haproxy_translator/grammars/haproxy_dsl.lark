@@ -31,6 +31,7 @@ global_section: "global" "{" global_property* "}"
                 | "maxconnrate" ":" number             -> global_maxconnrate
                 | "maxsslrate" ":" number              -> global_maxsslrate
                 | "maxsessrate" ":" number             -> global_maxsessrate
+                | "maxpipes" ":" number                -> global_maxpipes
                 | "ulimit-n" ":" number                -> global_ulimit_n
                 | "user" ":" string                    -> global_user
                 | "group" ":" string                   -> global_group
@@ -38,11 +39,46 @@ global_section: "global" "{" global_property* "}"
                 | "pidfile" ":" string                 -> global_pidfile
                 | "ca-base" ":" string                 -> global_ca_base
                 | "crt-base" ":" string                -> global_crt_base
+                | "key-base" ":" string                -> global_key_base
                 | "log-tag" ":" string                 -> global_log_tag
                 | "log-send-hostname" ":" string       -> global_log_send_hostname
                 | "ssl-dh-param-file" ":" string       -> global_ssl_dh_param_file
-                | "ssl-default-server-ciphers" ":" string  -> global_ssl_default_server_ciphers
+                | "ssl-default-bind-ciphers" ":" string       -> global_ssl_default_bind_ciphers
+                | "ssl-default-bind-options" ":" string_array -> global_ssl_default_bind_options
+                | "ssl-default-bind-ciphersuites" ":" string  -> global_ssl_default_bind_ciphersuites
+                | "ssl-default-server-ciphers" ":" string     -> global_ssl_default_server_ciphers
+                | "ssl-default-server-ciphersuites" ":" string -> global_ssl_default_server_ciphersuites
+                | "ssl-default-server-options" ":" string_array -> global_ssl_default_server_options
                 | "ssl-server-verify" ":" string       -> global_ssl_server_verify
+                | "ssl-engine" ":" string              -> global_ssl_engine
+                | "master-worker" ":" boolean          -> global_master_worker
+                | "mworker-max-reloads" ":" number     -> global_mworker_max_reloads
+                | "tune.bufsize" ":" number            -> global_tune_bufsize
+                | "tune.maxrewrite" ":" number         -> global_tune_maxrewrite
+                | "tune.ssl.bufsize" ":" number        -> global_tune_ssl_bufsize
+                | "tune.ssl.cachesize" ":" number      -> global_tune_ssl_cachesize
+                | "tune.ssl.lifetime" ":" string       -> global_tune_ssl_lifetime
+                | "tune.ssl.maxrecord" ":" number      -> global_tune_ssl_maxrecord
+                | "tune.ssl.keylog" ":" string         -> global_tune_ssl_keylog
+                | "tune.ssl.capture-cipherlist-size" ":" number -> global_tune_ssl_capture_cipherlist_size
+                | "tune.ssl.capture-buffer-size" ":" number    -> global_tune_ssl_capture_buffer_size
+                | "tune.ssl.default-dh-param" ":" number       -> global_tune_ssl_default_dh_param
+                | "tune.ssl.ocsp-update.minthour" ":" number   -> global_tune_ssl_ocsp_update_minthour
+                | "tune.ssl.ocsp-update.maxhour" ":" number    -> global_tune_ssl_ocsp_update_maxhour
+                | "tune.h2.be.glitches-threshold" ":" number         -> global_tune_h2_be_glitches_threshold
+                | "tune.h2.be.initial-window-size" ":" number        -> global_tune_h2_be_initial_window_size
+                | "tune.h2.be.max-concurrent-streams" ":" number     -> global_tune_h2_be_max_concurrent_streams
+                | "tune.h2.fe.glitches-threshold" ":" number         -> global_tune_h2_fe_glitches_threshold
+                | "tune.h2.fe.initial-window-size" ":" number        -> global_tune_h2_fe_initial_window_size
+                | "tune.h2.fe.max-concurrent-streams" ":" number     -> global_tune_h2_fe_max_concurrent_streams
+                | "tune.h2.fe.max-total-streams" ":" number          -> global_tune_h2_fe_max_total_streams
+                | "tune.h2.header-table-size" ":" number             -> global_tune_h2_header_table_size
+                | "tune.h2.initial-window-size" ":" number           -> global_tune_h2_initial_window_size
+                | "tune.h2.max-concurrent-streams" ":" number        -> global_tune_h2_max_concurrent_streams
+                | "tune.h2.max-frame-size" ":" number                -> global_tune_h2_max_frame_size
+                | "tune.http.maxhdr" ":" number        -> global_tune_http_maxhdr
+                | "tune.http.cookielen" ":" number     -> global_tune_http_cookielen
+                | "tune.http.logurilen" ":" number     -> global_tune_http_logurilen
                 | "setenv" string string               -> global_setenv
                 | "presetenv" string string            -> global_presetenv
                 | "resetenv" string                    -> global_resetenv
@@ -50,8 +86,6 @@ global_section: "global" "{" global_property* "}"
                 | log_target                           -> global_log
                 | lua_section                          -> global_lua
                 | stats_section                        -> global_stats
-                | "ssl-default-bind-ciphers" ":" string       -> global_ssl_default_bind_ciphers
-                | "ssl-default-bind-options" ":" string_array -> global_ssl_default_bind_options
 
 log_target: "log" string log_facility log_level
 

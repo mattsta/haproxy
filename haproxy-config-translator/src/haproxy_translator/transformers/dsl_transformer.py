@@ -102,32 +102,57 @@ class DSLTransformer(Transformer):
     # ===== Global Section =====
     def global_section(self, items: list[Any]) -> GlobalConfig:
         """Transform global section."""
+        # Process management
         daemon = True
-        maxconn = 2000
-        nbproc = None
-        maxconnrate = None
-        maxsslrate = None
-        maxsessrate = None
         user = None
         group = None
         chroot = None
         pidfile = None
+        nbproc = None
+        master_worker = None
+        mworker_max_reloads = None
+
+        # Connection limits
+        maxconn = 2000
+        maxconnrate = None
+        maxsslrate = None
+        maxsessrate = None
+        maxpipes = None
+
+        # SSL/TLS paths
         ca_base = None
         crt_base = None
-        log_tag = None
-        log_send_hostname = None
+        key_base = None
+
+        # SSL/TLS configuration
         ssl_dh_param_file = None
-        ssl_default_server_ciphers = None
-        ssl_server_verify = None
-        log_targets = []
-        lua_scripts = []
-        stats = None
         ssl_default_bind_ciphers = None
         ssl_default_bind_options = []
-        tuning = {}
+        ssl_default_bind_ciphersuites = None
+        ssl_default_server_ciphers = None
+        ssl_default_server_ciphersuites = None
+        ssl_default_server_options = []
+        ssl_server_verify = None
+        ssl_engine = None
+
+        # Logging configuration
+        log_tag = None
+        log_send_hostname = None
+        log_targets = []
+
+        # Environment variables
         env_vars = {}
         reset_env_vars = []
         unset_env_vars = []
+
+        # Lua scripts
+        lua_scripts = []
+
+        # Stats
+        stats = None
+
+        # Performance tuning
+        tuning = {}
 
         for item in items:
             if isinstance(item, tuple):
@@ -152,24 +177,40 @@ class DSLTransformer(Transformer):
                     chroot = value
                 elif key == "pidfile":
                     pidfile = value
+                elif key == "maxpipes":
+                    maxpipes = value
                 elif key == "ca_base":
                     ca_base = value
                 elif key == "crt_base":
                     crt_base = value
+                elif key == "key_base":
+                    key_base = value
                 elif key == "log_tag":
                     log_tag = value
                 elif key == "log_send_hostname":
                     log_send_hostname = value
                 elif key == "ssl_dh_param_file":
                     ssl_dh_param_file = value
-                elif key == "ssl_default_server_ciphers":
-                    ssl_default_server_ciphers = value
-                elif key == "ssl_server_verify":
-                    ssl_server_verify = value
                 elif key == "ssl_default_bind_ciphers":
                     ssl_default_bind_ciphers = value
                 elif key == "ssl_default_bind_options":
                     ssl_default_bind_options = value
+                elif key == "ssl_default_bind_ciphersuites":
+                    ssl_default_bind_ciphersuites = value
+                elif key == "ssl_default_server_ciphers":
+                    ssl_default_server_ciphers = value
+                elif key == "ssl_default_server_ciphersuites":
+                    ssl_default_server_ciphersuites = value
+                elif key == "ssl_default_server_options":
+                    ssl_default_server_options = value
+                elif key == "ssl_server_verify":
+                    ssl_server_verify = value
+                elif key == "ssl_engine":
+                    ssl_engine = value
+                elif key == "master_worker":
+                    master_worker = value
+                elif key == "mworker_max_reloads":
+                    mworker_max_reloads = value
                 elif key == "setenv":
                     env_vars[value[0]] = value[1]
                 elif key == "presetenv":
@@ -180,6 +221,34 @@ class DSLTransformer(Transformer):
                     unset_env_vars.append(value)
                 elif key in ("nbthread", "maxsslconn", "ulimit_n"):
                     tuning[key] = value
+                elif key.startswith("tune_"):
+                    # All tune.* directives go into tuning dict
+                    # Convert transformer key to HAProxy format
+                    # e.g., tune_ssl_bufsize → tune.ssl.bufsize
+                    # e.g., tune_h2_be_glitches_threshold → tune.h2.be.glitches-threshold
+                    # e.g., tune_ssl_ocsp_update_minthour → tune.ssl.ocsp-update.minthour
+                    parts = key.split("_")
+                    if len(parts) >= 3:
+                        # parts[0] = "tune", parts[1] = category (ssl, h2, http), rest = directive
+                        category = parts[1]
+
+                        # Special case for ocsp-update directives
+                        if len(parts) >= 5 and parts[2:4] == ["ocsp", "update"]:
+                            # tune_ssl_ocsp_update_minthour → tune.ssl.ocsp-update.minthour
+                            suffix = parts[4]
+                            tune_key = f"tune.{category}.ocsp-update.{suffix}"
+                        # Check if there's a subcategory (be, fe)
+                        elif len(parts) >= 4 and parts[2] in ("be", "fe"):
+                            subcategory = parts[2]
+                            directive_parts = parts[3:]
+                            tune_key = f"tune.{category}.{subcategory}.{'-'.join(directive_parts)}"
+                        else:
+                            directive_parts = parts[2:]
+                            tune_key = f"tune.{category}.{'-'.join(directive_parts)}"
+                    else:
+                        # Fallback: just convert all underscores to dots
+                        tune_key = key.replace("_", ".")
+                    tuning[tune_key] = value
             elif isinstance(item, LogTarget):
                 log_targets.append(item)
             elif isinstance(item, list) and all(isinstance(x, LuaScript) for x in item):
@@ -188,32 +257,49 @@ class DSLTransformer(Transformer):
                 stats = item
 
         return GlobalConfig(
+            # Process management
             daemon=daemon,
-            maxconn=maxconn,
-            nbproc=nbproc,
-            maxconnrate=maxconnrate,
-            maxsslrate=maxsslrate,
-            maxsessrate=maxsessrate,
             user=user,
             group=group,
             chroot=chroot,
             pidfile=pidfile,
+            nbproc=nbproc,
+            master_worker=master_worker,
+            mworker_max_reloads=mworker_max_reloads,
+            # Connection limits
+            maxconn=maxconn,
+            maxconnrate=maxconnrate,
+            maxsslrate=maxsslrate,
+            maxsessrate=maxsessrate,
+            maxpipes=maxpipes,
+            # SSL/TLS paths
             ca_base=ca_base,
             crt_base=crt_base,
-            log_tag=log_tag,
-            log_send_hostname=log_send_hostname,
+            key_base=key_base,
+            # SSL/TLS configuration
             ssl_dh_param_file=ssl_dh_param_file,
-            ssl_default_server_ciphers=ssl_default_server_ciphers,
-            ssl_server_verify=ssl_server_verify,
-            log_targets=log_targets,
-            lua_scripts=lua_scripts,
-            stats=stats,
-            tuning=tuning,
             ssl_default_bind_ciphers=ssl_default_bind_ciphers,
             ssl_default_bind_options=ssl_default_bind_options,
+            ssl_default_bind_ciphersuites=ssl_default_bind_ciphersuites,
+            ssl_default_server_ciphers=ssl_default_server_ciphers,
+            ssl_default_server_ciphersuites=ssl_default_server_ciphersuites,
+            ssl_default_server_options=ssl_default_server_options,
+            ssl_server_verify=ssl_server_verify,
+            ssl_engine=ssl_engine,
+            # Logging configuration
+            log_tag=log_tag,
+            log_send_hostname=log_send_hostname,
+            log_targets=log_targets,
+            # Environment variables
             env_vars=env_vars,
             reset_env_vars=reset_env_vars,
             unset_env_vars=unset_env_vars,
+            # Lua scripts
+            lua_scripts=lua_scripts,
+            # Stats
+            stats=stats,
+            # Performance tuning
+            tuning=tuning,
         )
 
     def global_daemon(self, items: list[Any]) -> tuple[str, bool]:
@@ -302,6 +388,114 @@ class DSLTransformer(Transformer):
 
     def global_unsetenv(self, items: list[Any]) -> tuple[str, str]:
         return ("unsetenv", items[0])
+
+    # Phase 2 global directives - Buffer and performance tuning
+    def global_maxpipes(self, items: list[Any]) -> tuple[str, int]:
+        return ("maxpipes", items[0])
+
+    def global_tune_bufsize(self, items: list[Any]) -> tuple[str, int]:
+        return ("tune_bufsize", items[0])
+
+    def global_tune_maxrewrite(self, items: list[Any]) -> tuple[str, int]:
+        return ("tune_maxrewrite", items[0])
+
+    # Phase 2 - SSL/TLS Phase 2 directives
+    def global_key_base(self, items: list[Any]) -> tuple[str, str]:
+        return ("key_base", items[0])
+
+    def global_ssl_default_bind_ciphersuites(self, items: list[Any]) -> tuple[str, str]:
+        return ("ssl_default_bind_ciphersuites", items[0])
+
+    def global_ssl_default_server_ciphersuites(self, items: list[Any]) -> tuple[str, str]:
+        return ("ssl_default_server_ciphersuites", items[0])
+
+    def global_ssl_default_server_options(self, items: list[Any]) -> tuple[str, list[str]]:
+        return ("ssl_default_server_options", items[0])
+
+    def global_ssl_engine(self, items: list[Any]) -> tuple[str, str]:
+        return ("ssl_engine", items[0])
+
+    # Phase 2 - Master-worker mode
+    def global_master_worker(self, items: list[Any]) -> tuple[str, bool]:
+        return ("master_worker", items[0])
+
+    def global_mworker_max_reloads(self, items: list[Any]) -> tuple[str, int]:
+        return ("mworker_max_reloads", items[0])
+
+    # Phase 2 - SSL tuning directives
+    def global_tune_ssl_bufsize(self, items: list[Any]) -> tuple[str, int]:
+        return ("tune_ssl_bufsize", items[0])
+
+    def global_tune_ssl_cachesize(self, items: list[Any]) -> tuple[str, int]:
+        return ("tune_ssl_cachesize", items[0])
+
+    def global_tune_ssl_lifetime(self, items: list[Any]) -> tuple[str, str]:
+        return ("tune_ssl_lifetime", items[0])
+
+    def global_tune_ssl_maxrecord(self, items: list[Any]) -> tuple[str, int]:
+        return ("tune_ssl_maxrecord", items[0])
+
+    def global_tune_ssl_keylog(self, items: list[Any]) -> tuple[str, str]:
+        return ("tune_ssl_keylog", items[0])
+
+    def global_tune_ssl_capture_cipherlist_size(self, items: list[Any]) -> tuple[str, int]:
+        return ("tune_ssl_capture_cipherlist_size", items[0])
+
+    def global_tune_ssl_capture_buffer_size(self, items: list[Any]) -> tuple[str, int]:
+        return ("tune_ssl_capture_buffer_size", items[0])
+
+    def global_tune_ssl_default_dh_param(self, items: list[Any]) -> tuple[str, int]:
+        return ("tune_ssl_default_dh_param", items[0])
+
+    def global_tune_ssl_ocsp_update_minthour(self, items: list[Any]) -> tuple[str, int]:
+        return ("tune_ssl_ocsp_update_minthour", items[0])
+
+    def global_tune_ssl_ocsp_update_maxhour(self, items: list[Any]) -> tuple[str, int]:
+        return ("tune_ssl_ocsp_update_maxhour", items[0])
+
+    # Phase 2 - HTTP/2 tuning directives
+    def global_tune_h2_be_glitches_threshold(self, items: list[Any]) -> tuple[str, int]:
+        return ("tune_h2_be_glitches_threshold", items[0])
+
+    def global_tune_h2_be_initial_window_size(self, items: list[Any]) -> tuple[str, int]:
+        return ("tune_h2_be_initial_window_size", items[0])
+
+    def global_tune_h2_be_max_concurrent_streams(self, items: list[Any]) -> tuple[str, int]:
+        return ("tune_h2_be_max_concurrent_streams", items[0])
+
+    def global_tune_h2_fe_glitches_threshold(self, items: list[Any]) -> tuple[str, int]:
+        return ("tune_h2_fe_glitches_threshold", items[0])
+
+    def global_tune_h2_fe_initial_window_size(self, items: list[Any]) -> tuple[str, int]:
+        return ("tune_h2_fe_initial_window_size", items[0])
+
+    def global_tune_h2_fe_max_concurrent_streams(self, items: list[Any]) -> tuple[str, int]:
+        return ("tune_h2_fe_max_concurrent_streams", items[0])
+
+    def global_tune_h2_fe_max_total_streams(self, items: list[Any]) -> tuple[str, int]:
+        return ("tune_h2_fe_max_total_streams", items[0])
+
+    def global_tune_h2_header_table_size(self, items: list[Any]) -> tuple[str, int]:
+        return ("tune_h2_header_table_size", items[0])
+
+    def global_tune_h2_initial_window_size(self, items: list[Any]) -> tuple[str, int]:
+        return ("tune_h2_initial_window_size", items[0])
+
+    def global_tune_h2_max_concurrent_streams(self, items: list[Any]) -> tuple[str, int]:
+        return ("tune_h2_max_concurrent_streams", items[0])
+
+    def global_tune_h2_max_frame_size(self, items: list[Any]) -> tuple[str, int]:
+        return ("tune_h2_max_frame_size", items[0])
+
+    # Phase 2 - HTTP tuning directives
+    def global_tune_http_maxhdr(self, items: list[Any]) -> tuple[str, int]:
+        return ("tune_http_maxhdr", items[0])
+
+    def global_tune_http_cookielen(self, items: list[Any]) -> tuple[str, int]:
+        return ("tune_http_cookielen", items[0])
+
+    def global_tune_http_logurilen(self, items: list[Any]) -> tuple[str, int]:
+        return ("tune_http_logurilen", items[0])
 
     def log_target(self, items: list[Any]) -> LogTarget:
         address = items[0]

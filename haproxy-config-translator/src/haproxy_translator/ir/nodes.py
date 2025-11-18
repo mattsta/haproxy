@@ -144,32 +144,57 @@ class TcpResponseRule(IRNode):
 class GlobalConfig(IRNode):
     """Global configuration section."""
 
+    # Process management
     daemon: bool = True
-    maxconn: int = 2000
-    nbproc: int | None = None
-    maxconnrate: int | None = None
-    maxsslrate: int | None = None
-    maxsessrate: int | None = None
     user: str | None = None
     group: str | None = None
     chroot: str | None = None
     pidfile: str | None = None
+    nbproc: int | None = None
+    master_worker: bool | None = None
+    mworker_max_reloads: int | None = None
+
+    # Connection limits
+    maxconn: int = 2000
+    maxconnrate: int | None = None
+    maxsslrate: int | None = None
+    maxsessrate: int | None = None
+    maxpipes: int | None = None
+
+    # SSL/TLS paths
     ca_base: str | None = None
     crt_base: str | None = None
-    log_tag: str | None = None
-    log_send_hostname: str | None = None
+    key_base: str | None = None
+
+    # SSL/TLS configuration
     ssl_dh_param_file: str | None = None
-    ssl_default_server_ciphers: str | None = None
-    ssl_server_verify: str | None = None
-    log_targets: list[LogTarget] = field(default_factory=list)
-    lua_scripts: list[LuaScript] = field(default_factory=list)
-    stats: StatsConfig | None = None
-    tuning: dict[str, Any] = field(default_factory=dict)
     ssl_default_bind_ciphers: str | None = None
     ssl_default_bind_options: list[str] = field(default_factory=list)
+    ssl_default_bind_ciphersuites: str | None = None
+    ssl_default_server_ciphers: str | None = None
+    ssl_default_server_ciphersuites: str | None = None
+    ssl_default_server_options: list[str] = field(default_factory=list)
+    ssl_server_verify: str | None = None
+    ssl_engine: str | None = None
+
+    # Logging configuration
+    log_tag: str | None = None
+    log_send_hostname: str | None = None
+    log_targets: list[LogTarget] = field(default_factory=list)
+
+    # Environment variables
     env_vars: dict[str, str] = field(default_factory=dict)  # setenv/presetenv
     reset_env_vars: list[str] = field(default_factory=list)  # resetenv
     unset_env_vars: list[str] = field(default_factory=list)  # unsetenv
+
+    # Lua scripts
+    lua_scripts: list[LuaScript] = field(default_factory=list)
+
+    # Stats
+    stats: StatsConfig | None = None
+
+    # Performance tuning (tune.* directives stored here)
+    tuning: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass(frozen=True)

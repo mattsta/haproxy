@@ -1,0 +1,141 @@
+/**
+ * Phase 2 Global Directives - Feature Demonstration
+ *
+ * This example demonstrates ALL 34 Phase 2 global directives for
+ * SSL/TLS tuning, HTTP/2 optimization, and advanced features.
+ *
+ * NEW Phase 2 Features:
+ * 1. Buffer Tuning (3): maxpipes, tune.bufsize, tune.maxrewrite
+ * 2. TLS 1.3 Ciphersuites (2): ssl-default-bind-ciphersuites, ssl-default-server-ciphersuites
+ * 3. SSL Server Options (2): ssl-default-server-options, ssl-engine
+ * 4. SSL Paths (1): key-base
+ * 5. Master-Worker Mode (2): master-worker, mworker-max-reloads
+ * 6. SSL Tuning (10): tune.ssl.* directives
+ * 7. HTTP/2 Tuning (11): tune.h2.* directives
+ * 8. HTTP Tuning (3): tune.http.* directives
+ */
+
+config phase2_demo {
+    global {
+        daemon: true
+        user: "haproxy"
+        group: "haproxy"
+
+        // ===== CONNECTION & PERFORMANCE =====
+        maxconn: 50000
+        maxpipes: 16384                    // NEW: Max pipes for splicing
+        tune.bufsize: 32768                // NEW: Default buffer size (bytes)
+        tune.maxrewrite: 8192              // NEW: Max header rewrite space
+
+        // ===== MASTER-WORKER MODE =====
+        master-worker: true                // NEW: Enable master-worker mode for zero-downtime reloads
+        mworker-max-reloads: 10            // NEW: Max reload count before full restart
+
+        // ===== SSL/TLS 1.3 CIPHERSUITES =====
+        ssl-default-bind-ciphersuites: "TLS_AES_128_GCM_SHA256:TLS_AES_256_GCM_SHA384:TLS_CHACHA20_POLY1305_SHA256"     // NEW
+        ssl-default-server-ciphersuites: "TLS_AES_128_GCM_SHA256:TLS_AES_256_GCM_SHA384"                                  // NEW
+
+        // ===== SSL/TLS PATHS =====
+        ca-base: "/etc/ssl/certs"
+        crt-base: "/etc/ssl/private"
+        key-base: "/etc/ssl/keys"          // NEW: Private key directory
+
+        // ===== SSL/TLS OPTIONS =====
+        ssl-default-bind-ciphers: "ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256"
+        ssl-default-bind-options: ["no-sslv3", "no-tlsv10", "no-tlsv11", "no-tls-tickets"]
+        ssl-default-server-ciphers: "ECDHE-RSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384"
+        ssl-default-server-options: ["no-sslv3", "no-tlsv10", "no-tlsv11"]                     // NEW
+        ssl-engine: "aesni"                // NEW: Hardware acceleration (AES-NI)
+
+        // ===== SSL PERFORMANCE TUNING =====
+        tune.ssl.bufsize: 32768            // NEW: SSL buffer size for handshakes
+        tune.ssl.cachesize: 200000         // NEW: SSL session cache (200k sessions)
+        tune.ssl.lifetime: "5m"            // NEW: SSL session lifetime (5 minutes)
+        tune.ssl.maxrecord: 16384          // NEW: Max SSL record size (16KB)
+        tune.ssl.keylog: "/var/log/haproxy/ssl-keys.log"              // NEW: SSL key logging (debugging TLS 1.3)
+        tune.ssl.capture-cipherlist-size: 512                         // NEW: Cipher list capture buffer
+        tune.ssl.capture-buffer-size: 256                             // NEW: Capture buffer size
+        tune.ssl.default-dh-param: 2048                               // NEW: DH parameters (2048-bit)
+        tune.ssl.ocsp-update.minthour: 1                              // NEW: Min OCSP update interval
+        tune.ssl.ocsp-update.maxhour: 24                              // NEW: Max OCSP update interval
+
+        // ===== HTTP/2 BACKEND TUNING =====
+        tune.h2.be.glitches-threshold: 10                             // NEW: Backend glitch threshold
+        tune.h2.be.initial-window-size: 65536                         // NEW: Backend window (64KB)
+        tune.h2.be.max-concurrent-streams: 100                        // NEW: Backend max streams
+
+        // ===== HTTP/2 FRONTEND TUNING =====
+        tune.h2.fe.glitches-threshold: 20                             // NEW: Frontend glitch threshold
+        tune.h2.fe.initial-window-size: 131072                        // NEW: Frontend window (128KB)
+        tune.h2.fe.max-concurrent-streams: 200                        // NEW: Frontend max streams
+        tune.h2.fe.max-total-streams: 1000                            // NEW: Frontend total streams
+
+        // ===== HTTP/2 GENERAL TUNING =====
+        tune.h2.header-table-size: 8192                               // NEW: HPACK header table (8KB)
+        tune.h2.initial-window-size: 65536                            // NEW: Default window (64KB)
+        tune.h2.max-concurrent-streams: 150                           // NEW: Default max streams
+        tune.h2.max-frame-size: 32768                                 // NEW: Max frame size (32KB)
+
+        // ===== HTTP TUNING =====
+        tune.http.maxhdr: 200              // NEW: Max headers per request
+        tune.http.cookielen: 8192          // NEW: Max cookie length (8KB)
+        tune.http.logurilen: 2048          // NEW: Max URI in logs (2KB)
+
+        // ===== LOGGING =====
+        log "127.0.0.1" local0 info
+        log-tag: "phase2-production"
+        log-send-hostname: "lb-prod-01"
+    }
+
+    defaults {
+        mode: http
+        retries: 3
+        timeout: {
+            connect: 5s
+            client: 60s
+            server: 60s
+        }
+    }
+
+    frontend https_h2 {
+        bind *:443
+        mode: http
+        default_backend: web_backend
+    }
+
+    backend web_backend {
+        mode: http
+        balance: roundrobin
+
+        servers {
+            server web1 {
+                address: "10.0.1.10"
+                port: 8443
+                ssl: true
+                verify: "required"
+                check: true
+            }
+
+            server web2 {
+                address: "10.0.1.11"
+                port: 8443
+                ssl: true
+                verify: "required"
+                check: true
+            }
+        }
+    }
+}
+
+/**
+ * Key Benefits:
+ *
+ * - TLS 1.3 with modern ciphersuites
+ * - HTTP/2 optimization (tuned windows, streams, frames)
+ * - SSL performance (hardware accel, larger caches, optimized buffers)
+ * - Buffer tuning for high throughput
+ * - Master-worker mode for zero-downtime reloads
+ * - OCSP stapling automation
+ * - Support for large cookies, headers, and URIs
+ * - Secure backend SSL connections
+ */

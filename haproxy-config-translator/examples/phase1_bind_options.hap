@@ -1,0 +1,237 @@
+/**
+ * Phase 1 Bind Options - Feature Demonstration
+ *
+ * This example demonstrates ALL 8 Phase 1 critical bind options
+ * implemented and validated in this release.
+ *
+ * NEW Phase 1 Bind Options:
+ * 1. Socket Options: backlog, interface, thread, accept-netscaler-cip
+ * 2. SSL/TLS Options: strict-sni, prefer-client-ciphers, allow-0rtt
+ *
+ * These options work with HAProxy's generic bind option handler,
+ * providing powerful control over socket behavior and SSL/TLS security.
+ */
+
+config phase1_bind_demo {
+    global {
+        daemon: true
+        user: "haproxy"
+        group: "haproxy"
+        maxconn: 20000
+        nbproc: 4
+        nbthread: 8
+
+        // SSL/TLS configuration
+        ssl-default-bind-ciphers: "ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384"
+        ssl-default-bind-options: ["no-sslv3", "no-tlsv10", "no-tlsv11", "no-tls-tickets"]
+    }
+
+    defaults {
+        mode: http
+        retries: 3
+
+        timeout: {
+            connect: 5s
+            client: 30s
+            server: 30s
+        }
+    }
+
+    /**
+     * Example 1: Socket Performance Tuning
+     * Demonstrates backlog, interface, and thread options
+     */
+    frontend http_performance {
+        // High-performance bind with large backlog and thread pinning
+        bind *:80 backlog 8192 interface "eth0" thread 2
+
+        default_backend: app_servers
+    }
+
+    /**
+     * Example 2: NetScaler Integration
+     * Demonstrates accept-netscaler-cip for preserving client IPs
+     */
+    frontend netscaler_integration {
+        // Accept NetScaler Client IP insertion (CIP v1 and v2)
+        bind *:8080 accept-netscaler-cip 31
+
+        // Log the real client IP from NetScaler
+        option: "httplog"
+
+        default_backend: app_servers
+    }
+
+    /**
+     * Example 3: Production SSL/TLS Hardening
+     * Demonstrates strict-sni, prefer-client-ciphers, and allow-0rtt
+     */
+    frontend https_hardened {
+        // Production-ready SSL configuration with security hardening
+        bind *:443 ssl {
+            cert: "/etc/ssl/wildcard.example.com.pem"
+            alpn: ["h2", "http/1.1"]
+
+            // NEW Phase 1 SSL Options:
+            strict-sni: true              // Require valid SNI, reject default cert fallback
+            prefer-client-ciphers: false  // Server chooses cipher (recommended)
+            allow-0rtt: false            // Disable TLS 1.3 early data (security)
+
+            // Additional SSL hardening
+            ssl-min-ver: "TLSv1.2"
+            ssl-max-ver: "TLSv1.3"
+        } backlog 4096 thread 4
+
+        default_backend: secure_app_servers
+    }
+
+    /**
+     * Example 4: Multi-Interface Load Balancer
+     * Demonstrates binding to specific interfaces for network isolation
+     */
+    frontend multi_interface {
+        // Public traffic on eth0
+        bind *:80 interface "eth0" backlog 4096
+
+        // Internal traffic on eth1
+        bind 10.0.0.1:8080 interface "eth1" backlog 2048
+
+        default_backend: app_servers
+    }
+
+    /**
+     * Example 5: Thread-Pinned High-Performance HTTPS
+     * Combines socket options with SSL options
+     */
+    frontend https_performance {
+        bind *:443 ssl {
+            cert: "/etc/ssl/cert.pem"
+            alpn: ["h2", "http/1.1"]
+            strict-sni: true
+            prefer-client-ciphers: false
+            allow-0rtt: false
+        } backlog 16384 interface "eth0" thread 8
+
+        default_backend: secure_app_servers
+    }
+
+    /**
+     * Example 6: TLS 1.3 with Early Data (0-RTT)
+     * Demonstrates when you might enable allow-0rtt
+     */
+    frontend https_with_early_data {
+        // CAUTION: Only enable 0-RTT for idempotent requests!
+        // 0-RTT data can be replayed by attackers
+        // This is for performance-critical APIs with GET-only operations
+        bind *:8443 ssl {
+            cert: "/etc/ssl/api.pem"
+            alpn: ["h2", "http/1.1"]
+            strict-sni: true
+            prefer-client-ciphers: false
+            allow-0rtt: true              // Enable for performance (use carefully!)
+            ssl-min-ver: "TLSv1.3"
+        }
+
+        // Note: In production, add ACLs to protect against 0-RTT replay attacks
+        // Example: Only allow 0-RTT on read-only endpoints
+
+        default_backend: api_servers
+    }
+
+    /**
+     * Example 7: All Socket Options Combined
+     * Maximum performance tuning
+     */
+    frontend all_socket_options {
+        bind *:9090 backlog 32768 interface "eth2" thread 16 accept-netscaler-cip 31
+
+        default_backend: app_servers
+    }
+
+    /**
+     * Example 8: All SSL Options Combined
+     * Maximum security hardening
+     */
+    frontend all_ssl_options {
+        bind *:9443 ssl {
+            cert: "/etc/ssl/hardened.pem"
+            alpn: ["h2", "http/1.1"]
+            strict-sni: true
+            prefer-client-ciphers: false
+            allow-0rtt: false
+            ssl-min-ver: "TLSv1.2"
+            ssl-max-ver: "TLSv1.3"
+            ciphers: "ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256"
+        } backlog 8192 thread 8
+
+        default_backend: secure_app_servers
+    }
+
+    backend app_servers {
+        balance: roundrobin
+
+        servers {
+            server app1 {
+                address: "10.0.1.10"
+                port: 8080
+                check: true
+            }
+
+            server app2 {
+                address: "10.0.1.11"
+                port: 8080
+                check: true
+            }
+
+            server app3 {
+                address: "10.0.1.12"
+                port: 8080
+                check: true
+            }
+        }
+    }
+
+    backend secure_app_servers {
+        balance: roundrobin
+
+        servers {
+            server secure1 {
+                address: "10.0.2.10"
+                port: 8443
+                ssl: true
+                verify: "required"
+                check: true
+            }
+
+            server secure2 {
+                address: "10.0.2.11"
+                port: 8443
+                ssl: true
+                verify: "required"
+                check: true
+            }
+        }
+    }
+
+    backend api_servers {
+        balance: leastconn
+
+        servers {
+            server api1 {
+                address: "10.0.3.10"
+                port: 9000
+                ssl: true
+                verify: "required"
+                check: true
+            }
+
+            server api2 {
+                address: "10.0.3.11"
+                port: 9000
+                ssl: true
+                verify: "required"
+                check: true
+            }
+        }
+    }
+}

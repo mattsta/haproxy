@@ -131,6 +131,18 @@ class HAProxyCodeGenerator:
         if global_config.pidfile:
             lines.append(self._indent(f"pidfile {global_config.pidfile}"))
 
+        # Connection tuning
+        if global_config.maxpipes:
+            lines.append(self._indent(f"maxpipes {global_config.maxpipes}"))
+
+        # Master-worker mode
+        if global_config.master_worker is not None:
+            if global_config.master_worker:
+                lines.append(self._indent("master-worker"))
+
+        if global_config.mworker_max_reloads:
+            lines.append(self._indent(f"mworker-max-reloads {global_config.mworker_max_reloads}"))
+
         # SSL/TLS base paths
         if global_config.ca_base:
             lines.append(self._indent(f"ca-base {global_config.ca_base}"))
@@ -138,7 +150,10 @@ class HAProxyCodeGenerator:
         if global_config.crt_base:
             lines.append(self._indent(f"crt-base {global_config.crt_base}"))
 
-        # Performance tuning
+        if global_config.key_base:
+            lines.append(self._indent(f"key-base {global_config.key_base}"))
+
+        # Performance tuning (basic)
         if "nbthread" in global_config.tuning:
             lines.append(self._indent(f"nbthread {global_config.tuning['nbthread']}"))
 
@@ -147,6 +162,12 @@ class HAProxyCodeGenerator:
 
         if "ulimit_n" in global_config.tuning:
             lines.append(self._indent(f"ulimit-n {global_config.tuning['ulimit_n']}"))
+
+        # Performance tuning (tune.* directives)
+        for tune_key, tune_value in sorted(global_config.tuning.items()):
+            if tune_key not in ("nbthread", "maxsslconn", "ulimit_n"):
+                # Keys already in HAProxy format from transformer
+                lines.append(self._indent(f"{tune_key} {tune_value}"))
 
         # Environment variables
         for var_name, var_value in global_config.env_vars.items():
@@ -181,6 +202,11 @@ class HAProxyCodeGenerator:
                 self._indent(f"ssl-default-bind-ciphers {global_config.ssl_default_bind_ciphers}")
             )
 
+        if global_config.ssl_default_bind_ciphersuites:
+            lines.append(
+                self._indent(f"ssl-default-bind-ciphersuites {global_config.ssl_default_bind_ciphersuites}")
+            )
+
         for option in global_config.ssl_default_bind_options:
             lines.append(self._indent(f"ssl-default-bind-options {option}"))
 
@@ -189,8 +215,19 @@ class HAProxyCodeGenerator:
                 self._indent(f"ssl-default-server-ciphers {global_config.ssl_default_server_ciphers}")
             )
 
+        if global_config.ssl_default_server_ciphersuites:
+            lines.append(
+                self._indent(f"ssl-default-server-ciphersuites {global_config.ssl_default_server_ciphersuites}")
+            )
+
+        for option in global_config.ssl_default_server_options:
+            lines.append(self._indent(f"ssl-default-server-options {option}"))
+
         if global_config.ssl_server_verify:
             lines.append(self._indent(f"ssl-server-verify {global_config.ssl_server_verify}"))
+
+        if global_config.ssl_engine:
+            lines.append(self._indent(f"ssl-engine {global_config.ssl_engine}"))
 
         # Lua scripts
         for script in global_config.lua_scripts:
