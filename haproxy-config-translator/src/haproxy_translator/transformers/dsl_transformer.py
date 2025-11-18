@@ -1053,6 +1053,9 @@ class DSLTransformer(Transformer):
         sni = None
         alpn = []
         backup = False
+        send_proxy = False
+        send_proxy_v2 = False
+        slowstart = None
         template_spreads = []
 
         for prop in properties:
@@ -1087,6 +1090,12 @@ class DSLTransformer(Transformer):
                     alpn = value
                 elif key == "backup":
                     backup = value
+                elif key == "send_proxy":
+                    send_proxy = value
+                elif key == "send_proxy_v2":
+                    send_proxy_v2 = value
+                elif key == "slowstart":
+                    slowstart = value
 
         # Build metadata with template spreads if any
         metadata = {}
@@ -1108,6 +1117,9 @@ class DSLTransformer(Transformer):
             sni=sni,
             alpn=alpn,
             backup=backup,
+            send_proxy=send_proxy,
+            send_proxy_v2=send_proxy_v2,
+            slowstart=slowstart,
             metadata=metadata,
         )
 
@@ -1182,6 +1194,15 @@ class DSLTransformer(Transformer):
 
     def server_backup(self, items: list[Any]) -> tuple[str, bool]:
         return ("backup", items[0])
+
+    def server_send_proxy(self, items: list[Any]) -> tuple[str, bool]:
+        return ("send_proxy", items[0])
+
+    def server_send_proxy_v2(self, items: list[Any]) -> tuple[str, bool]:
+        return ("send_proxy_v2", items[0])
+
+    def server_slowstart(self, items: list[Any]) -> tuple[str, str]:
+        return ("slowstart", items[0])
 
     def server_template_spread(self, items: list[Any]) -> tuple[str, str]:
         """Return template spread as metadata marker."""

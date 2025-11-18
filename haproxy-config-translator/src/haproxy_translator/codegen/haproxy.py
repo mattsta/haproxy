@@ -558,6 +558,12 @@ class HAProxyCodeGenerator:
         if server.send_proxy:
             parts.append("send-proxy")
 
+        if server.send_proxy_v2:
+            parts.append("send-proxy-v2")
+
+        if server.slowstart:
+            parts.append(f"slowstart {server.slowstart}")
+
         for key, value in server.options.items():
             if isinstance(value, bool) and value:
                 parts.append(key)

@@ -273,6 +273,8 @@ class Server(IRNode):
     backup: bool = False
     disabled: bool = False
     send_proxy: bool = False
+    send_proxy_v2: bool = False
+    slowstart: str | None = None  # Warmup time (e.g., "30s")
     options: dict[str, Any] = field(default_factory=dict)
 
 

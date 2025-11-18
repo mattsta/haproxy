@@ -319,6 +319,9 @@ server_inline_param: identifier ":" value
                 | "sni" ":" string                  -> server_sni
                 | "alpn" ":" string_array           -> server_alpn
                 | "backup" ":" boolean              -> server_backup
+                | "send-proxy" ":" boolean          -> server_send_proxy
+                | "send-proxy-v2" ":" boolean       -> server_send_proxy_v2
+                | "slowstart" ":" duration          -> server_slowstart
                 | template_spread                   -> server_template_spread
 
 template_spread: "@" identifier
