@@ -127,9 +127,12 @@ class VariableResolver:
 
     def _resolve_global(self, global_config: GlobalConfig) -> GlobalConfig:
         """Resolve variables in global config."""
-        # For now, global config doesn't need variable resolution
-        # Most fields are primitives or fixed values
-        return global_config
+        # Resolve Lua scripts in global config
+        resolved_lua_scripts = []
+        if global_config.lua_scripts:
+            resolved_lua_scripts = [self._resolve_lua_script(script) for script in global_config.lua_scripts]
+
+        return replace(global_config, lua_scripts=resolved_lua_scripts)
 
     def _resolve_defaults(self, defaults: DefaultsConfig) -> DefaultsConfig:
         """Resolve variables in defaults config."""
@@ -235,10 +238,14 @@ class VariableResolver:
 
     def _resolve_lua_script(self, script: "LuaScript") -> "LuaScript":
         """Resolve variables in Lua script."""
-        # Resolve content (file path or inline code might have variables)
-        resolved_content = self._resolve_value(script.content)
+        # Do NOT resolve content - it may contain Lua template parameters like ${user}
+        # which should be preserved for Lua manager interpolation
+        # Only resolve if it's a file path (source_type == "file")
+        resolved_content = script.content
+        if script.source_type == "file" and script.content:
+            resolved_content = self._resolve_value(script.content)
 
-        # Resolve parameters (template parameters might have variables)
+        # Resolve parameters (template parameters might reference config variables)
         resolved_parameters = {
             key: self._resolve_value(value)
             for key, value in script.parameters.items()
