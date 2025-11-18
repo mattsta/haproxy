@@ -171,6 +171,10 @@ class DefaultsConfig(IRNode):
     timeout_queue: str | None = None
     timeout_http_request: str | None = None  # HTTP request timeout
     timeout_http_keep_alive: str | None = None  # Keep-alive timeout
+    timeout_tunnel: str | None = None  # Tunnel timeout (WebSocket, etc.)
+    timeout_client_fin: str | None = None  # Client FIN timeout
+    timeout_server_fin: str | None = None  # Server FIN timeout
+    timeout_tarpit: str | None = None  # Tarpit timeout (security)
     log: str | None = "global"
     options: list[str] = field(default_factory=list)
     errorfiles: dict[int, str] = field(default_factory=dict)
@@ -361,6 +365,8 @@ class Frontend(IRNode):
     timeout_client: str | None = None
     timeout_http_request: str | None = None  # HTTP request timeout
     timeout_http_keep_alive: str | None = None  # Keep-alive timeout
+    timeout_client_fin: str | None = None  # Client FIN timeout
+    timeout_tarpit: str | None = None  # Tarpit timeout
     maxconn: int | None = None
     monitor_uri: str | None = None  # Monitor URI for health checks
 
@@ -389,6 +395,8 @@ class Backend(IRNode):
     timeout_server: str | None = None
     timeout_connect: str | None = None
     timeout_check: str | None = None
+    timeout_tunnel: str | None = None  # Tunnel timeout (WebSocket, etc.)
+    timeout_server_fin: str | None = None  # Server FIN timeout
     retries: int | None = None
 
 

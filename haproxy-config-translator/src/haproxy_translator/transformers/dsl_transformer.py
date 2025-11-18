@@ -269,6 +269,10 @@ class DSLTransformer(Transformer):
         timeout_check = None
         timeout_http_request = None
         timeout_http_keep_alive = None
+        timeout_tunnel = None
+        timeout_client_fin = None
+        timeout_server_fin = None
+        timeout_tarpit = None
         log = "global"
         options = []
         errorloc = {}
@@ -312,6 +316,14 @@ class DSLTransformer(Transformer):
                             timeout_http_request = timeout_value
                         elif timeout_key == "http_keep_alive":
                             timeout_http_keep_alive = timeout_value
+                        elif timeout_key == "tunnel":
+                            timeout_tunnel = timeout_value
+                        elif timeout_key == "client_fin":
+                            timeout_client_fin = timeout_value
+                        elif timeout_key == "server_fin":
+                            timeout_server_fin = timeout_value
+                        elif timeout_key == "tarpit":
+                            timeout_tarpit = timeout_value
 
         return DefaultsConfig(
             mode=mode,
@@ -322,6 +334,10 @@ class DSLTransformer(Transformer):
             timeout_check=timeout_check,
             timeout_http_request=timeout_http_request,
             timeout_http_keep_alive=timeout_http_keep_alive,
+            timeout_tunnel=timeout_tunnel,
+            timeout_client_fin=timeout_client_fin,
+            timeout_server_fin=timeout_server_fin,
+            timeout_tarpit=timeout_tarpit,
             log=log,
             options=options,
             errorloc=errorloc,
@@ -385,6 +401,8 @@ class DSLTransformer(Transformer):
         timeout_client = None
         timeout_http_request = None
         timeout_http_keep_alive = None
+        timeout_client_fin = None
+        timeout_tarpit = None
         monitor_uri = None
         maxconn = None
 
@@ -445,6 +463,10 @@ class DSLTransformer(Transformer):
                     timeout_http_request = value
                 elif key == "timeout_http_keep_alive":
                     timeout_http_keep_alive = value
+                elif key == "timeout_client_fin":
+                    timeout_client_fin = value
+                elif key == "timeout_tarpit":
+                    timeout_tarpit = value
                 elif key == "monitor_uri":
                     monitor_uri = value
                 elif key == "maxconn":
@@ -467,6 +489,8 @@ class DSLTransformer(Transformer):
             timeout_client=timeout_client,
             timeout_http_request=timeout_http_request,
             timeout_http_keep_alive=timeout_http_keep_alive,
+            timeout_client_fin=timeout_client_fin,
+            timeout_tarpit=timeout_tarpit,
             monitor_uri=monitor_uri,
             maxconn=maxconn,
         )
@@ -488,6 +512,12 @@ class DSLTransformer(Transformer):
 
     def frontend_timeout_http_keep_alive(self, items: list[Any]) -> tuple[str, str]:
         return ("timeout_http_keep_alive", str(items[0]))
+
+    def frontend_timeout_client_fin(self, items: list[Any]) -> tuple[str, str]:
+        return ("timeout_client_fin", str(items[0]))
+
+    def frontend_timeout_tarpit(self, items: list[Any]) -> tuple[str, str]:
+        return ("timeout_tarpit", str(items[0]))
 
     def frontend_monitor_uri(self, items: list[Any]) -> tuple[str, str]:
         return ("monitor_uri", str(items[0]))
@@ -632,6 +662,8 @@ class DSLTransformer(Transformer):
         timeout_server = None
         timeout_connect = None
         timeout_check = None
+        timeout_tunnel = None
+        timeout_server_fin = None
         retries = None
 
         for prop in properties:
@@ -689,6 +721,10 @@ class DSLTransformer(Transformer):
                     timeout_connect = value
                 elif key == "timeout_check":
                     timeout_check = value
+                elif key == "timeout_tunnel":
+                    timeout_tunnel = value
+                elif key == "timeout_server_fin":
+                    timeout_server_fin = value
                 elif key == "retries":
                     retries = value
 
@@ -718,6 +754,8 @@ class DSLTransformer(Transformer):
             timeout_server=timeout_server,
             timeout_connect=timeout_connect,
             timeout_check=timeout_check,
+            timeout_tunnel=timeout_tunnel,
+            timeout_server_fin=timeout_server_fin,
             retries=retries,
             metadata=metadata,
         )
@@ -757,6 +795,12 @@ class DSLTransformer(Transformer):
 
     def backend_timeout_check(self, items: list[Any]) -> tuple[str, str]:
         return ("timeout_check", str(items[0]))
+
+    def backend_timeout_tunnel(self, items: list[Any]) -> tuple[str, str]:
+        return ("timeout_tunnel", str(items[0]))
+
+    def backend_timeout_server_fin(self, items: list[Any]) -> tuple[str, str]:
+        return ("timeout_server_fin", str(items[0]))
 
     def backend_retries(self, items: list[Any]) -> tuple[str, int]:
         return ("retries", items[0])

@@ -114,6 +114,8 @@ frontend_section: "frontend" identifier "{" frontend_property* "}"
                   | "timeout_client" ":" duration          -> frontend_timeout_client
                   | "timeout_http_request" ":" duration    -> frontend_timeout_http_request
                   | "timeout_http_keep_alive" ":" duration -> frontend_timeout_http_keep_alive
+                  | "timeout_client_fin" ":" duration      -> frontend_timeout_client_fin
+                  | "timeout_tarpit" ":" duration          -> frontend_timeout_tarpit
                   | "monitor_uri" ":" string               -> frontend_monitor_uri
                   | "maxconn" ":" number                   -> frontend_maxconn
 
@@ -256,6 +258,8 @@ backend_section: "backend" identifier "{" backend_property* "}"
                  | "timeout_server" ":" duration            -> backend_timeout_server
                  | "timeout_connect" ":" duration           -> backend_timeout_connect
                  | "timeout_check" ":" duration             -> backend_timeout_check
+                 | "timeout_tunnel" ":" duration            -> backend_timeout_tunnel
+                 | "timeout_server_fin" ":" duration        -> backend_timeout_server_fin
                  | "retries" ":" number                     -> backend_retries
 
 balance_algo: BALANCE_ROUNDROBIN | BALANCE_LEASTCONN | BALANCE_SOURCE | BALANCE_URI | BALANCE_URL_PARAM | BALANCE_RANDOM | BALANCE_STATIC_RR | BALANCE_FIRST | BALANCE_HDR | BALANCE_RDP_COOKIE

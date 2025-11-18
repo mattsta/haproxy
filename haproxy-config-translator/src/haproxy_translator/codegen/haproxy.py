@@ -183,6 +183,18 @@ class HAProxyCodeGenerator:
         if defaults.timeout_http_keep_alive:
             lines.append(self._indent(f"timeout http-keep-alive {defaults.timeout_http_keep_alive}"))
 
+        if defaults.timeout_tunnel:
+            lines.append(self._indent(f"timeout tunnel {defaults.timeout_tunnel}"))
+
+        if defaults.timeout_client_fin:
+            lines.append(self._indent(f"timeout client-fin {defaults.timeout_client_fin}"))
+
+        if defaults.timeout_server_fin:
+            lines.append(self._indent(f"timeout server-fin {defaults.timeout_server_fin}"))
+
+        if defaults.timeout_tarpit:
+            lines.append(self._indent(f"timeout tarpit {defaults.timeout_tarpit}"))
+
         # Options
         for option in defaults.options:
             lines.append(self._indent(f"option {option}"))
@@ -231,6 +243,12 @@ class HAProxyCodeGenerator:
 
         if frontend.timeout_http_keep_alive:
             lines.append(self._indent(f"timeout http-keep-alive {frontend.timeout_http_keep_alive}"))
+
+        if frontend.timeout_client_fin:
+            lines.append(self._indent(f"timeout client-fin {frontend.timeout_client_fin}"))
+
+        if frontend.timeout_tarpit:
+            lines.append(self._indent(f"timeout tarpit {frontend.timeout_tarpit}"))
 
         # Monitor URI
         if frontend.monitor_uri:
@@ -304,6 +322,12 @@ class HAProxyCodeGenerator:
 
         if backend.timeout_check:
             lines.append(self._indent(f"timeout check {backend.timeout_check}"))
+
+        if backend.timeout_tunnel:
+            lines.append(self._indent(f"timeout tunnel {backend.timeout_tunnel}"))
+
+        if backend.timeout_server_fin:
+            lines.append(self._indent(f"timeout server-fin {backend.timeout_server_fin}"))
 
         # Options
         for option in backend.options:
