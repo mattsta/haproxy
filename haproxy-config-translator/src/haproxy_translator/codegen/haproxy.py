@@ -258,6 +258,17 @@ class HAProxyCodeGenerator:
         if frontend.monitor_uri:
             lines.append(self._indent(f"monitor-uri {frontend.monitor_uri}"))
 
+        # Log format
+        if frontend.log_format:
+            lines.append(self._indent(f"log-format {frontend.log_format}"))
+
+        # Capture headers
+        for header_name, length in frontend.capture_request_headers:
+            lines.append(self._indent(f"capture request header {header_name} len {length}"))
+
+        for header_name, length in frontend.capture_response_headers:
+            lines.append(self._indent(f"capture response header {header_name} len {length}"))
+
         # ACLs
         for acl in frontend.acls:
             lines.append(self._indent(self._format_acl(acl)))
@@ -336,6 +347,10 @@ class HAProxyCodeGenerator:
         # Options
         for option in backend.options:
             lines.append(self._indent(f"option {option}"))
+
+        # Log format
+        if backend.log_format:
+            lines.append(self._indent(f"log-format {backend.log_format}"))
 
         # ACLs
         for acl in backend.acls:
@@ -554,6 +569,31 @@ class HAProxyCodeGenerator:
         if default_server.slowstart:
             parts.append(f"slowstart {default_server.slowstart}")
 
+        # SSL/TLS health check options
+        if default_server.check_ssl:
+            parts.append("check-ssl")
+
+        if default_server.check_sni:
+            parts.append(f"check-sni {default_server.check_sni}")
+
+        # SSL/TLS version constraints
+        if default_server.ssl_min_ver:
+            parts.append(f"ssl-min-ver {default_server.ssl_min_ver}")
+
+        if default_server.ssl_max_ver:
+            parts.append(f"ssl-max-ver {default_server.ssl_max_ver}")
+
+        # Server certificate options
+        if default_server.ca_file:
+            parts.append(f"ca-file {default_server.ca_file}")
+
+        if default_server.crt:
+            parts.append(f"crt {default_server.crt}")
+
+        # Source IP binding
+        if default_server.source:
+            parts.append(f"source {default_server.source}")
+
         return " ".join(parts)
 
     def _format_server(self, server: Server) -> str:
@@ -597,6 +637,31 @@ class HAProxyCodeGenerator:
 
         if server.slowstart:
             parts.append(f"slowstart {server.slowstart}")
+
+        # SSL/TLS health check options
+        if server.check_ssl:
+            parts.append("check-ssl")
+
+        if server.check_sni:
+            parts.append(f"check-sni {server.check_sni}")
+
+        # SSL/TLS version constraints
+        if server.ssl_min_ver:
+            parts.append(f"ssl-min-ver {server.ssl_min_ver}")
+
+        if server.ssl_max_ver:
+            parts.append(f"ssl-max-ver {server.ssl_max_ver}")
+
+        # Server certificate options
+        if server.ca_file:
+            parts.append(f"ca-file {server.ca_file}")
+
+        if server.crt:
+            parts.append(f"crt {server.crt}")
+
+        # Source IP binding
+        if server.source:
+            parts.append(f"source {server.source}")
 
         for key, value in server.options.items():
             if isinstance(value, bool) and value:

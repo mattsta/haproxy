@@ -133,11 +133,6 @@ BARE_INTERPOLATION.3: /(?:[a-zA-Z0-9.*:-]*\$\{[^}]+\})+[a-zA-Z0-9.*:-]*/
 HOST_PORT: /[a-zA-Z0-9.*:-]+/
 
 ?bind_option: ssl_block
-            | "accept-proxy"            -> bind_accept_proxy
-            | "defer-accept"            -> bind_defer_accept
-            | "transparent"             -> bind_transparent
-            | "ssl-min-ver" string      -> bind_ssl_min_ver
-            | "ssl-max-ver" string      -> bind_ssl_max_ver
             | BIND_OPTION_NAME value    -> bind_generic_option
 
 BIND_OPTION_NAME: /[a-zA-Z_][a-zA-Z0-9_-]*/

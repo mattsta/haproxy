@@ -239,14 +239,6 @@ class Bind(IRNode):
     ssl: bool = False
     ssl_cert: str | None = None
     alpn: list[str] = field(default_factory=list)
-    # SSL/TLS version constraints
-    ssl_min_ver: str | None = None  # Minimum TLS version
-    ssl_max_ver: str | None = None  # Maximum TLS version
-    # PROXY protocol
-    accept_proxy: bool = False  # Accept PROXY protocol
-    # Advanced bind options
-    defer_accept: bool = False  # TCP_DEFER_ACCEPT option
-    transparent: bool = False  # Transparent proxy
     options: dict[str, Any] = field(default_factory=dict)
 
     def __str__(self) -> str:

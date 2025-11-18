@@ -405,6 +405,9 @@ class DSLTransformer(Transformer):
         timeout_tarpit = None
         monitor_uri = None
         maxconn = None
+        log_format = None
+        capture_request_headers = []
+        capture_response_headers = []
 
         for prop in properties:
             if isinstance(prop, Bind):
@@ -471,6 +474,12 @@ class DSLTransformer(Transformer):
                     monitor_uri = value
                 elif key == "maxconn":
                     maxconn = value
+                elif key == "log_format":
+                    log_format = value
+                elif key == "capture_request_header":
+                    capture_request_headers.append(value)
+                elif key == "capture_response_header":
+                    capture_response_headers.append(value)
 
         return Frontend(
             name=name,
@@ -493,6 +502,9 @@ class DSLTransformer(Transformer):
             timeout_tarpit=timeout_tarpit,
             monitor_uri=monitor_uri,
             maxconn=maxconn,
+            log_format=log_format,
+            capture_request_headers=capture_request_headers,
+            capture_response_headers=capture_response_headers,
         )
 
     def frontend_mode(self, items: list[Any]) -> tuple[str, str]:
@@ -524,6 +536,15 @@ class DSLTransformer(Transformer):
 
     def frontend_maxconn(self, items: list[Any]) -> tuple[str, int]:
         return ("maxconn", items[0])
+
+    def frontend_log_format(self, items: list[Any]) -> tuple[str, str]:
+        return ("log_format", items[0])
+
+    def frontend_capture_request_header(self, items: list[Any]) -> tuple[str, tuple[str, int]]:
+        return ("capture_request_header", (items[0], items[1]))
+
+    def frontend_capture_response_header(self, items: list[Any]) -> tuple[str, tuple[str, int]]:
+        return ("capture_response_header", (items[0], items[1]))
 
     def bind_directive(self, items: list[Any]) -> Bind:
         address = str(items[0])
@@ -665,6 +686,7 @@ class DSLTransformer(Transformer):
         timeout_tunnel = None
         timeout_server_fin = None
         retries = None
+        log_format = None
 
         for prop in properties:
             if isinstance(prop, Server):
@@ -727,6 +749,8 @@ class DSLTransformer(Transformer):
                     timeout_server_fin = value
                 elif key == "retries":
                     retries = value
+                elif key == "log_format":
+                    log_format = value
 
         # Build metadata with server loops if any
         metadata = {}
@@ -757,6 +781,7 @@ class DSLTransformer(Transformer):
             timeout_tunnel=timeout_tunnel,
             timeout_server_fin=timeout_server_fin,
             retries=retries,
+            log_format=log_format,
             metadata=metadata,
         )
 
@@ -805,6 +830,9 @@ class DSLTransformer(Transformer):
     def backend_retries(self, items: list[Any]) -> tuple[str, int]:
         return ("retries", items[0])
 
+    def backend_log_format(self, items: list[Any]) -> tuple[str, str]:
+        return ("log_format", items[0])
+
     def backend_default_server(self, items: list[Any]) -> DefaultServer:
         """Handle default-server in backend."""
         return cast(DefaultServer, items[0])
@@ -825,6 +853,13 @@ class DSLTransformer(Transformer):
         send_proxy = False
         send_proxy_v2 = False
         slowstart = None
+        check_ssl = False
+        check_sni = None
+        ssl_min_ver = None
+        ssl_max_ver = None
+        ca_file = None
+        crt = None
+        source = None
         options: dict[str, Any] = {}
 
         for item in items:
@@ -856,6 +891,20 @@ class DSLTransformer(Transformer):
                     send_proxy_v2 = value
                 elif key == "slowstart":
                     slowstart = value
+                elif key == "check_ssl":
+                    check_ssl = value
+                elif key == "check_sni":
+                    check_sni = value
+                elif key == "ssl_min_ver":
+                    ssl_min_ver = value
+                elif key == "ssl_max_ver":
+                    ssl_max_ver = value
+                elif key == "ca_file":
+                    ca_file = value
+                elif key == "crt":
+                    crt = value
+                elif key == "source":
+                    source = value
 
         return DefaultServer(
             check=check,
@@ -871,6 +920,13 @@ class DSLTransformer(Transformer):
             send_proxy=send_proxy,
             send_proxy_v2=send_proxy_v2,
             slowstart=slowstart,
+            check_ssl=check_ssl,
+            check_sni=check_sni,
+            ssl_min_ver=ssl_min_ver,
+            ssl_max_ver=ssl_max_ver,
+            ca_file=ca_file,
+            crt=crt,
+            source=source,
             options=options,
         )
 
@@ -912,6 +968,27 @@ class DSLTransformer(Transformer):
 
     def ds_slowstart(self, items: list[Any]) -> tuple[str, str]:
         return ("slowstart", items[0])
+
+    def ds_check_ssl(self, items: list[Any]) -> tuple[str, bool]:
+        return ("check_ssl", items[0])
+
+    def ds_check_sni(self, items: list[Any]) -> tuple[str, str]:
+        return ("check_sni", items[0])
+
+    def ds_ssl_min_ver(self, items: list[Any]) -> tuple[str, str]:
+        return ("ssl_min_ver", items[0])
+
+    def ds_ssl_max_ver(self, items: list[Any]) -> tuple[str, str]:
+        return ("ssl_max_ver", items[0])
+
+    def ds_ca_file(self, items: list[Any]) -> tuple[str, str]:
+        return ("ca_file", items[0])
+
+    def ds_crt(self, items: list[Any]) -> tuple[str, str]:
+        return ("crt", items[0])
+
+    def ds_source(self, items: list[Any]) -> tuple[str, str]:
+        return ("source", items[0])
 
     # ===== Listen Section =====
     def listen_section(self, items: list[Any]) -> Listen:
@@ -1158,6 +1235,13 @@ class DSLTransformer(Transformer):
         send_proxy = False
         send_proxy_v2 = False
         slowstart = None
+        check_ssl = False
+        check_sni = None
+        ssl_min_ver = None
+        ssl_max_ver = None
+        ca_file = None
+        crt = None
+        source = None
         template_spreads = []
 
         for prop in properties:
@@ -1198,6 +1282,20 @@ class DSLTransformer(Transformer):
                     send_proxy_v2 = value
                 elif key == "slowstart":
                     slowstart = value
+                elif key == "check_ssl":
+                    check_ssl = value
+                elif key == "check_sni":
+                    check_sni = value
+                elif key == "ssl_min_ver":
+                    ssl_min_ver = value
+                elif key == "ssl_max_ver":
+                    ssl_max_ver = value
+                elif key == "ca_file":
+                    ca_file = value
+                elif key == "crt":
+                    crt = value
+                elif key == "source":
+                    source = value
 
         # Build metadata with template spreads if any
         metadata = {}
@@ -1222,6 +1320,13 @@ class DSLTransformer(Transformer):
             send_proxy=send_proxy,
             send_proxy_v2=send_proxy_v2,
             slowstart=slowstart,
+            check_ssl=check_ssl,
+            check_sni=check_sni,
+            ssl_min_ver=ssl_min_ver,
+            ssl_max_ver=ssl_max_ver,
+            ca_file=ca_file,
+            crt=crt,
+            source=source,
             metadata=metadata,
         )
 
@@ -1305,6 +1410,27 @@ class DSLTransformer(Transformer):
 
     def server_slowstart(self, items: list[Any]) -> tuple[str, str]:
         return ("slowstart", items[0])
+
+    def server_check_ssl(self, items: list[Any]) -> tuple[str, bool]:
+        return ("check_ssl", items[0])
+
+    def server_check_sni(self, items: list[Any]) -> tuple[str, str]:
+        return ("check_sni", items[0])
+
+    def server_ssl_min_ver(self, items: list[Any]) -> tuple[str, str]:
+        return ("ssl_min_ver", items[0])
+
+    def server_ssl_max_ver(self, items: list[Any]) -> tuple[str, str]:
+        return ("ssl_max_ver", items[0])
+
+    def server_ca_file(self, items: list[Any]) -> tuple[str, str]:
+        return ("ca_file", items[0])
+
+    def server_crt(self, items: list[Any]) -> tuple[str, str]:
+        return ("crt", items[0])
+
+    def server_source(self, items: list[Any]) -> tuple[str, str]:
+        return ("source", items[0])
 
     def server_template_spread(self, items: list[Any]) -> tuple[str, str]:
         """Return template spread as metadata marker."""
