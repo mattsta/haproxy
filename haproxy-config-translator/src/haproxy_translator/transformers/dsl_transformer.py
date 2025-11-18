@@ -595,29 +595,62 @@ class DSLTransformer(Transformer):
     def http_response_block(self, items: list[Any]) -> list[HttpResponseRule]:
         return items
 
-    def http_rule(self, items: list[Any]) -> HttpRequestRule:
-        action = str(items[0])
-        parameters = {}
-        condition = None
+    def http_request_rule(self, items: list[Any]) -> HttpRequestRule:
+        # items[0] is the tuple from action_expr: (action_name, parameters)
+        # items[1] (if present) is the condition
+        action_data = items[0]
 
-        for item in items[1:]:
-            if isinstance(item, tuple):
-                if item[0] == "condition":
-                    condition = item[1]
-                else:
-                    parameters[item[0]] = item[1]
-            elif isinstance(item, str):
-                # Positional value
-                if "header" not in parameters:
-                    parameters["header"] = item
-                else:
-                    parameters["value"] = item
+        if isinstance(action_data, tuple):
+            action, parameters = action_data
+        else:
+            # Fallback for old format
+            action = str(action_data)
+            parameters = {}
+
+        condition = None
+        if len(items) > 1 and isinstance(items[1], tuple) and items[1][0] == "condition":
+            condition = items[1][1]
 
         return HttpRequestRule(action=action, parameters=parameters, condition=condition)
 
-    def action_expr(self, items: list[Any]) -> str:
-        return cast("str", items[0])
-        # Collect parameters
+    def http_response_rule(self, items: list[Any]) -> HttpResponseRule:
+        # items[0] is the tuple from action_expr: (action_name, parameters)
+        # items[1] (if present) is the condition
+        action_data = items[0]
+
+        if isinstance(action_data, tuple):
+            action, parameters = action_data
+        else:
+            # Fallback for old format
+            action = str(action_data)
+            parameters = {}
+
+        condition = None
+        if len(items) > 1 and isinstance(items[1], tuple) and items[1][0] == "condition":
+            condition = items[1][1]
+
+        return HttpResponseRule(action=action, parameters=parameters, condition=condition)
+
+    def action_expr(self, items: list[Any]) -> tuple[str, dict[str, Any]]:
+        """Transform action expression with action name and parameters."""
+        action_name = str(items[0])
+        parameters = {}
+
+        # Collect parameters from items[1:]
+        for item in items[1:]:
+            if isinstance(item, tuple):
+                parameters[item[0]] = item[1]
+            elif isinstance(item, str):
+                # Positional value - use generic "value" key
+                if "value" not in parameters:
+                    parameters["value"] = item
+                else:
+                    # Multiple values - create a list
+                    if not isinstance(parameters["value"], list):
+                        parameters["value"] = [parameters["value"]]
+                    parameters["value"].append(item)
+
+        return (action_name, parameters)
 
     def action_name(self, items: list[Any]) -> str:
         return cast("str", items[0])

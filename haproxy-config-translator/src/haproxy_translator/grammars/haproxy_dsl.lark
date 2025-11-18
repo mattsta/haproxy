@@ -147,10 +147,11 @@ SSL_PROPERTY_NAME: /[a-zA-Z_][a-zA-Z0-9_-]*/
 
 use_acl_directive: "use" "acl" ":" identifier_array
 
-http_request_block: "http-request" "{" http_rule* "}"
-http_response_block: "http-response" "{" http_rule* "}"
+http_request_block: "http-request" "{" http_request_rule* "}"
+http_response_block: "http-response" "{" http_response_rule* "}"
 
-http_rule: action_expr if_condition?
+http_request_rule: action_expr if_condition?
+http_response_rule: action_expr if_condition?
 
 action_expr: action_name http_rule_params*
 

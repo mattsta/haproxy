@@ -497,9 +497,14 @@ class HAProxyCodeGenerator:
 
     def _format_http_request_rule(self, rule: HttpRequestRule) -> str:
         """Format HTTP request rule."""
-        parts = [f"http-request {rule.action}"]
+        # Convert underscores to hyphens in action name for HAProxy syntax
+        haproxy_action = rule.action.replace("_", "-")
+        parts = [f"http-request {haproxy_action}"]
 
         for key, value in rule.parameters.items():
+            # Convert underscores to hyphens for HAProxy syntax
+            haproxy_key = key.replace("_", "-")
+
             if key in ["header", "name"]:
                 parts.append(value)
             elif key == "status":
@@ -507,9 +512,9 @@ class HAProxyCodeGenerator:
             elif key == "deny_status":
                 parts.append(f"deny status {value}")
             elif isinstance(value, str) and " " in value:
-                parts.append(f'{key} "{value}"')
+                parts.append(f'{haproxy_key} "{value}"')
             else:
-                parts.append(f"{key} {value}")
+                parts.append(f"{haproxy_key} {value}")
 
         if rule.condition:
             parts.append(f"if {rule.condition}")
@@ -518,13 +523,18 @@ class HAProxyCodeGenerator:
 
     def _format_http_response_rule(self, rule: HttpResponseRule) -> str:
         """Format HTTP response rule."""
-        parts = [f"http-response {rule.action}"]
+        # Convert underscores to hyphens in action name for HAProxy syntax
+        haproxy_action = rule.action.replace("_", "-")
+        parts = [f"http-response {haproxy_action}"]
 
         for key, value in rule.parameters.items():
+            # Convert underscores to hyphens for HAProxy syntax
+            haproxy_key = key.replace("_", "-")
+
             if isinstance(value, str) and " " in value:
-                parts.append(f'{key} "{value}"')
+                parts.append(f'{haproxy_key} "{value}"')
             else:
-                parts.append(f"{key} {value}")
+                parts.append(f"{haproxy_key} {value}")
 
         if rule.condition:
             parts.append(f"if {rule.condition}")
