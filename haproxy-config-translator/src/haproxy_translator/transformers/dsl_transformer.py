@@ -104,16 +104,30 @@ class DSLTransformer(Transformer):
         """Transform global section."""
         daemon = True
         maxconn = 2000
+        nbproc = None
+        maxconnrate = None
+        maxsslrate = None
+        maxsessrate = None
         user = None
         group = None
         chroot = None
         pidfile = None
+        ca_base = None
+        crt_base = None
+        log_tag = None
+        log_send_hostname = None
+        ssl_dh_param_file = None
+        ssl_default_server_ciphers = None
+        ssl_server_verify = None
         log_targets = []
         lua_scripts = []
         stats = None
         ssl_default_bind_ciphers = None
         ssl_default_bind_options = []
         tuning = {}
+        env_vars = {}
+        reset_env_vars = []
+        unset_env_vars = []
 
         for item in items:
             if isinstance(item, tuple):
@@ -122,6 +136,14 @@ class DSLTransformer(Transformer):
                     daemon = value
                 elif key == "maxconn":
                     maxconn = value
+                elif key == "nbproc":
+                    nbproc = value
+                elif key == "maxconnrate":
+                    maxconnrate = value
+                elif key == "maxsslrate":
+                    maxsslrate = value
+                elif key == "maxsessrate":
+                    maxsessrate = value
                 elif key == "user":
                     user = value
                 elif key == "group":
@@ -130,10 +152,32 @@ class DSLTransformer(Transformer):
                     chroot = value
                 elif key == "pidfile":
                     pidfile = value
+                elif key == "ca_base":
+                    ca_base = value
+                elif key == "crt_base":
+                    crt_base = value
+                elif key == "log_tag":
+                    log_tag = value
+                elif key == "log_send_hostname":
+                    log_send_hostname = value
+                elif key == "ssl_dh_param_file":
+                    ssl_dh_param_file = value
+                elif key == "ssl_default_server_ciphers":
+                    ssl_default_server_ciphers = value
+                elif key == "ssl_server_verify":
+                    ssl_server_verify = value
                 elif key == "ssl_default_bind_ciphers":
                     ssl_default_bind_ciphers = value
                 elif key == "ssl_default_bind_options":
                     ssl_default_bind_options = value
+                elif key == "setenv":
+                    env_vars[value[0]] = value[1]
+                elif key == "presetenv":
+                    env_vars[value[0]] = value[1]
+                elif key == "resetenv":
+                    reset_env_vars.append(value)
+                elif key == "unsetenv":
+                    unset_env_vars.append(value)
                 elif key in ("nbthread", "maxsslconn", "ulimit_n"):
                     tuning[key] = value
             elif isinstance(item, LogTarget):
@@ -146,16 +190,30 @@ class DSLTransformer(Transformer):
         return GlobalConfig(
             daemon=daemon,
             maxconn=maxconn,
+            nbproc=nbproc,
+            maxconnrate=maxconnrate,
+            maxsslrate=maxsslrate,
+            maxsessrate=maxsessrate,
             user=user,
             group=group,
             chroot=chroot,
             pidfile=pidfile,
+            ca_base=ca_base,
+            crt_base=crt_base,
+            log_tag=log_tag,
+            log_send_hostname=log_send_hostname,
+            ssl_dh_param_file=ssl_dh_param_file,
+            ssl_default_server_ciphers=ssl_default_server_ciphers,
+            ssl_server_verify=ssl_server_verify,
             log_targets=log_targets,
             lua_scripts=lua_scripts,
             stats=stats,
             tuning=tuning,
             ssl_default_bind_ciphers=ssl_default_bind_ciphers,
             ssl_default_bind_options=ssl_default_bind_options,
+            env_vars=env_vars,
+            reset_env_vars=reset_env_vars,
+            unset_env_vars=unset_env_vars,
         )
 
     def global_daemon(self, items: list[Any]) -> tuple[str, bool]:
@@ -199,6 +257,51 @@ class DSLTransformer(Transformer):
 
     def global_ulimit_n(self, items: list[Any]) -> tuple[str, int]:
         return ("ulimit_n", items[0])
+
+    def global_nbproc(self, items: list[Any]) -> tuple[str, int]:
+        return ("nbproc", items[0])
+
+    def global_maxconnrate(self, items: list[Any]) -> tuple[str, int]:
+        return ("maxconnrate", items[0])
+
+    def global_maxsslrate(self, items: list[Any]) -> tuple[str, int]:
+        return ("maxsslrate", items[0])
+
+    def global_maxsessrate(self, items: list[Any]) -> tuple[str, int]:
+        return ("maxsessrate", items[0])
+
+    def global_ca_base(self, items: list[Any]) -> tuple[str, str]:
+        return ("ca_base", items[0])
+
+    def global_crt_base(self, items: list[Any]) -> tuple[str, str]:
+        return ("crt_base", items[0])
+
+    def global_log_tag(self, items: list[Any]) -> tuple[str, str]:
+        return ("log_tag", items[0])
+
+    def global_log_send_hostname(self, items: list[Any]) -> tuple[str, str]:
+        return ("log_send_hostname", items[0])
+
+    def global_ssl_dh_param_file(self, items: list[Any]) -> tuple[str, str]:
+        return ("ssl_dh_param_file", items[0])
+
+    def global_ssl_default_server_ciphers(self, items: list[Any]) -> tuple[str, str]:
+        return ("ssl_default_server_ciphers", items[0])
+
+    def global_ssl_server_verify(self, items: list[Any]) -> tuple[str, str]:
+        return ("ssl_server_verify", items[0])
+
+    def global_setenv(self, items: list[Any]) -> tuple[str, tuple[str, str]]:
+        return ("setenv", (items[0], items[1]))
+
+    def global_presetenv(self, items: list[Any]) -> tuple[str, tuple[str, str]]:
+        return ("presetenv", (items[0], items[1]))
+
+    def global_resetenv(self, items: list[Any]) -> tuple[str, str]:
+        return ("resetenv", items[0])
+
+    def global_unsetenv(self, items: list[Any]) -> tuple[str, str]:
+        return ("unsetenv", items[0])
 
     def log_target(self, items: list[Any]) -> LogTarget:
         address = items[0]

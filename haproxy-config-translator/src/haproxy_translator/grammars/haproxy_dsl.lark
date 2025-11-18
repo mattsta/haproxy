@@ -26,12 +26,27 @@ global_section: "global" "{" global_property* "}"
 ?global_property: "daemon" ":" boolean                 -> global_daemon
                 | "maxconn" ":" number                 -> global_maxconn
                 | "nbthread" ":" number                -> global_nbthread
+                | "nbproc" ":" number                  -> global_nbproc
                 | "maxsslconn" ":" number              -> global_maxsslconn
+                | "maxconnrate" ":" number             -> global_maxconnrate
+                | "maxsslrate" ":" number              -> global_maxsslrate
+                | "maxsessrate" ":" number             -> global_maxsessrate
                 | "ulimit-n" ":" number                -> global_ulimit_n
                 | "user" ":" string                    -> global_user
                 | "group" ":" string                   -> global_group
                 | "chroot" ":" string                  -> global_chroot
                 | "pidfile" ":" string                 -> global_pidfile
+                | "ca-base" ":" string                 -> global_ca_base
+                | "crt-base" ":" string                -> global_crt_base
+                | "log-tag" ":" string                 -> global_log_tag
+                | "log-send-hostname" ":" string       -> global_log_send_hostname
+                | "ssl-dh-param-file" ":" string       -> global_ssl_dh_param_file
+                | "ssl-default-server-ciphers" ":" string  -> global_ssl_default_server_ciphers
+                | "ssl-server-verify" ":" string       -> global_ssl_server_verify
+                | "setenv" string string               -> global_setenv
+                | "presetenv" string string            -> global_presetenv
+                | "resetenv" string                    -> global_resetenv
+                | "unsetenv" string                    -> global_unsetenv
                 | log_target                           -> global_log
                 | lua_section                          -> global_lua
                 | stats_section                        -> global_stats

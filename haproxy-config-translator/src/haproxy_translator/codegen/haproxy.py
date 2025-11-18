@@ -105,6 +105,20 @@ class HAProxyCodeGenerator:
 
         lines.append(self._indent(f"maxconn {global_config.maxconn}"))
 
+        # Process control
+        if global_config.nbproc:
+            lines.append(self._indent(f"nbproc {global_config.nbproc}"))
+
+        # Rate limiting
+        if global_config.maxconnrate:
+            lines.append(self._indent(f"maxconnrate {global_config.maxconnrate}"))
+
+        if global_config.maxsslrate:
+            lines.append(self._indent(f"maxsslrate {global_config.maxsslrate}"))
+
+        if global_config.maxsessrate:
+            lines.append(self._indent(f"maxsessrate {global_config.maxsessrate}"))
+
         if global_config.user:
             lines.append(self._indent(f"user {global_config.user}"))
 
@@ -117,6 +131,13 @@ class HAProxyCodeGenerator:
         if global_config.pidfile:
             lines.append(self._indent(f"pidfile {global_config.pidfile}"))
 
+        # SSL/TLS base paths
+        if global_config.ca_base:
+            lines.append(self._indent(f"ca-base {global_config.ca_base}"))
+
+        if global_config.crt_base:
+            lines.append(self._indent(f"crt-base {global_config.crt_base}"))
+
         # Performance tuning
         if "nbthread" in global_config.tuning:
             lines.append(self._indent(f"nbthread {global_config.tuning['nbthread']}"))
@@ -127,6 +148,23 @@ class HAProxyCodeGenerator:
         if "ulimit_n" in global_config.tuning:
             lines.append(self._indent(f"ulimit-n {global_config.tuning['ulimit_n']}"))
 
+        # Environment variables
+        for var_name, var_value in global_config.env_vars.items():
+            lines.append(self._indent(f"setenv {var_name} {var_value}"))
+
+        for var_name in global_config.reset_env_vars:
+            lines.append(self._indent(f"resetenv {var_name}"))
+
+        for var_name in global_config.unset_env_vars:
+            lines.append(self._indent(f"unsetenv {var_name}"))
+
+        # Logging configuration
+        if global_config.log_tag:
+            lines.append(self._indent(f"log-tag {global_config.log_tag}"))
+
+        if global_config.log_send_hostname:
+            lines.append(self._indent(f"log-send-hostname {global_config.log_send_hostname}"))
+
         # Log targets
         for log in global_config.log_targets:
             log_line = f"log {log.address} {log.facility.value} {log.level.value}"
@@ -135,6 +173,9 @@ class HAProxyCodeGenerator:
             lines.append(self._indent(log_line))
 
         # SSL configuration
+        if global_config.ssl_dh_param_file:
+            lines.append(self._indent(f"ssl-dh-param-file {global_config.ssl_dh_param_file}"))
+
         if global_config.ssl_default_bind_ciphers:
             lines.append(
                 self._indent(f"ssl-default-bind-ciphers {global_config.ssl_default_bind_ciphers}")
@@ -142,6 +183,14 @@ class HAProxyCodeGenerator:
 
         for option in global_config.ssl_default_bind_options:
             lines.append(self._indent(f"ssl-default-bind-options {option}"))
+
+        if global_config.ssl_default_server_ciphers:
+            lines.append(
+                self._indent(f"ssl-default-server-ciphers {global_config.ssl_default_server_ciphers}")
+            )
+
+        if global_config.ssl_server_verify:
+            lines.append(self._indent(f"ssl-server-verify {global_config.ssl_server_verify}"))
 
         # Lua scripts
         for script in global_config.lua_scripts:

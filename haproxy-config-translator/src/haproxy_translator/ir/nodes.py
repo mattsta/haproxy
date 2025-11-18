@@ -146,16 +146,30 @@ class GlobalConfig(IRNode):
 
     daemon: bool = True
     maxconn: int = 2000
+    nbproc: int | None = None
+    maxconnrate: int | None = None
+    maxsslrate: int | None = None
+    maxsessrate: int | None = None
     user: str | None = None
     group: str | None = None
     chroot: str | None = None
     pidfile: str | None = None
+    ca_base: str | None = None
+    crt_base: str | None = None
+    log_tag: str | None = None
+    log_send_hostname: str | None = None
+    ssl_dh_param_file: str | None = None
+    ssl_default_server_ciphers: str | None = None
+    ssl_server_verify: str | None = None
     log_targets: list[LogTarget] = field(default_factory=list)
     lua_scripts: list[LuaScript] = field(default_factory=list)
     stats: StatsConfig | None = None
     tuning: dict[str, Any] = field(default_factory=dict)
     ssl_default_bind_ciphers: str | None = None
     ssl_default_bind_options: list[str] = field(default_factory=list)
+    env_vars: dict[str, str] = field(default_factory=dict)  # setenv/presetenv
+    reset_env_vars: list[str] = field(default_factory=list)  # resetenv
+    unset_env_vars: list[str] = field(default_factory=list)  # unsetenv
 
 
 @dataclass(frozen=True)
