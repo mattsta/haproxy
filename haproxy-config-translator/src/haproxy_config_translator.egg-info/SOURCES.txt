@@ -31,3 +31,4 @@ src/haproxy_translator/utils/errors.py
 src/haproxy_translator/validators/__init__.py
 src/haproxy_translator/validators/semantic.py
 tests/test_basic_translation.py
+tests/test_coverage_100_percent.py

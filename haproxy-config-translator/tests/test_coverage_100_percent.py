@@ -317,3 +317,169 @@ class TestCoverage100Percent:
         ir = parser.parse(config)
         assert ir.frontends
         assert ir.frontends[0].use_backend_rules
+
+    # ========== Phase 2: Additional Coverage Tests ==========
+
+    def test_frontend_single_option(self):
+        """Test frontend with single option (line 1334)."""
+        config = """
+        config test {
+            frontend web {
+                bind *:80
+                mode: http
+                option: "httplog"
+                default_backend: web_servers
+            }
+
+            backend web_servers {
+                servers {
+                    server srv1 {
+                        address: "127.0.0.1"
+                        port: 8080
+                    }
+                }
+            }
+        }
+        """
+        parser = DSLParser()
+        ir = parser.parse(config)
+        assert ir.frontends
+        assert "httplog" in ir.frontends[0].options
+
+    def test_frontend_maxconn(self):
+        """Test frontend with maxconn (lines 1348, 1410)."""
+        config = """
+        config test {
+            frontend web {
+                bind *:80
+                mode: http
+                maxconn: 2000
+                default_backend: web_servers
+            }
+
+            backend web_servers {
+                servers {
+                    server srv1 {
+                        address: "127.0.0.1"
+                        port: 8080
+                    }
+                }
+            }
+        }
+        """
+        parser = DSLParser()
+        ir = parser.parse(config)
+        assert ir.frontends
+        assert ir.frontends[0].maxconn == 2000
+
+    def test_backend_cookie_directive(self):
+        """Test backend cookie directive (lines 1703, 2321)."""
+        config = """
+        config test {
+            backend web_servers {
+                cookie: "SERVERID insert indirect nocache"
+                servers {
+                    server srv1 {
+                        address: "127.0.0.1"
+                        port: 8080
+                        cookie: "srv1"
+                    }
+                }
+            }
+        }
+        """
+        parser = DSLParser()
+        ir = parser.parse(config)
+        assert ir.backends
+        assert ir.backends[0].cookie == "SERVERID insert indirect nocache"
+
+    def test_backend_retries_directive(self):
+        """Test backend retries directive (lines 1712, 2630)."""
+        config = """
+        config test {
+            backend web_servers {
+                retries: 3
+                servers {
+                    server srv1 {
+                        address: "127.0.0.1"
+                        port: 8080
+                    }
+                }
+            }
+        }
+        """
+        parser = DSLParser()
+        ir = parser.parse(config)
+        assert ir.backends
+        assert ir.backends[0].retries == 3
+
+    def test_backend_single_option(self):
+        """Test backend with single option (line 1739)."""
+        config = """
+        config test {
+            backend web_servers {
+                option: "httpchk"
+                servers {
+                    server srv1 {
+                        address: "127.0.0.1"
+                        port: 8080
+                    }
+                }
+            }
+        }
+        """
+        parser = DSLParser()
+        ir = parser.parse(config)
+        assert ir.backends
+        assert "httpchk" in ir.backends[0].options
+
+    def test_listen_section_with_acl(self):
+        """Test listen section with ACL (lines 1923, 1931-1937)."""
+        config = """
+        config test {
+            listen mysql {
+                bind *:3306
+                mode: tcp
+
+                acl is_valid {
+                    src "10.0.0.0/8"
+                }
+
+                servers {
+                    server db1 {
+                        address: "10.0.1.1"
+                        port: 3306
+                    }
+                }
+            }
+        }
+        """
+        parser = DSLParser()
+        ir = parser.parse(config)
+        assert ir.listens
+        assert ir.listens[0].acls
+
+    def test_listen_section_basic(self):
+        """Test basic listen section (lines 1967, 1977, 2003)."""
+        config = """
+        config test {
+            listen web {
+                bind *:80
+                mode: http
+
+                servers {
+                    server srv1 {
+                        address: "127.0.0.1"
+                        port: 8080
+                    }
+                }
+            }
+        }
+        """
+        parser = DSLParser()
+        ir = parser.parse(config)
+        codegen = HAProxyCodeGenerator()
+        output = codegen.generate(ir)
+        assert ir.listens
+        assert "listen web" in output
+        assert "bind *:80" in output
