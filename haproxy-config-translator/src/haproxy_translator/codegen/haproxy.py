@@ -342,6 +342,10 @@ class HAProxyCodeGenerator:
                 types_str = " ".join(backend.compression.types)
                 lines.append(self._indent(f"compression type {types_str}"))
 
+        # Default server
+        if backend.default_server:
+            lines.append(self._indent(self._format_default_server(backend.default_server)))
+
         # Servers
         for server in backend.servers:
             lines.append(self._indent(self._format_server(server)))
@@ -465,6 +469,46 @@ class HAProxyCodeGenerator:
 
         if rule.condition:
             parts.append(f"if {rule.condition}")
+
+        return " ".join(parts)
+
+    def _format_default_server(self, default_server: "DefaultServer") -> str:
+        """Format default-server directive."""
+        parts = ["default-server"]
+
+        if default_server.check:
+            parts.append("check")
+            if default_server.check_interval:
+                parts.append(f"inter {default_server.check_interval}")
+            if default_server.rise:
+                parts.append(f"rise {default_server.rise}")
+            if default_server.fall:
+                parts.append(f"fall {default_server.fall}")
+
+        if default_server.weight:
+            parts.append(f"weight {default_server.weight}")
+
+        if default_server.maxconn:
+            parts.append(f"maxconn {default_server.maxconn}")
+
+        if default_server.ssl:
+            parts.append("ssl")
+            if default_server.ssl_verify:
+                parts.append(f"verify {default_server.ssl_verify}")
+            if default_server.sni:
+                parts.append(f"sni {default_server.sni}")
+            if default_server.alpn:
+                alpn_str = ",".join(default_server.alpn)
+                parts.append(f"alpn {alpn_str}")
+
+        if default_server.send_proxy:
+            parts.append("send-proxy")
+
+        if default_server.send_proxy_v2:
+            parts.append("send-proxy-v2")
+
+        if default_server.slowstart:
+            parts.append(f"slowstart {default_server.slowstart}")
 
         return " ".join(parts)
 

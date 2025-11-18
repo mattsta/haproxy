@@ -11,6 +11,7 @@ from ..ir.nodes import (
     Bind,
     CompressionConfig,
     ConfigIR,
+    DefaultServer,
     DefaultsConfig,
     ForLoop,
     Frontend,
@@ -603,6 +604,7 @@ class DSLTransformer(Transformer):
         servers = []
         server_templates = []
         server_loops = []  # Collect for loops
+        default_server = None
         health_check = None
         acls = []
         options = []
@@ -624,6 +626,8 @@ class DSLTransformer(Transformer):
                 servers.append(prop)
             elif isinstance(prop, ForLoop):
                 server_loops.append(prop)
+            elif isinstance(prop, DefaultServer):
+                default_server = prop
             elif isinstance(prop, ACL):
                 acls.append(prop)
             elif isinstance(prop, StickTable):
@@ -686,6 +690,7 @@ class DSLTransformer(Transformer):
             balance=balance,
             servers=servers,
             server_templates=server_templates,
+            default_server=default_server,
             health_check=health_check,
             acls=acls,
             options=options,
@@ -742,6 +747,114 @@ class DSLTransformer(Transformer):
 
     def backend_retries(self, items: list[Any]) -> tuple[str, int]:
         return ("retries", items[0])
+
+    def backend_default_server(self, items: list[Any]) -> DefaultServer:
+        """Handle default-server in backend."""
+        return items[0]
+
+    # ===== Default Server =====
+    def default_server_directive(self, items: list[Any]) -> DefaultServer:
+        """Transform default-server directive."""
+        check = False
+        check_interval = None
+        rise = None
+        fall = None
+        weight = None
+        maxconn = None
+        ssl = False
+        ssl_verify = None
+        sni = None
+        alpn = []
+        send_proxy = False
+        send_proxy_v2 = False
+        slowstart = None
+        options = {}
+
+        for item in items:
+            if isinstance(item, tuple):
+                key, value = item
+                if key == "check":
+                    check = value
+                elif key == "inter":
+                    check_interval = value
+                elif key == "rise":
+                    rise = value
+                elif key == "fall":
+                    fall = value
+                elif key == "weight":
+                    weight = value
+                elif key == "maxconn":
+                    maxconn = value
+                elif key == "ssl":
+                    ssl = value
+                elif key == "verify":
+                    ssl_verify = value
+                elif key == "sni":
+                    sni = value
+                elif key == "alpn":
+                    alpn = value
+                elif key == "send_proxy":
+                    send_proxy = value
+                elif key == "send_proxy_v2":
+                    send_proxy_v2 = value
+                elif key == "slowstart":
+                    slowstart = value
+
+        return DefaultServer(
+            check=check,
+            check_interval=check_interval,
+            rise=rise,
+            fall=fall,
+            weight=weight,
+            maxconn=maxconn,
+            ssl=ssl,
+            ssl_verify=ssl_verify,
+            sni=sni,
+            alpn=alpn,
+            send_proxy=send_proxy,
+            send_proxy_v2=send_proxy_v2,
+            slowstart=slowstart,
+            options=options,
+        )
+
+    def ds_check(self, items: list[Any]) -> tuple[str, bool]:
+        return ("check", items[0])
+
+    def ds_inter(self, items: list[Any]) -> tuple[str, str]:
+        return ("inter", items[0])
+
+    def ds_rise(self, items: list[Any]) -> tuple[str, int]:
+        return ("rise", items[0])
+
+    def ds_fall(self, items: list[Any]) -> tuple[str, int]:
+        return ("fall", items[0])
+
+    def ds_weight(self, items: list[Any]) -> tuple[str, int]:
+        return ("weight", items[0])
+
+    def ds_maxconn(self, items: list[Any]) -> tuple[str, int]:
+        return ("maxconn", items[0])
+
+    def ds_ssl(self, items: list[Any]) -> tuple[str, bool]:
+        return ("ssl", items[0])
+
+    def ds_verify(self, items: list[Any]) -> tuple[str, str]:
+        return ("verify", items[0])
+
+    def ds_sni(self, items: list[Any]) -> tuple[str, str]:
+        return ("sni", items[0])
+
+    def ds_alpn(self, items: list[Any]) -> tuple[str, list[str]]:
+        return ("alpn", items[0])
+
+    def ds_send_proxy(self, items: list[Any]) -> tuple[str, bool]:
+        return ("send_proxy", items[0])
+
+    def ds_send_proxy_v2(self, items: list[Any]) -> tuple[str, bool]:
+        return ("send_proxy_v2", items[0])
+
+    def ds_slowstart(self, items: list[Any]) -> tuple[str, str]:
+        return ("slowstart", items[0])
 
     # ===== Listen Section =====
     def listen_section(self, items: list[Any]) -> Listen:

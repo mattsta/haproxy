@@ -277,6 +277,26 @@ class Server(IRNode):
 
 
 @dataclass(frozen=True)
+class DefaultServer(IRNode):
+    """Default server configuration applied to all servers in a backend."""
+
+    check: bool = False
+    check_interval: str | None = None  # inter parameter
+    rise: int | None = None
+    fall: int | None = None
+    weight: int | None = None
+    maxconn: int | None = None
+    ssl: bool = False
+    ssl_verify: str | None = None
+    sni: str | None = None
+    alpn: list[str] = field(default_factory=list)
+    send_proxy: bool = False
+    send_proxy_v2: bool = False
+    slowstart: str | None = None  # Warmup time
+    options: dict[str, Any] = field(default_factory=dict)
+
+
+@dataclass(frozen=True)
 class ServerTemplate(IRNode):
     """Server template for dynamic generation."""
 
@@ -349,7 +369,7 @@ class Backend(IRNode):
     balance: BalanceAlgorithm = BalanceAlgorithm.ROUNDROBIN
     servers: list[Server] = field(default_factory=list)
     server_templates: list[ServerTemplate] = field(default_factory=list)
-    default_server: Server | None = None  # Default server options
+    default_server: DefaultServer | None = None  # Default server options
     health_check: HealthCheck | None = None
     acls: list[ACL] = field(default_factory=list)
     options: list[str] = field(default_factory=list)

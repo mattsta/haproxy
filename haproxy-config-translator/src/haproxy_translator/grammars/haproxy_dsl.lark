@@ -238,6 +238,7 @@ backend_section: "backend" identifier "{" backend_property* "}"
                  | "cookie" ":" string                      -> backend_cookie
                  | acl_definition                           -> backend_acl
                  | health_check_block                       -> backend_health_check
+                 | default_server_directive                 -> backend_default_server
                  | servers_block                            -> backend_servers
                  | server_template_block                    -> backend_server_template
                  | compression_block                        -> backend_compression
@@ -275,6 +276,22 @@ health_check_block: "health-check" "{" health_check_property* "}"
 expect_value: "status" number
 
 header_definition: "header" string string
+
+default_server_directive: "default-server" "{" default_server_property* "}"
+
+?default_server_property: "check" ":" boolean               -> ds_check
+                        | "inter" ":" duration              -> ds_inter
+                        | "rise" ":" number                 -> ds_rise
+                        | "fall" ":" number                 -> ds_fall
+                        | "weight" ":" number               -> ds_weight
+                        | "maxconn" ":" number              -> ds_maxconn
+                        | "ssl" ":" boolean                 -> ds_ssl
+                        | "verify" ":" string               -> ds_verify
+                        | "sni" ":" string                  -> ds_sni
+                        | "alpn" ":" string_array           -> ds_alpn
+                        | "send-proxy" ":" boolean          -> ds_send_proxy
+                        | "send-proxy-v2" ":" boolean       -> ds_send_proxy_v2
+                        | "slowstart" ":" duration          -> ds_slowstart
 
 servers_block: "servers" "{" server_item* "}"
 
