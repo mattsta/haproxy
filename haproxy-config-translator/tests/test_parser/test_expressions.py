@@ -65,18 +65,25 @@ class TestEnvFunction:
 
     def test_env_call_simple(self, parser):
         """Test simple env() call."""
-        source = """
-        config test {
-            let port = env("PORT")
+        import os
+        # Set the environment variable for the test
+        os.environ["PORT"] = "9000"
+        try:
+            source = """
+            config test {
+                let port = env("PORT")
 
-            backend servers {
-                balance: roundrobin
+                backend servers {
+                    balance: roundrobin
+                }
             }
-        }
-        """
-        # This will parse, but won't actually resolve until transformation
-        ir = parser.parse(source)
-        assert "port" in ir.variables
+            """
+            # This will parse, but won't actually resolve until transformation
+            ir = parser.parse(source)
+            assert "port" in ir.variables
+        finally:
+            # Clean up
+            del os.environ["PORT"]
 
     def test_env_call_with_default(self, parser):
         """Test env() with default value."""

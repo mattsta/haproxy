@@ -14,14 +14,14 @@ class TestParserCoverage:
     def parser(self):
         return DSLParser()
 
-    @pytest.mark.skip(reason="Parser transformer mocking needs different approach")
     def test_generic_exception_handling(self, parser):
         """Test generic exception handling during transformation."""
         # We need to cause an exception that's not ValidationError or ParseError
         # during the transformation phase
 
-        # Mock the transformer to raise a generic exception
-        with patch.object(parser, 'transformer') as mock_transformer:
+        # Mock DSLTransformer to raise a generic exception
+        with patch('haproxy_translator.parsers.dsl_parser.DSLTransformer') as mock_transformer_class:
+            mock_transformer = mock_transformer_class.return_value
             mock_transformer.transform.side_effect = RuntimeError("Unexpected transformer error")
 
             source = """

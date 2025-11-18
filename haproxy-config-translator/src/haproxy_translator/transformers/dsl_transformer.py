@@ -2579,11 +2579,12 @@ class DSLTransformer(Transformer):
         return items[0] if items else None
 
     def env_call(self, items: list[Any]) -> str:
-        var_name = items[0]
-        default = items[1] if len(items) > 1 else ""
-        import os
+        from ..transformers.variable_resolver import resolve_env_variable
 
-        return os.environ.get(var_name, default)
+        var_name = items[0]
+        default = items[1] if len(items) > 1 else None
+
+        return resolve_env_variable(var_name, default)
 
     # ===== Primitives =====
     def identifier(self, items: list[Token]) -> str:

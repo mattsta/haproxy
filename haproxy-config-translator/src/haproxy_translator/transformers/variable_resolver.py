@@ -218,11 +218,25 @@ class VariableResolver:
                 # Keep as string if not a valid integer
                 resolved_port = resolved_port_str
 
+        # Resolve ALPN list (may contain variable references)
+        resolved_alpn = self._resolve_value(server.alpn) if server.alpn else []
+
+        # Resolve other server options that may contain variables
+        resolved_sni = self._resolve_value(server.sni) if server.sni else None
+        resolved_source = self._resolve_value(server.source) if server.source else None
+        resolved_ca_file = self._resolve_value(server.ca_file) if server.ca_file else None
+        resolved_crt = self._resolve_value(server.crt) if server.crt else None
+
         return replace(
             server,
             address=resolved_address,
             port=resolved_port,
             ssl_verify=resolved_ssl_verify,
+            alpn=resolved_alpn,
+            sni=resolved_sni,
+            source=resolved_source,
+            ca_file=resolved_ca_file,
+            crt=resolved_crt,
         )
 
     def _resolve_acl(self, acl: ACL) -> ACL:

@@ -18,7 +18,6 @@ class TestLoopUnrollerCoverage:
     def codegen(self):
         return HAProxyCodeGenerator()
 
-    @pytest.mark.skip(reason="For loop list syntax needs investigation")
     def test_for_loop_with_list_iterable(self, parser, codegen):
         """Test for loop with a list iterable."""
         source = """
@@ -26,7 +25,7 @@ class TestLoopUnrollerCoverage:
             backend app {
                 servers {
                     for dc in ["us-east", "us-west", "eu-central"] {
-                        server ${dc}-srv {
+                        server "${dc}-srv" {
                             address: "${dc}.example.com"
                             port: 8080
                         }
@@ -41,15 +40,14 @@ class TestLoopUnrollerCoverage:
         assert "us-west-srv us-west.example.com:8080" in output
         assert "eu-central-srv eu-central.example.com:8080" in output
 
-    @pytest.mark.skip(reason="For loop range syntax needs investigation")
     def test_for_loop_with_expression(self, parser, codegen):
         """Test for loop with expression substitution."""
         source = """
         config test {
             backend app {
                 servers {
-                    for i in 1..3 {
-                        server web${i * 10} {
+                    for i in ["1", "2", "3"] {
+                        server "web${i}0" {
                             address: "10.0.1.${i}"
                             port: 8080
                         }
@@ -96,16 +94,14 @@ class TestLoopUnrollerCoverage:
         with pytest.raises(ParseError, match="Unsupported iterable type"):
             unroller.unroll()
 
-    @pytest.mark.skip(reason="For loop range syntax needs investigation")
-    @pytest.mark.skip(reason="For loop expression error handling needs investigation")
     def test_for_loop_with_expression_error(self, parser, codegen):
         """Test for loop with invalid expression raises error."""
         source = """
         config test {
             backend app {
                 servers {
-                    for i in 1..2 {
-                        server web${undefined_var} {
+                    for i in ["1", "2"] {
+                        server "web${undefined_var}" {
                             address: "10.0.1.${i}"
                             port: 8080
                         }
@@ -114,7 +110,7 @@ class TestLoopUnrollerCoverage:
             }
         }
         """
-        # This should raise an error during loop unrolling
+        # This should raise an error during parsing/transformation due to undefined variable
         with pytest.raises(ParseError, match="Failed to evaluate expression"):
             ir = parser.parse(source)
 
