@@ -1,0 +1,128 @@
+Directive,Category,Status,Priority,Notes
+daemon,Process Management,✅ Implemented,✅,Boolean flag for background execution
+user,Process Management,✅ Implemented,✅,Process user by name
+group,Process Management,✅ Implemented,✅,Process group by name
+chroot,Process Management,✅ Implemented,✅,Filesystem jail directory
+pidfile,Process Management,✅ Implemented,✅,PID file path
+maxconn,Performance Limits,✅ Implemented,✅,Maximum concurrent connections
+nbthread,Process/Threading,✅ Implemented,✅,Number of worker threads
+log,Logging,✅ Implemented,✅,Syslog target with facility and level
+lua-load,Lua Configuration,✅ Implemented,✅,Load Lua script files
+ssl-default-bind-ciphers,SSL/TLS,✅ Implemented,✅,Default cipher list for listeners
+ssl-default-bind-options,SSL/TLS,✅ Implemented,✅,Default SSL options for listeners
+maxsslconn,Performance Limits,✅ Implemented (via tuning dict),✅,Max SSL connections
+ulimit-n,Performance Limits,✅ Implemented (via tuning dict),✅,File descriptor limit
+stats socket,Stats/Monitoring,⚠️ Partial,✅,Basic stats socket support (hardcoded in codegen)
+uid,Process Management,❌ Missing,CRITICAL,Process user by numeric ID
+gid,Process Management,❌ Missing,CRITICAL,Process group by numeric ID
+setcap,Process Management,❌ Missing,MEDIUM,Linux capabilities
+set-dumpable,Process Management,❌ Missing,LOW,Enable core dumps
+unix-bind,Process Management,❌ Missing,MEDIUM,Default permissions for Unix sockets
+nbproc,Process/Threading,❌ Missing,CRITICAL,Number of processes (deprecated in 2.6+)
+cpu-map,Process/Threading,❌ Missing,MEDIUM,CPU affinity bindings
+setenv,Environment Variables,❌ Missing,CRITICAL,Set/override environment variable
+presetenv,Environment Variables,❌ Missing,CRITICAL,Set environment variable (don't override if exists)
+resetenv,Environment Variables,❌ Missing,CRITICAL,Remove all variables except specified ones
+unsetenv,Environment Variables,❌ Missing,CRITICAL,Remove specific environment variable
+maxconnrate,Performance Limits,❌ Missing,CRITICAL,Connection rate limit
+maxsslrate,Performance Limits,❌ Missing,CRITICAL,SSL connection rate
+maxsessrate,Performance Limits,❌ Missing,CRITICAL,Session rate limit
+maxpipes,Performance Limits,❌ Missing,CRITICAL,Pipe buffer count
+tune.bufsize,Buffer/Memory Tuning,❌ Missing,CRITICAL,Default buffer size
+tune.buffers.limit,Buffer/Memory Tuning,❌ Missing,HIGH,Total buffer memory limit
+tune.buffers.reserve,Buffer/Memory Tuning,❌ Missing,HIGH,Reserved buffer space
+tune.http.maxhdr,Buffer/Memory Tuning,❌ Missing,HIGH,Max HTTP header count
+tune.http.cookielen,Buffer/Memory Tuning,❌ Missing,HIGH,Max cookie length
+tune.http.logurilen,Buffer/Memory Tuning,❌ Missing,HIGH,Max URI length in logs
+tune.ssl.bufsize,SSL/TLS,❌ Missing,HIGH,SSL buffer size
+tune.ssl.cachesize,SSL/TLS,❌ Missing,HIGH,SSL session cache entries
+tune.ssl.lifetime,SSL/TLS,❌ Missing,HIGH,SSL session lifetime (seconds)
+tune.ssl.maxrecord,SSL/TLS,❌ Missing,HIGH,Max SSL record size
+tune.ssl.keylog,SSL/TLS,❌ Missing,HIGH,Enable SSLKEYLOGFILE support
+tune.ssl.capture-cipherlist,SSL/TLS,❌ Missing,HIGH,Capture offered ciphers
+tune.ssl.capture-buffer-size,SSL/TLS,❌ Missing,HIGH,Buffer for cipher capture
+tune.ssl.default-dh-param,SSL/TLS,❌ Missing,HIGH,Default DH parameter size
+tune.ssl.ocsp-update.minthour,SSL/TLS,❌ Missing,HIGH,OCSP update minimum hour
+tune.ssl.ocsp-update.maxhour,SSL/TLS,❌ Missing,HIGH,OCSP update maximum hour
+tune.memory.pool-allocator,Buffer/Memory Tuning,❌ Missing,MEDIUM,Memory allocator type
+tune.memory.fail-alloc,Buffer/Memory Tuning,❌ Missing,MEDIUM,Allocation failure handling
+tune.h2.be.glitches-threshold,HTTP/2 Tuning,❌ Missing,HIGH,HTTP/2 backend glitch threshold
+tune.h2.be.initial-window-size,HTTP/2 Tuning,❌ Missing,HIGH,HTTP/2 backend window sizing
+tune.h2.be.max-concurrent-streams,HTTP/2 Tuning,❌ Missing,HIGH,HTTP/2 backend stream limits
+tune.h2.fe.glitches-threshold,HTTP/2 Tuning,❌ Missing,HIGH,HTTP/2 frontend glitch threshold
+tune.h2.fe.initial-window-size,HTTP/2 Tuning,❌ Missing,HIGH,HTTP/2 frontend window sizing
+tune.h2.fe.max-concurrent-streams,HTTP/2 Tuning,❌ Missing,HIGH,HTTP/2 frontend stream limits
+tune.h2.fe.max-total-streams,HTTP/2 Tuning,❌ Missing,HIGH,HTTP/2 frontend total stream limits
+tune.h2.header-table-size,HTTP/2 Tuning,❌ Missing,HIGH,HTTP/2 header table sizing
+tune.h2.initial-window-size,HTTP/2 Tuning,❌ Missing,HIGH,HTTP/2 window size defaults
+tune.h2.max-concurrent-streams,HTTP/2 Tuning,❌ Missing,HIGH,HTTP/2 concurrency limits
+tune.h2.max-frame-size,HTTP/2 Tuning,❌ Missing,HIGH,HTTP/2 frame sizing
+tune.disable-fast-forward,Performance Tuning,❌ Missing,MEDIUM,Disable fast forwarding optimization
+tune.fd.edge-triggered,Performance Tuning,❌ Missing,MEDIUM,File descriptor polling mode
+tune.comp.maxlevel,Performance Tuning,❌ Missing,MEDIUM,Compression level (1-9)
+tune.maxrewrite,Buffer/Memory Tuning,❌ Missing,CRITICAL,Max rewrite buffer size
+ssl-default-bind-ciphersuites,SSL/TLS,❌ Missing,HIGH,TLS 1.3 ciphersuites for binding
+ssl-default-server-ciphers,SSL/TLS,❌ Missing,CRITICAL,Default ciphers for server connections
+ssl-default-server-ciphersuites,SSL/TLS,❌ Missing,HIGH,TLS 1.3 ciphersuites for servers
+ssl-default-server-options,SSL/TLS,❌ Missing,HIGH,Default SSL options for backend connections
+ssl-dh-param-file,SSL/TLS,❌ Missing,CRITICAL,Diffie-Hellman parameter file
+ssl-engine,SSL/TLS,❌ Missing,HIGH,OpenSSL engine selection
+ssl-server-verify,SSL/TLS,❌ Missing,CRITICAL,Default server certificate verification
+ca-base,SSL/TLS,❌ Missing,CRITICAL,Base directory for CA certificates
+crt-base,SSL/TLS,❌ Missing,CRITICAL,Base directory for certificate files
+key-base,SSL/TLS,❌ Missing,HIGH,Base directory for key files
+log-tag,Logging,❌ Missing,CRITICAL,Syslog tag/prefix
+log-send-hostname,Logging,❌ Missing,CRITICAL,Include hostname in syslog
+log-format,Logging,❌ Missing,MEDIUM,Global default log format
+log-format-ssl,Logging,❌ Missing,MEDIUM,SSL-specific log format
+stats timeout,Stats/Monitoring,❌ Missing,MEDIUM,Stats socket timeout
+stats maxconn,Stats/Monitoring,❌ Missing,MEDIUM,Max stats connections
+email-alert from,Stats/Monitoring,❌ Missing,MEDIUM,Email alert sender
+email-alert mailers,Stats/Monitoring,❌ Missing,MEDIUM,Email configuration
+email-alert level,Stats/Monitoring,❌ Missing,MEDIUM,Alert severity level
+master-worker,Master-Worker Mode,❌ Missing,HIGH,Enable master-worker process model
+mworker-max-reloads,Master-Worker Mode,❌ Missing,HIGH,Max reloads before restart
+mworker-prog,Master-Worker Mode,❌ Missing,MEDIUM,Custom master-worker program
+deviceatlas-json-file,Device Detection,❌ Missing,LOW,Device detection data file
+deviceatlas-log-level,Device Detection,❌ Missing,LOW,Logging level (0-3)
+deviceatlas-separator,Device Detection,❌ Missing,LOW,Property separator
+deviceatlas-properties-cookie,Device Detection,❌ Missing,LOW,Cookie name for detection
+51degrees-data-file,Device Detection,❌ Missing,LOW,Data file path
+51degrees-property-name-list,Device Detection,❌ Missing,LOW,Properties to detect
+51degrees-property-separator,Device Detection,❌ Missing,LOW,Separator for properties
+51degrees-cache-size,Device Detection,❌ Missing,LOW,Cache size in entries
+wurfl-data-file,Device Detection,❌ Missing,LOW,WURFL data file
+wurfl-information-list,Device Detection,❌ Missing,LOW,Information properties
+wurfl-information-list-separator,Device Detection,❌ Missing,LOW,Properties separator
+wurfl-cache-size,Device Detection,❌ Missing,LOW,Cache size
+external-check,External Integration,❌ Missing,LOW,Enable external health check agents
+description,Advanced Options,❌ Missing,LOW,Process description string
+node,Advanced Options,❌ Missing,MEDIUM,Node identifier string
+httpclient.timeout.connect,HTTP Client,❌ Missing,LOW,HTTP client connection timeout
+httpclient.timeout.server-response,HTTP Client,❌ Missing,LOW,Server response timeout
+httpclient.ssl.verify,HTTP Client,❌ Missing,LOW,SSL certificate verification
+httpclient.ssl.ca-file,HTTP Client,❌ Missing,LOW,CA certificate file
+httpclient.resolvers,HTTP Client,❌ Missing,LOW,Resolver configuration
+httpclient.default-ssl-modes,HTTP Client,❌ Missing,LOW,Default SSL modes
+httpclient.default-ssl-schemes,HTTP Client,❌ Missing,LOW,SSL scheme defaults
+tune.quic.socket-owner,QUIC/HTTP3,❌ Missing,LOW,QUIC socket owner
+tune.quic.backend.conn-tx-buffers,QUIC/HTTP3,❌ Missing,LOW,QUIC backend TX buffers
+tune.quic.backend.glitches-threshold,QUIC/HTTP3,❌ Missing,LOW,QUIC backend glitch threshold
+tune.quic.be.initial-window-size,QUIC/HTTP3,❌ Missing,LOW,Backend window size
+tune.quic.be.max-ack-delay,QUIC/HTTP3,❌ Missing,LOW,Max ACK delay
+tune.quic.frontend.conn-tx-buffers,QUIC/HTTP3,❌ Missing,LOW,QUIC frontend TX buffers
+tune.quic.frontend.max-idle-timeout,QUIC/HTTP3,❌ Missing,LOW,Frontend idle timeout
+tune.quic.frontend.initial-window-size,QUIC/HTTP3,❌ Missing,LOW,Frontend window size
+h1-case-adjust,Header Adjustment,❌ Missing,LOW,Adjust case of specific HTTP/1.1 headers
+h1-case-adjust-file,Header Adjustment,❌ Missing,LOW,Load header case adjustments from file
+debug,Debugging,❌ Missing,LOW,Enable debug mode
+quiet,Debugging,❌ Missing,LOW,Suppress informational startup messages
+expose-fd,Debugging,❌ Missing,LOW,Expose file descriptors (systemd integration)
+expose-experimental-directives,Debugging,❌ Missing,LOW,Enable experimental features
+hard-stop-after,Advanced Options,❌ Missing,MEDIUM,Forced shutdown timeout
+userlist,Authentication,❌ Missing,LOW,Authentication user definitions
+peers,Synchronization,❌ Missing,LOW,Peer synchronization configuration
+mailers,Email Configuration,❌ Missing,LOW,Email server configuration
+programs,Program Hooks,❌ Missing,LOW,External program hooks
+http-errors,Error Pages,❌ Missing,LOW,Custom HTTP error pages
+rings,Log Buffers,❌ Missing,LOW,In-memory log buffers
