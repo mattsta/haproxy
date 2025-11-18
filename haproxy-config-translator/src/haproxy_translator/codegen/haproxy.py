@@ -1,5 +1,6 @@
 """HAProxy native configuration code generator."""
 
+import dataclasses
 from pathlib import Path
 
 from ..ir.nodes import (
@@ -8,6 +9,7 @@ from ..ir.nodes import (
     Bind,
     ConfigIR,
     DefaultsConfig,
+    DefaultServer,
     Frontend,
     GlobalConfig,
     HealthCheck,
@@ -16,6 +18,10 @@ from ..ir.nodes import (
     Listen,
     Server,
     ServerTemplate,
+    StickRule,
+    StickTable,
+    TcpRequestRule,
+    TcpResponseRule,
 )
 
 
@@ -49,13 +55,11 @@ class HAProxyCodeGenerator:
         if ir.lua_scripts and len(ir.lua_scripts) > 0:
             if global_config:
                 # Add top-level lua scripts to global config's lua_scripts
-                import dataclasses
                 all_lua_scripts = list(ir.lua_scripts) + list(global_config.lua_scripts)
                 global_config = dataclasses.replace(global_config, lua_scripts=all_lua_scripts)
             else:
                 # Create a minimal global config with just lua scripts
-                from ..ir.nodes import GlobalConfig as GC
-                global_config = GC(lua_scripts=list(ir.lua_scripts))
+                global_config = GlobalConfig(lua_scripts=list(ir.lua_scripts))
 
         # Generate global section
         if global_config:
@@ -642,35 +646,35 @@ class HAProxyCodeGenerator:
     def _format_stick_table(self, stick_table: "StickTable") -> str:
         """Format stick-table directive."""
         parts = [f"stick-table type {stick_table.type} size {stick_table.size}"]
-        
+
         if stick_table.expire:
             parts.append(f"expire {stick_table.expire}")
-        
+
         if stick_table.nopurge:
             parts.append("nopurge")
-        
+
         if stick_table.peers:
             parts.append(f"peers {stick_table.peers}")
-        
+
         if stick_table.store:
             store_str = " ".join(stick_table.store)
             parts.append(f"store {store_str}")
-        
+
         return " ".join(parts)
 
     def _format_stick_rule(self, stick_rule: "StickRule") -> str:
         """Format stick rule (stick on/match/store)."""
         parts = [f"stick {stick_rule.rule_type}"]
-        
+
         if stick_rule.pattern:
             parts.append(stick_rule.pattern)
-        
+
         if stick_rule.table:
             parts.append(f"table {stick_rule.table}")
-        
+
         if stick_rule.condition:
             parts.append(f"if {stick_rule.condition}")
-        
+
         return " ".join(parts)
 
     def _format_tcp_request_rule(self, tcp_req: "TcpRequestRule") -> str:

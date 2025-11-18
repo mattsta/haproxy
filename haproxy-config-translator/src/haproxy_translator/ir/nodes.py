@@ -309,7 +309,7 @@ class ServerTemplate(IRNode):
     prefix: str = ""
     count: int = 0
     fqdn_pattern: str = ""  # e.g., "api-{id}.example.com"
-    port: int = 8080
+    port: int | str = 8080  # Can be int or string with ${var} interpolation
     base_server: Server | None = None
 
 

@@ -181,7 +181,11 @@ def _watch_mode(
 ) -> None:
     """Watch for file changes and regenerate."""
     try:
-        from watchdog.events import FileModifiedEvent, FileSystemEventHandler
+        from watchdog.events import (
+            DirModifiedEvent,
+            FileModifiedEvent,
+            FileSystemEventHandler,
+        )
         from watchdog.observers import Observer
     except ImportError:
         console.print(
@@ -195,7 +199,7 @@ def _watch_mode(
             self.file_to_watch = file_to_watch.resolve()
             self.last_modified: float = 0.0
 
-        def on_modified(self, event: FileModifiedEvent) -> None:
+        def on_modified(self, event: FileModifiedEvent | DirModifiedEvent) -> None:
             if event.src_path == str(self.file_to_watch):
                 # Debounce rapid modifications
                 import time

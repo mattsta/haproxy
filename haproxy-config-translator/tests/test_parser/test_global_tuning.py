@@ -2,8 +2,8 @@
 
 import pytest
 
-from haproxy_translator.parsers import DSLParser
 from haproxy_translator.codegen.haproxy import HAProxyCodeGenerator
+from haproxy_translator.parsers import DSLParser
 
 
 class TestGlobalTuning:
@@ -144,10 +144,10 @@ class TestGlobalTuning:
         # Check global section has all tuning directives
         global_lines = []
         in_global = False
-        for line in output.split('\n'):
-            if line.startswith('global'):
+        for line in output.split("\n"):
+            if line.startswith("global"):
                 in_global = True
-            elif line and not line.startswith(' ') and in_global:
+            elif line and not line.startswith(" ") and in_global:
                 break
             elif in_global and line.strip():
                 global_lines.append(line.strip())

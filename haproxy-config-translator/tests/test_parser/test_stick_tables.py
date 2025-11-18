@@ -2,16 +2,8 @@
 
 import pytest
 
-from haproxy_translator.ir.nodes import (
-    Backend,
-    Frontend,
-    StickRule,
-    StickTable,
-    TcpRequestRule,
-    TcpResponseRule,
-)
-from haproxy_translator.parsers.dsl_parser import DSLParser
 from haproxy_translator.codegen.haproxy import HAProxyCodeGenerator
+from haproxy_translator.parsers.dsl_parser import DSLParser
 
 
 @pytest.fixture

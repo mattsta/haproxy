@@ -11,8 +11,8 @@ from ..ir.nodes import (
     Bind,
     CompressionConfig,
     ConfigIR,
-    DefaultServer,
     DefaultsConfig,
+    DefaultServer,
     ForLoop,
     Frontend,
     GlobalConfig,
@@ -807,7 +807,7 @@ class DSLTransformer(Transformer):
 
     def backend_default_server(self, items: list[Any]) -> DefaultServer:
         """Handle default-server in backend."""
-        return items[0]
+        return cast(DefaultServer, items[0])
 
     # ===== Default Server =====
     def default_server_directive(self, items: list[Any]) -> DefaultServer:
@@ -825,7 +825,7 @@ class DSLTransformer(Transformer):
         send_proxy = False
         send_proxy_v2 = False
         slowstart = None
-        options = {}
+        options: dict[str, Any] = {}
 
         for item in items:
             if isinstance(item, tuple):
@@ -1095,7 +1095,7 @@ class DSLTransformer(Transformer):
 
     def hc_expect(self, items: list[Any]) -> tuple[str, Any]:
         """Handle expect value (status, string, rstatus, rstring, negated)."""
-        return items[0]
+        return cast("tuple[str, Any]", items[0])
 
     def hc_header(self, items: list[Any]) -> tuple[str, str, str]:
         return ("header", items[0][0], items[0][1])
@@ -1682,7 +1682,7 @@ class DSLTransformer(Transformer):
         rule_type = items[0]
         action = str(items[1]) if len(items) > 1 else ""
         condition = None
-        parameters = {}
+        parameters: dict[str, Any] = {}
 
         # Parse remaining items for parameters and condition
         for item in items[2:]:
@@ -1708,15 +1708,6 @@ class DSLTransformer(Transformer):
         """Transform tcp action parameter (duration or value)."""
         return str(items[0]) if items else ""
 
-    def if_condition(self, items: list[Any]) -> tuple[str, str]:
-        """Transform if condition to a tuple marking it as a condition."""
-        condition = str(items[0]) if items else ""
-        return ("condition", condition)
-
-    def condition_expr(self, items: list[Any]) -> str:
-        """Extract condition expression (ACL name or expression)."""
-        return str(items[0]) if items else ""
-
     def tcp_response_block(self, items: list[Any]) -> list[TcpResponseRule]:
         """Transform tcp-response block."""
         return items
@@ -1730,7 +1721,7 @@ class DSLTransformer(Transformer):
         rule_type = items[0]
         action = str(items[1]) if len(items) > 1 else ""
         condition = None
-        parameters = {}
+        parameters: dict[str, Any] = {}
 
         for item in items[2:]:
             if isinstance(item, tuple):
@@ -1761,7 +1752,7 @@ class DSLTransformer(Transformer):
     # ===== Backend ACL Support =====
     def backend_acl(self, items: list[Any]) -> ACL:
         """Transform ACL in backend."""
-        return items[0] if items and isinstance(items[0], ACL) else items[0]
+        return cast(ACL, items[0])
 
     def backend_tcp_request(self, items: list[Any]) -> list[TcpRequestRule]:
         """Transform tcp-request in backend."""
@@ -1773,8 +1764,8 @@ class DSLTransformer(Transformer):
 
     def backend_stick_table(self, items: list[Any]) -> StickTable:
         """Transform stick-table in backend."""
-        return items[0] if items else None
+        return cast(StickTable, items[0]) if items else cast(StickTable, None)
 
     def backend_stick_rule(self, items: list[Any]) -> StickRule:
         """Transform stick rule in backend."""
-        return items[0] if items else None
+        return cast(StickRule, items[0]) if items else cast(StickRule, None)

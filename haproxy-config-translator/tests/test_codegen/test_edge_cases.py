@@ -2,12 +2,22 @@
 
 import pytest
 
-from haproxy_translator.parsers import DSLParser
 from haproxy_translator.codegen.haproxy import HAProxyCodeGenerator
 from haproxy_translator.ir.nodes import (
-    ConfigIR, Backend, Frontend, Server, Bind, StickTable, StickRule,
-    TcpRequestRule, TcpResponseRule, Mode, BalanceAlgorithm, HttpRequestRule
+    Backend,
+    BalanceAlgorithm,
+    Bind,
+    ConfigIR,
+    Frontend,
+    HttpRequestRule,
+    Mode,
+    Server,
+    StickRule,
+    StickTable,
+    TcpRequestRule,
+    TcpResponseRule,
 )
+from haproxy_translator.parsers import DSLParser
 
 
 class TestCodeGenEdgeCases:
@@ -46,7 +56,6 @@ class TestCodeGenEdgeCases:
 
     def test_server_options_dict(self, codegen):
         """Test server with additional options dict."""
-        from dataclasses import replace
 
         server = Server(
             name="api1",

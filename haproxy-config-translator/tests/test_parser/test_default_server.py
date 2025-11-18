@@ -2,8 +2,8 @@
 
 import pytest
 
-from haproxy_translator.parsers import DSLParser
 from haproxy_translator.codegen.haproxy import HAProxyCodeGenerator
+from haproxy_translator.parsers import DSLParser
 
 
 class TestDefaultServer:
@@ -357,6 +357,6 @@ class TestDefaultServer:
         output = codegen.generate(ir)
 
         # Both default-server directives should appear
-        lines = output.split('\n')
-        default_server_lines = [line for line in lines if 'default-server' in line]
+        lines = output.split("\n")
+        default_server_lines = [line for line in lines if "default-server" in line]
         assert len(default_server_lines) == 2

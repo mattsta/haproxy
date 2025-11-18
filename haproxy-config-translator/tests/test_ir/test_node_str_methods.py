@@ -1,8 +1,7 @@
 """Test __str__ methods for IR nodes."""
 
-import pytest
 
-from haproxy_translator.ir.nodes import ACL, HttpRequestRule, Bind
+from haproxy_translator.ir.nodes import ACL, Bind, HttpRequestRule
 
 
 class TestACLStr:

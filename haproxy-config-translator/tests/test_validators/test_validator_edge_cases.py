@@ -2,6 +2,13 @@
 
 import pytest
 
+from haproxy_translator.ir.nodes import (
+    Backend,
+    BalanceAlgorithm,
+    ConfigIR,
+    HealthCheck,
+    Server,
+)
 from haproxy_translator.parsers import DSLParser
 from haproxy_translator.validators.semantic import SemanticValidator
 
@@ -40,10 +47,6 @@ class TestValidatorEdgeCases:
 
     def test_health_check_with_method_but_no_uri(self):
         """Test warning for health check with method but missing URI."""
-        from haproxy_translator.ir.nodes import (
-            ConfigIR, Backend, Server, HealthCheck, BalanceAlgorithm
-        )
-
         # Create IR with health check that has method but no URI
         health_check = HealthCheck(method="GET", uri="")
         backend = Backend(
