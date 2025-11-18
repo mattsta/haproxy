@@ -95,6 +95,37 @@ global_section: "global" "{" global_property* "}"
                 | "node" ":" string                         -> global_node
                 | "description" ":" string                  -> global_description
                 | "external-check" ":" boolean              -> global_external_check
+                // Phase 4A - Performance & Runtime (9 directives)
+                | "busy-polling" ":" boolean              -> global_busy_polling
+                | "max-spread-checks" ":" number          -> global_max_spread_checks
+                | "spread-checks" ":" number              -> global_spread_checks
+                | "maxcompcpuusage" ":" number            -> global_maxcompcpuusage
+                | "maxcomprate" ":" number                -> global_maxcomprate
+                | "tune.idle-pool.shared" ":" string      -> global_tune_idle_pool_shared
+                | "tune.pattern.cache-size" ":" number    -> global_tune_pattern_cache_size
+                | "tune.stick-counters" ":" number        -> global_tune_stick_counters
+                | "default-path" ":" string               -> global_default_path
+                // Phase 4A - Lua Configuration (6 directives)
+                | "tune.lua.forced-yield" ":" number      -> global_tune_lua_forced_yield
+                | "tune.lua.maxmem" ":" number            -> global_tune_lua_maxmem
+                | "tune.lua.session-timeout" ":" string   -> global_tune_lua_session_timeout
+                | "tune.lua.task-timeout" ":" string      -> global_tune_lua_task_timeout
+                | "tune.lua.service-timeout" ":" string   -> global_tune_lua_service_timeout
+                | "tune.lua.log.loggers" ":" string       -> global_tune_lua_log_loggers
+                // Phase 4A - Variables Configuration (5 directives)
+                | "tune.vars.global-max-size" ":" number  -> global_tune_vars_global_max_size
+                | "tune.vars.proc-max-size" ":" number    -> global_tune_vars_proc_max_size
+                | "tune.vars.reqres-max-size" ":" number  -> global_tune_vars_reqres_max_size
+                | "tune.vars.sess-max-size" ":" number    -> global_tune_vars_sess_max_size
+                | "tune.vars.txn-max-size" ":" number     -> global_tune_vars_txn_max_size
+                // Phase 4A - Connection Pool (2 directives)
+                | "tune.pool.high-fd-ratio" ":" number    -> global_tune_pool_high_fd_ratio
+                | "tune.pool.low-fd-ratio" ":" number     -> global_tune_pool_low_fd_ratio
+                // Phase 4A - Socket Buffers (4 directives)
+                | "tune.rcvbuf.client" ":" number         -> global_tune_rcvbuf_client
+                | "tune.rcvbuf.server" ":" number         -> global_tune_rcvbuf_server
+                | "tune.sndbuf.client" ":" number         -> global_tune_sndbuf_client
+                | "tune.sndbuf.server" ":" number         -> global_tune_sndbuf_server
                 | "setenv" string string               -> global_setenv
                 | "presetenv" string string            -> global_presetenv
                 | "resetenv" string                    -> global_resetenv

@@ -211,6 +211,26 @@ class HAProxyCodeGenerator:
         for process_thread, cpu_list in global_config.cpu_map.items():
             lines.append(self._indent(f"cpu-map {process_thread} {cpu_list}"))
 
+        # Performance & Runtime (Phase 4A)
+        if global_config.busy_polling is not None:
+            if global_config.busy_polling:
+                lines.append(self._indent("busy-polling"))
+
+        if global_config.max_spread_checks is not None:
+            lines.append(self._indent(f"max-spread-checks {global_config.max_spread_checks}"))
+
+        if global_config.spread_checks is not None:
+            lines.append(self._indent(f"spread-checks {global_config.spread_checks}"))
+
+        if global_config.maxcompcpuusage is not None:
+            lines.append(self._indent(f"maxcompcpuusage {global_config.maxcompcpuusage}"))
+
+        if global_config.maxcomprate is not None:
+            lines.append(self._indent(f"maxcomprate {global_config.maxcomprate}"))
+
+        if global_config.default_path:
+            lines.append(self._indent(f"default-path {global_config.default_path}"))
+
         # Logging configuration
         if global_config.log_tag:
             lines.append(self._indent(f"log-tag {global_config.log_tag}"))

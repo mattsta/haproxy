@@ -199,6 +199,14 @@ class GlobalConfig(IRNode):
     unix_bind: str | None = None
     cpu_map: dict[str, str] = field(default_factory=dict)  # process/thread -> CPU list
 
+    # Performance & Runtime (Phase 4A)
+    busy_polling: bool | None = None
+    max_spread_checks: int | None = None
+    spread_checks: int | None = None
+    maxcompcpuusage: int | None = None
+    maxcomprate: int | None = None
+    default_path: str | None = None
+
     # Lua scripts
     lua_scripts: list[LuaScript] = field(default_factory=list)
 

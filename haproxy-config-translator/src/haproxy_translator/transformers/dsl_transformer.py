@@ -157,6 +157,14 @@ class DSLTransformer(Transformer):
         unix_bind = None
         cpu_map = {}
 
+        # Performance & Runtime (Phase 4A)
+        busy_polling = None
+        max_spread_checks = None
+        spread_checks = None
+        maxcompcpuusage = None
+        maxcomprate = None
+        default_path = None
+
         # Lua scripts
         lua_scripts = []
 
@@ -235,6 +243,19 @@ class DSLTransformer(Transformer):
                     hard_stop_after = value
                 elif key == "external_check":
                     external_check = value
+                # Phase 4A - Performance & Runtime
+                elif key == "busy_polling":
+                    busy_polling = value
+                elif key == "max_spread_checks":
+                    max_spread_checks = value
+                elif key == "spread_checks":
+                    spread_checks = value
+                elif key == "maxcompcpuusage":
+                    maxcompcpuusage = value
+                elif key == "maxcomprate":
+                    maxcomprate = value
+                elif key == "default_path":
+                    default_path = value
                 elif key == "setcap":
                     setcap = value
                 elif key == "set_dumpable":
@@ -260,22 +281,38 @@ class DSLTransformer(Transformer):
                     # e.g., tune_ssl_bufsize → tune.ssl.bufsize
                     # e.g., tune_h2_be_glitches_threshold → tune.h2.be.glitches-threshold
                     # e.g., tune_ssl_ocsp_update_minthour → tune.ssl.ocsp-update.minthour
+                    # e.g., tune_idle_pool_shared → tune.idle-pool.shared
                     parts = key.split("_")
                     if len(parts) >= 3:
-                        # parts[0] = "tune", parts[1] = category (ssl, h2, http), rest = directive
-                        category = parts[1]
+                        # parts[0] = "tune", parts[1] = category, rest = directive
 
                         # Special case for ocsp-update directives
                         if len(parts) >= 5 and parts[2:4] == ["ocsp", "update"]:
                             # tune_ssl_ocsp_update_minthour → tune.ssl.ocsp-update.minthour
+                            category = parts[1]
                             suffix = parts[4]
                             tune_key = f"tune.{category}.ocsp-update.{suffix}"
+                        # Special case for idle-pool directives
+                        elif len(parts) == 4 and parts[1:3] == ["idle", "pool"]:
+                            # tune_idle_pool_shared → tune.idle-pool.shared
+                            tune_key = f"tune.idle-pool.{parts[3]}"
+                        # Special case for lua.log directives
+                        elif len(parts) == 4 and parts[1:3] == ["lua", "log"]:
+                            # tune_lua_log_loggers → tune.lua.log.loggers
+                            tune_key = f"tune.lua.log.{parts[3]}"
+                        # Special case for single-level compound directives (e.g., stick-counters, pattern-cache-size)
+                        elif len(parts) == 3 and parts[1] in ("stick", "pattern"):
+                            # tune_stick_counters → tune.stick-counters
+                            # tune_pattern_cache_size → tune.pattern-cache-size (already 3 parts but handled below)
+                            tune_key = f"tune.{'-'.join(parts[1:])}"
                         # Check if there's a subcategory (be, fe)
                         elif len(parts) >= 4 and parts[2] in ("be", "fe"):
+                            category = parts[1]
                             subcategory = parts[2]
                             directive_parts = parts[3:]
                             tune_key = f"tune.{category}.{subcategory}.{'-'.join(directive_parts)}"
                         else:
+                            category = parts[1]
                             directive_parts = parts[2:]
                             tune_key = f"tune.{category}.{'-'.join(directive_parts)}"
                     else:
@@ -338,6 +375,13 @@ class DSLTransformer(Transformer):
             set_dumpable=set_dumpable,
             unix_bind=unix_bind,
             cpu_map=cpu_map,
+            # Performance & Runtime (Phase 4A)
+            busy_polling=busy_polling,
+            max_spread_checks=max_spread_checks,
+            spread_checks=spread_checks,
+            maxcompcpuusage=maxcompcpuusage,
+            maxcomprate=maxcomprate,
+            default_path=default_path,
             # Lua scripts
             lua_scripts=lua_scripts,
             # Stats
@@ -593,6 +637,89 @@ class DSLTransformer(Transformer):
 
     def global_external_check(self, items: list[Any]) -> tuple[str, bool]:
         return ("external_check", items[0])
+
+    # Phase 4A - Performance & Runtime directives
+    def global_busy_polling(self, items: list[Any]) -> tuple[str, bool]:
+        return ("busy_polling", items[0])
+
+    def global_max_spread_checks(self, items: list[Any]) -> tuple[str, int]:
+        return ("max_spread_checks", items[0])
+
+    def global_spread_checks(self, items: list[Any]) -> tuple[str, int]:
+        return ("spread_checks", items[0])
+
+    def global_maxcompcpuusage(self, items: list[Any]) -> tuple[str, int]:
+        return ("maxcompcpuusage", items[0])
+
+    def global_maxcomprate(self, items: list[Any]) -> tuple[str, int]:
+        return ("maxcomprate", items[0])
+
+    def global_tune_idle_pool_shared(self, items: list[Any]) -> tuple[str, str]:
+        return ("tune_idle_pool_shared", items[0])
+
+    def global_tune_pattern_cache_size(self, items: list[Any]) -> tuple[str, int]:
+        return ("tune_pattern_cache_size", items[0])
+
+    def global_tune_stick_counters(self, items: list[Any]) -> tuple[str, int]:
+        return ("tune_stick_counters", items[0])
+
+    def global_default_path(self, items: list[Any]) -> tuple[str, str]:
+        return ("default_path", items[0])
+
+    # Phase 4A - Lua Configuration directives
+    def global_tune_lua_forced_yield(self, items: list[Any]) -> tuple[str, int]:
+        return ("tune_lua_forced_yield", items[0])
+
+    def global_tune_lua_maxmem(self, items: list[Any]) -> tuple[str, int]:
+        return ("tune_lua_maxmem", items[0])
+
+    def global_tune_lua_session_timeout(self, items: list[Any]) -> tuple[str, str]:
+        return ("tune_lua_session_timeout", items[0])
+
+    def global_tune_lua_task_timeout(self, items: list[Any]) -> tuple[str, str]:
+        return ("tune_lua_task_timeout", items[0])
+
+    def global_tune_lua_service_timeout(self, items: list[Any]) -> tuple[str, str]:
+        return ("tune_lua_service_timeout", items[0])
+
+    def global_tune_lua_log_loggers(self, items: list[Any]) -> tuple[str, str]:
+        return ("tune_lua_log_loggers", items[0])
+
+    # Phase 4A - Variables Configuration directives
+    def global_tune_vars_global_max_size(self, items: list[Any]) -> tuple[str, int]:
+        return ("tune_vars_global_max_size", items[0])
+
+    def global_tune_vars_proc_max_size(self, items: list[Any]) -> tuple[str, int]:
+        return ("tune_vars_proc_max_size", items[0])
+
+    def global_tune_vars_reqres_max_size(self, items: list[Any]) -> tuple[str, int]:
+        return ("tune_vars_reqres_max_size", items[0])
+
+    def global_tune_vars_sess_max_size(self, items: list[Any]) -> tuple[str, int]:
+        return ("tune_vars_sess_max_size", items[0])
+
+    def global_tune_vars_txn_max_size(self, items: list[Any]) -> tuple[str, int]:
+        return ("tune_vars_txn_max_size", items[0])
+
+    # Phase 4A - Connection Pool directives
+    def global_tune_pool_high_fd_ratio(self, items: list[Any]) -> tuple[str, int]:
+        return ("tune_pool_high_fd_ratio", items[0])
+
+    def global_tune_pool_low_fd_ratio(self, items: list[Any]) -> tuple[str, int]:
+        return ("tune_pool_low_fd_ratio", items[0])
+
+    # Phase 4A - Socket Buffers directives
+    def global_tune_rcvbuf_client(self, items: list[Any]) -> tuple[str, int]:
+        return ("tune_rcvbuf_client", items[0])
+
+    def global_tune_rcvbuf_server(self, items: list[Any]) -> tuple[str, int]:
+        return ("tune_rcvbuf_server", items[0])
+
+    def global_tune_sndbuf_client(self, items: list[Any]) -> tuple[str, int]:
+        return ("tune_sndbuf_client", items[0])
+
+    def global_tune_sndbuf_server(self, items: list[Any]) -> tuple[str, int]:
+        return ("tune_sndbuf_server", items[0])
 
     def log_target(self, items: list[Any]) -> LogTarget:
         address = items[0]

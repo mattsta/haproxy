@@ -1,0 +1,289 @@
+/**
+ * Phase 4A Features Example - High-Priority Production Directives
+ *
+ * This example demonstrates all 26 Phase 4A global directives:
+ *
+ * Performance & Runtime (9 directives):
+ * - busy-polling: Enable busy polling on sockets
+ * - max-spread-checks: Maximum time for spreading health checks
+ * - spread-checks: Percentage to spread health checks
+ * - maxcompcpuusage: Maximum CPU usage for compression
+ * - maxcomprate: Maximum compression rate
+ * - tune.idle-pool.shared: Use shared idle connection pool
+ * - tune.pattern.cache-size: Pattern matching cache size
+ * - tune.stick-counters: Number of stick-table counters
+ * - default-path: Default PATH environment variable
+ *
+ * Lua Configuration (6 directives):
+ * - tune.lua.forced-yield: Lua forced yield interval
+ * - tune.lua.maxmem: Maximum Lua memory
+ * - tune.lua.session-timeout: Lua session timeout
+ * - tune.lua.task-timeout: Lua task timeout
+ * - tune.lua.service-timeout: Lua service timeout
+ * - tune.lua.log.loggers: Lua logging configuration
+ *
+ * Variables Configuration (5 directives):
+ * - tune.vars.global-max-size: Global variables max size
+ * - tune.vars.proc-max-size: Process variables max size
+ * - tune.vars.reqres-max-size: Request/response variables max size
+ * - tune.vars.sess-max-size: Session variables max size
+ * - tune.vars.txn-max-size: Transaction variables max size
+ *
+ * Connection Pool (2 directives):
+ * - tune.pool.high-fd-ratio: High file descriptor ratio
+ * - tune.pool.low-fd-ratio: Low file descriptor ratio
+ *
+ * Socket Buffers (4 directives):
+ * - tune.rcvbuf.client: Client receive buffer size
+ * - tune.rcvbuf.server: Server receive buffer size
+ * - tune.sndbuf.client: Client send buffer size
+ * - tune.sndbuf.server: Server send buffer size
+ */
+
+config phase4a_enterprise {
+    global {
+        // Basic configuration
+        daemon: true
+        maxconn: 200000
+        log "/dev/log" local0 info
+
+        // Performance & Runtime Optimization
+        busy-polling: true                    // Enable busy polling for lower latency
+        max-spread-checks: 15000              // Spread health checks over 15 seconds
+        spread-checks: 50                     // Use 50% of interval for spreading
+        maxcompcpuusage: 85                   // Allow up to 85% CPU for compression
+        maxcomprate: 5000000                  // Max 5MB/s compression rate
+        default-path: "/usr/local/bin:/usr/bin:/bin"  // Default PATH for external checks
+
+        tune.idle-pool.shared: "on"           // Share idle connection pools
+        tune.pattern.cache-size: 500000       // Large pattern cache for ACLs
+        tune.stick-counters: 20               // Support 20 stick-table counters per session
+
+        // Lua Performance Tuning
+        tune.lua.forced-yield: 50000          // Yield every 50k instructions
+        tune.lua.maxmem: 2147483648           // 2GB max Lua memory
+        tune.lua.session-timeout: "5s"        // 5s session timeout
+        tune.lua.task-timeout: "5s"           // 5s task timeout
+        tune.lua.service-timeout: "10s"       // 10s service timeout
+        tune.lua.log.loggers: "on"            // Enable Lua logging
+
+        // Variables Storage Optimization
+        tune.vars.global-max-size: 2097152    // 2MB for global variables
+        tune.vars.proc-max-size: 1048576      // 1MB for process variables
+        tune.vars.reqres-max-size: 262144     // 256KB for request/response vars
+        tune.vars.sess-max-size: 131072       // 128KB for session variables
+        tune.vars.txn-max-size: 65536         // 64KB for transaction variables
+
+        // Connection Pool Tuning
+        tune.pool.high-fd-ratio: 80           // Start using pool at 80% FD usage
+        tune.pool.low-fd-ratio: 20            // Stop using pool at 20% FD usage
+
+        // Socket Buffer Optimization
+        tune.rcvbuf.client: 262144            // 256KB client receive buffer
+        tune.rcvbuf.server: 262144            // 256KB server receive buffer
+        tune.sndbuf.client: 262144            // 256KB client send buffer
+        tune.sndbuf.server: 262144            // 256KB server send buffer
+
+        // SSL Configuration (from Phase 1)
+        ssl-default-bind-ciphers: "ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384"
+        ssl-default-bind-options: ["no-sslv3", "no-tlsv10", "no-tlsv11", "no-tls-tickets"]
+    }
+
+    defaults {
+        mode: http
+        timeout: {
+            connect: 10s
+            client: 60s
+            server: 60s
+        }
+        log: "global"
+        option: ["httplog", "dontlognull", "http-server-close"]
+    }
+
+    /**
+     * Frontend: High-Performance HTTPS
+     * Benefits from all Phase 4A optimizations
+     */
+    frontend https_optimized {
+        bind *:443 ssl {
+            cert: "/etc/ssl/certs/enterprise.pem"
+            alpn: ["h2", "http/1.1"]
+            ssl-min-ver: "TLSv1.2"
+            ssl-max-ver: "TLSv1.3"
+        }
+
+        maxconn: 100000
+
+        // ACLs using pattern cache
+        acl {
+            is_api path_beg "/api/"
+            is_admin path_beg "/admin/"
+            is_static path_beg "/static/" "/assets/" "/images/"
+            is_websocket path_beg "/ws/"
+        }
+
+        // Routing with optimized ACL matching
+        use_backend {
+            backend: admin_backend if is_admin
+            backend: api_backend if is_api
+            backend: static_backend if is_static
+            backend: websocket_backend if is_websocket
+        }
+
+        default_backend: web_backend
+    }
+
+    /**
+     * Backend: API Servers
+     * High performance with connection pooling
+     */
+    backend api_backend {
+        balance: leastconn
+
+        option: ["httplog", "http-keep-alive"]
+
+        compression {
+            algo: "gzip"
+            type: ["application/json", "application/javascript", "text/plain"]
+        }
+
+        servers {
+            server api1 {
+                address: "10.0.1.10"
+                port: 8080
+                check: true
+                maxconn: 10000
+            }
+
+            server api2 {
+                address: "10.0.1.11"
+                port: 8080
+                check: true
+                maxconn: 10000
+            }
+
+            server api3 {
+                address: "10.0.1.12"
+                port: 8080
+                check: true
+                maxconn: 10000
+            }
+
+            server api4 {
+                address: "10.0.1.13"
+                port: 8080
+                check: true
+                maxconn: 10000
+                backup: true
+            }
+        }
+    }
+
+    /**
+     * Backend: Admin Interface
+     * Secure and restricted access
+     */
+    backend admin_backend {
+        balance: roundrobin
+
+        servers {
+            server admin1 {
+                address: "10.0.2.10"
+                port: 9000
+                check: true
+            }
+        }
+    }
+
+    /**
+     * Backend: Static Content
+     * Optimized for high throughput
+     */
+    backend static_backend {
+        balance: roundrobin
+
+        servers {
+            server static1 {
+                address: "10.0.3.10"
+                port: 8081
+                check: true
+            }
+
+            server static2 {
+                address: "10.0.3.11"
+                port: 8081
+                check: true
+            }
+
+            server static3 {
+                address: "10.0.3.12"
+                port: 8081
+                check: true
+            }
+        }
+    }
+
+    /**
+     * Backend: WebSocket
+     * Long-lived connections
+     */
+    backend websocket_backend {
+        balance: leastconn
+
+        option: ["http-server-close"]
+
+        servers {
+            server ws1 {
+                address: "10.0.4.10"
+                port: 8082
+                check: true
+            }
+
+            server ws2 {
+                address: "10.0.4.11"
+                port: 8082
+                check: true
+            }
+        }
+    }
+
+    /**
+     * Backend: Web Servers
+     * General purpose backend
+     */
+    backend web_backend {
+        balance: roundrobin
+
+        compression {
+            algo: "gzip"
+            type: ["text/html", "text/css", "text/javascript", "application/json"]
+        }
+
+        servers {
+            server web1 {
+                address: "10.0.5.10"
+                port: 80
+                check: true
+            }
+
+            server web2 {
+                address: "10.0.5.11"
+                port: 80
+                check: true
+            }
+
+            server web3 {
+                address: "10.0.5.12"
+                port: 80
+                check: true
+            }
+
+            server web4 {
+                address: "10.0.5.13"
+                port: 80
+                check: true
+                backup: true
+            }
+        }
+    }
+}
