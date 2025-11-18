@@ -130,7 +130,12 @@ BARE_INTERPOLATION.3: /(?:[a-zA-Z0-9.*:-]*\$\{[^}]+\})+[a-zA-Z0-9.*:-]*/
 HOST_PORT: /[a-zA-Z0-9.*:-]+/
 
 ?bind_option: ssl_block
-            | BIND_OPTION_NAME value  -> bind_generic_option
+            | "accept-proxy"            -> bind_accept_proxy
+            | "defer-accept"            -> bind_defer_accept
+            | "transparent"             -> bind_transparent
+            | "ssl-min-ver" string      -> bind_ssl_min_ver
+            | "ssl-max-ver" string      -> bind_ssl_max_ver
+            | BIND_OPTION_NAME value    -> bind_generic_option
 
 BIND_OPTION_NAME: /[a-zA-Z_][a-zA-Z0-9_-]*/
 
@@ -308,6 +313,13 @@ default_server_directive: "default-server" "{" default_server_property* "}"
                         | "send-proxy" ":" boolean          -> ds_send_proxy
                         | "send-proxy-v2" ":" boolean       -> ds_send_proxy_v2
                         | "slowstart" ":" duration          -> ds_slowstart
+                        | "check-ssl" ":" boolean           -> ds_check_ssl
+                        | "check-sni" ":" string            -> ds_check_sni
+                        | "ssl-min-ver" ":" string          -> ds_ssl_min_ver
+                        | "ssl-max-ver" ":" string          -> ds_ssl_max_ver
+                        | "ca-file" ":" string              -> ds_ca_file
+                        | "crt" ":" string                  -> ds_crt
+                        | "source" ":" string               -> ds_source
 
 servers_block: "servers" "{" server_item* "}"
 
@@ -335,6 +347,13 @@ server_inline_param: identifier ":" value
                 | "send-proxy" ":" boolean          -> server_send_proxy
                 | "send-proxy-v2" ":" boolean       -> server_send_proxy_v2
                 | "slowstart" ":" duration          -> server_slowstart
+                | "check-ssl" ":" boolean           -> server_check_ssl
+                | "check-sni" ":" string            -> server_check_sni
+                | "ssl-min-ver" ":" string          -> server_ssl_min_ver
+                | "ssl-max-ver" ":" string          -> server_ssl_max_ver
+                | "ca-file" ":" string              -> server_ca_file
+                | "crt" ":" string                  -> server_crt
+                | "source" ":" string               -> server_source
                 | template_spread                   -> server_template_spread
 
 template_spread: "@" identifier
