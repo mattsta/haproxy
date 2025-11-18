@@ -183,6 +183,20 @@ class DSLTransformer(Transformer):
         limited_quic = None
         localpeer = None
 
+        # SSL Advanced (Phase 4B Part 2)
+        ssl_load_extra_files = None
+        ssl_load_extra_del_ext = None
+        ssl_mode_async = None
+        ssl_propquery = None
+        ssl_provider = None
+        ssl_provider_path = None
+        issuers_chain_path = None
+
+        # Profiling & Debugging (Phase 4B Part 2)
+        profiling_tasks_on = None
+        profiling_tasks_automatic = None
+        profiling_memory_on = None
+
         # Lua scripts
         lua_scripts = []
 
@@ -304,6 +318,28 @@ class DSLTransformer(Transformer):
                     limited_quic = value
                 elif key == "localpeer":
                     localpeer = value
+                # Phase 4B Part 2 - SSL Advanced
+                elif key == "ssl_load_extra_files":
+                    ssl_load_extra_files = value
+                elif key == "ssl_load_extra_del_ext":
+                    ssl_load_extra_del_ext = value
+                elif key == "ssl_mode_async":
+                    ssl_mode_async = value
+                elif key == "ssl_propquery":
+                    ssl_propquery = value
+                elif key == "ssl_provider":
+                    ssl_provider = value
+                elif key == "ssl_provider_path":
+                    ssl_provider_path = value
+                elif key == "issuers_chain_path":
+                    issuers_chain_path = value
+                # Phase 4B Part 2 - Profiling & Debugging
+                elif key == "profiling_tasks_on":
+                    profiling_tasks_on = value
+                elif key == "profiling_tasks_automatic":
+                    profiling_tasks_automatic = value
+                elif key == "profiling_memory_on":
+                    profiling_memory_on = value
                 elif key == "setcap":
                     setcap = value
                 elif key == "set_dumpable":
@@ -446,6 +482,18 @@ class DSLTransformer(Transformer):
             noreuseport=noreuseport,
             limited_quic=limited_quic,
             localpeer=localpeer,
+            # SSL Advanced (Phase 4B Part 2)
+            ssl_load_extra_files=ssl_load_extra_files,
+            ssl_load_extra_del_ext=ssl_load_extra_del_ext,
+            ssl_mode_async=ssl_mode_async,
+            ssl_propquery=ssl_propquery,
+            ssl_provider=ssl_provider,
+            ssl_provider_path=ssl_provider_path,
+            issuers_chain_path=issuers_chain_path,
+            # Profiling & Debugging (Phase 4B Part 2)
+            profiling_tasks_on=profiling_tasks_on,
+            profiling_tasks_automatic=profiling_tasks_automatic,
+            profiling_memory_on=profiling_memory_on,
             # Lua scripts
             lua_scripts=lua_scripts,
             # Stats
@@ -828,6 +876,38 @@ class DSLTransformer(Transformer):
 
     def global_localpeer(self, items: list[Any]) -> tuple[str, str]:
         return ("localpeer", items[0])
+
+    # Phase 4B Part 2 - SSL Advanced directives
+    def global_ssl_load_extra_files(self, items: list[Any]) -> tuple[str, str]:
+        return ("ssl_load_extra_files", items[0])
+
+    def global_ssl_load_extra_del_ext(self, items: list[Any]) -> tuple[str, str]:
+        return ("ssl_load_extra_del_ext", items[0])
+
+    def global_ssl_mode_async(self, items: list[Any]) -> tuple[str, bool]:
+        return ("ssl_mode_async", items[0])
+
+    def global_ssl_propquery(self, items: list[Any]) -> tuple[str, str]:
+        return ("ssl_propquery", items[0])
+
+    def global_ssl_provider(self, items: list[Any]) -> tuple[str, str]:
+        return ("ssl_provider", items[0])
+
+    def global_ssl_provider_path(self, items: list[Any]) -> tuple[str, str]:
+        return ("ssl_provider_path", items[0])
+
+    def global_issuers_chain_path(self, items: list[Any]) -> tuple[str, str]:
+        return ("issuers_chain_path", items[0])
+
+    # Phase 4B Part 2 - Profiling & Debugging directives
+    def global_profiling_tasks_on(self, items: list[Any]) -> tuple[str, bool]:
+        return ("profiling_tasks_on", items[0])
+
+    def global_profiling_tasks_automatic(self, items: list[Any]) -> tuple[str, bool]:
+        return ("profiling_tasks_automatic", items[0])
+
+    def global_profiling_memory_on(self, items: list[Any]) -> tuple[str, bool]:
+        return ("profiling_memory_on", items[0])
 
     def log_target(self, items: list[Any]) -> LogTarget:
         address = items[0]

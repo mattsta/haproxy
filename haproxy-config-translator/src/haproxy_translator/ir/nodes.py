@@ -225,6 +225,20 @@ class GlobalConfig(IRNode):
     limited_quic: bool | None = None
     localpeer: str | None = None
 
+    # SSL Advanced (Phase 4B Part 2)
+    ssl_load_extra_files: str | None = None
+    ssl_load_extra_del_ext: str | None = None
+    ssl_mode_async: bool | None = None
+    ssl_propquery: str | None = None
+    ssl_provider: str | None = None
+    ssl_provider_path: str | None = None
+    issuers_chain_path: str | None = None
+
+    # Profiling & Debugging (Phase 4B Part 2)
+    profiling_tasks_on: bool | None = None
+    profiling_tasks_automatic: bool | None = None
+    profiling_memory_on: bool | None = None
+
     # Lua scripts
     lua_scripts: list[LuaScript] = field(default_factory=list)
 

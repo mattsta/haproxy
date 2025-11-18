@@ -142,6 +142,18 @@ global_section: "global" "{" global_property* "}"
                 | "noreuseport" ":" boolean                       -> global_noreuseport
                 | "limited-quic" ":" boolean                      -> global_limited_quic
                 | "localpeer" ":" string                          -> global_localpeer
+                // Phase 4B Part 2 - SSL Advanced (7 directives)
+                | "ssl-load-extra-files" ":" string              -> global_ssl_load_extra_files
+                | "ssl-load-extra-del-ext" ":" string            -> global_ssl_load_extra_del_ext
+                | "ssl-mode-async" ":" boolean                   -> global_ssl_mode_async
+                | "ssl-propquery" ":" string                     -> global_ssl_propquery
+                | "ssl-provider" ":" string                      -> global_ssl_provider
+                | "ssl-provider-path" ":" string                 -> global_ssl_provider_path
+                | "issuers-chain-path" ":" string                -> global_issuers_chain_path
+                // Phase 4B Part 2 - Profiling & Debugging (3 directives)
+                | "profiling.tasks.on" ":" boolean               -> global_profiling_tasks_on
+                | "profiling.tasks.automatic" ":" boolean        -> global_profiling_tasks_automatic
+                | "profiling.memory.on" ":" boolean              -> global_profiling_memory_on
                 | "setenv" string string               -> global_setenv
                 | "presetenv" string string            -> global_presetenv
                 | "resetenv" string                    -> global_resetenv

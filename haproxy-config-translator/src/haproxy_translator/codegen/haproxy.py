@@ -283,6 +283,42 @@ class HAProxyCodeGenerator:
         if global_config.localpeer:
             lines.append(self._indent(f"localpeer {global_config.localpeer}"))
 
+        # SSL Advanced (Phase 4B Part 2)
+        if global_config.ssl_load_extra_files:
+            lines.append(self._indent(f"ssl-load-extra-files {global_config.ssl_load_extra_files}"))
+
+        if global_config.ssl_load_extra_del_ext:
+            lines.append(self._indent(f"ssl-load-extra-del-ext {global_config.ssl_load_extra_del_ext}"))
+
+        if global_config.ssl_mode_async is not None:
+            if global_config.ssl_mode_async:
+                lines.append(self._indent("ssl-mode-async"))
+
+        if global_config.ssl_propquery:
+            lines.append(self._indent(f"ssl-propquery {global_config.ssl_propquery}"))
+
+        if global_config.ssl_provider:
+            lines.append(self._indent(f"ssl-provider {global_config.ssl_provider}"))
+
+        if global_config.ssl_provider_path:
+            lines.append(self._indent(f"ssl-provider-path {global_config.ssl_provider_path}"))
+
+        if global_config.issuers_chain_path:
+            lines.append(self._indent(f"issuers-chain-path {global_config.issuers_chain_path}"))
+
+        # Profiling & Debugging (Phase 4B Part 2)
+        if global_config.profiling_tasks_on is not None:
+            if global_config.profiling_tasks_on:
+                lines.append(self._indent("profiling.tasks.on"))
+
+        if global_config.profiling_tasks_automatic is not None:
+            if global_config.profiling_tasks_automatic:
+                lines.append(self._indent("profiling.tasks.automatic"))
+
+        if global_config.profiling_memory_on is not None:
+            if global_config.profiling_memory_on:
+                lines.append(self._indent("profiling.memory.on"))
+
         # Logging configuration
         if global_config.log_tag:
             lines.append(self._indent(f"log-tag {global_config.log_tag}"))
