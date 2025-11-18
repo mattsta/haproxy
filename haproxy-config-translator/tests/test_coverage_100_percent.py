@@ -483,3 +483,184 @@ class TestCoverage100Percent:
         assert ir.listens
         assert "listen web" in output
         assert "bind *:80" in output
+
+    # ========== Phase 3: More Edge Cases and Features ==========
+
+    def test_backend_http_request_rules(self):
+        """Test backend with http-request rules (lines 1712, 1721)."""
+        config = """
+        config test {
+            backend web_servers {
+                mode: http
+
+                http-request {
+                    set_header name: "X-Backend" value: "web"
+                }
+
+                servers {
+                    server srv1 {
+                        address: "127.0.0.1"
+                        port: 8080
+                    }
+                }
+            }
+        }
+        """
+        parser = DSLParser()
+        ir = parser.parse(config)
+        codegen = HAProxyCodeGenerator()
+        output = codegen.generate(ir)
+        assert ir.backends
+        assert "http-request" in output
+
+    def test_backend_balance_directive(self):
+        """Test backend with balance algorithms (line 2630)."""
+        config = """
+        config test {
+            backend web_servers {
+                balance: leastconn
+                servers {
+                    server srv1 {
+                        address: "127.0.0.1"
+                        port: 8080
+                    }
+                }
+            }
+        }
+        """
+        parser = DSLParser()
+        ir = parser.parse(config)
+        codegen = HAProxyCodeGenerator()
+        output = codegen.generate(ir)
+        assert "balance leastconn" in output
+
+    def test_listen_with_single_option(self):
+        """Test listen section with single option (line 1954)."""
+        config = """
+        config test {
+            listen stats {
+                bind *:8404
+                mode: http
+                option: "httplog"
+
+                servers {
+                    server srv1 {
+                        address: "127.0.0.1"
+                        port: 8080
+                    }
+                }
+            }
+        }
+        """
+        parser = DSLParser()
+        ir = parser.parse(config)
+        assert ir.listens
+        assert ir.listens[0].options
+        assert "httplog" in ir.listens[0].options
+
+    def test_server_with_backup_option(self):
+        """Test server with backup option (lines 2059-2062)."""
+        config = """
+        config test {
+            backend web_servers {
+                servers {
+                    server srv1 {
+                        address: "127.0.0.1"
+                        port: 8080
+                    }
+                    server backup1 {
+                        address: "192.168.1.10"
+                        port: 8080
+                        backup: true
+                    }
+                }
+            }
+        }
+        """
+        parser = DSLParser()
+        ir = parser.parse(config)
+        codegen = HAProxyCodeGenerator()
+        output = codegen.generate(ir)
+        assert "backup" in output
+
+    def test_defaults_with_multiple_timeouts(self):
+        """Test defaults with multiple timeout types (lines 2113, 2121-2123)."""
+        config = """
+        config test {
+            defaults {
+                mode: http
+                timeout: {
+                    connect: 5s
+                    client: 30s
+                    server: 30s
+                    check: 10s
+                }
+            }
+
+            backend app {
+                servers {
+                    server srv1 {
+                        address: "127.0.0.1"
+                        port: 8080
+                    }
+                }
+            }
+        }
+        """
+        parser = DSLParser()
+        ir = parser.parse(config)
+        assert ir.defaults
+        assert ir.defaults.timeout_check == "10s"
+
+    def test_stick_table_configuration(self):
+        """Test stick-table configuration (line 2189)."""
+        config = """
+        config test {
+            backend web_servers {
+                stick-table {
+                    type: ip
+                    size: 100000
+                }
+
+                servers {
+                    server srv1 {
+                        address: "127.0.0.1"
+                        port: 8080
+                    }
+                }
+            }
+        }
+        """
+        parser = DSLParser()
+        ir = parser.parse(config)
+        codegen = HAProxyCodeGenerator()
+        output = codegen.generate(ir)
+        assert "stick-table" in output
+        assert "type ip" in output
+
+    def test_server_with_weight_option(self):
+        """Test server with weight option (line 2086)."""
+        config = """
+        config test {
+            backend web_servers {
+                servers {
+                    server srv1 {
+                        address: "127.0.0.1"
+                        port: 8080
+                        weight: 100
+                    }
+                    server srv2 {
+                        address: "192.168.1.10"
+                        port: 8080
+                        weight: 50
+                    }
+                }
+            }
+        }
+        """
+        parser = DSLParser()
+        ir = parser.parse(config)
+        codegen = HAProxyCodeGenerator()
+        output = codegen.generate(ir)
+        assert "weight 100" in output
+        assert "weight 50" in output
