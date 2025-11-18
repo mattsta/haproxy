@@ -308,3 +308,75 @@ class TestFinal100PercentCoverage:
         assert "backup" in output
         assert "weight 100" in output
         assert "weight 80" in output
+
+    # ========== Template Expander Line 40 ==========
+
+    def test_template_spreads_single_value_not_list(self):
+        """Test template_spreads as single string (line 40 in template_expander.py)."""
+        from haproxy_translator.ir.nodes import Server, Backend, ConfigIR, Template
+        from haproxy_translator.transformers.template_expander import TemplateExpander
+
+        # Create a template
+        template = Template(
+            name="web_template",
+            parameters={"check": True, "weight": 100}
+        )
+
+        # Create a server with template_spreads as single string (not list)
+        server = Server(
+            name="srv1",
+            address="127.0.0.1",
+            port=8080,
+            metadata={"template_spreads": "web_template"}  # Single string, not list!
+        )
+
+        backend = Backend(
+            name="app",
+            servers=[server]
+        )
+
+        config = ConfigIR(
+            name="test",
+            backends=[backend],
+            templates={"web_template": template}
+        )
+
+        # Expand templates - this should hit line 40
+        expander = TemplateExpander(config)
+        expanded_ir = expander.expand()
+
+        # Verify template was applied
+        assert expanded_ir.backends[0].servers[0].check is True
+        assert expanded_ir.backends[0].servers[0].weight == 100
+
+    # ========== Variable Resolver Line 105 ==========
+
+    def test_variable_dict_value_resolution(self):
+        """Test variable with dict value requiring resolution (line 105 in variable_resolver.py)."""
+        from haproxy_translator.ir.nodes import ConfigIR, Backend, Server, Variable
+        from haproxy_translator.transformers.variable_resolver import VariableResolver
+
+        # Create variables
+        port_var = Variable(name="port", value="8080")
+        host_var = Variable(name="host", value="localhost")
+        server_config_var = Variable(
+            name="server_config",
+            value={"address": "${host}", "port": "${port}"}  # Dict with var refs!
+        )
+
+        config = ConfigIR(
+            name="test",
+            variables={
+                "port": port_var,
+                "host": host_var,
+                "server_config": server_config_var
+            },
+            backends=[Backend(name="app", servers=[Server(name="srv1", address="127.0.0.1", port=8080)])]
+        )
+
+        # Resolve variables - this should hit line 105 when resolving the dict
+        resolver = VariableResolver(config)
+        resolved_ir = resolver.resolve()
+
+        # Verify dict was resolved
+        assert resolved_ir.variables["server_config"].value == {"address": "localhost", "port": "8080"}
