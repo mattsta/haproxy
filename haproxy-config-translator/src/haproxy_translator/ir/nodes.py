@@ -239,6 +239,14 @@ class Bind(IRNode):
     ssl: bool = False
     ssl_cert: str | None = None
     alpn: list[str] = field(default_factory=list)
+    # SSL/TLS version constraints
+    ssl_min_ver: str | None = None  # Minimum TLS version
+    ssl_max_ver: str | None = None  # Maximum TLS version
+    # PROXY protocol
+    accept_proxy: bool = False  # Accept PROXY protocol
+    # Advanced bind options
+    defer_accept: bool = False  # TCP_DEFER_ACCEPT option
+    transparent: bool = False  # Transparent proxy
     options: dict[str, Any] = field(default_factory=dict)
 
     def __str__(self) -> str:
@@ -279,6 +287,15 @@ class Server(IRNode):
     send_proxy: bool = False
     send_proxy_v2: bool = False
     slowstart: str | None = None  # Warmup time (e.g., "30s")
+    # SSL/TLS options
+    check_ssl: bool = False  # Use SSL for health checks
+    check_sni: str | None = None  # SNI value for SSL health checks
+    ssl_min_ver: str | None = None  # Minimum TLS version (SSLv3, TLSv1.0, TLSv1.1, TLSv1.2, TLSv1.3)
+    ssl_max_ver: str | None = None  # Maximum TLS version
+    ca_file: str | None = None  # CA file for server certificate verification
+    crt: str | None = None  # Client certificate for mutual TLS
+    # Networking options
+    source: str | None = None  # Source IP address for outgoing connections
     options: dict[str, Any] = field(default_factory=dict)
 
 
@@ -299,6 +316,15 @@ class DefaultServer(IRNode):
     send_proxy: bool = False
     send_proxy_v2: bool = False
     slowstart: str | None = None  # Warmup time
+    # SSL/TLS options
+    check_ssl: bool = False  # Use SSL for health checks
+    check_sni: str | None = None  # SNI value for SSL health checks
+    ssl_min_ver: str | None = None  # Minimum TLS version
+    ssl_max_ver: str | None = None  # Maximum TLS version
+    ca_file: str | None = None  # CA file for server certificate verification
+    crt: str | None = None  # Client certificate for mutual TLS
+    # Networking options
+    source: str | None = None  # Source IP address for outgoing connections
     options: dict[str, Any] = field(default_factory=dict)
 
 
@@ -369,6 +395,9 @@ class Frontend(IRNode):
     timeout_tarpit: str | None = None  # Tarpit timeout
     maxconn: int | None = None
     monitor_uri: str | None = None  # Monitor URI for health checks
+    log_format: str | None = None  # Custom log format string
+    capture_request_headers: list[tuple[str, int]] = field(default_factory=list)  # [(header_name, length), ...]
+    capture_response_headers: list[tuple[str, int]] = field(default_factory=list)  # [(header_name, length), ...]
 
 
 @dataclass(frozen=True)
@@ -387,6 +416,7 @@ class Backend(IRNode):
     http_request_rules: list[HttpRequestRule] = field(default_factory=list)
     http_response_rules: list[HttpResponseRule] = field(default_factory=list)
     tcp_request_rules: list["TcpRequestRule"] = field(default_factory=list)
+    log_format: str | None = None  # Custom log format string
     tcp_response_rules: list["TcpResponseRule"] = field(default_factory=list)
     compression: CompressionConfig | None = None
     cookie: str | None = None
