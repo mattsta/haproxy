@@ -1,0 +1,96 @@
+/**
+ * Phase 1 Global Directives - Feature Demonstration
+ *
+ * This example demonstrates ALL 15 Phase 1 critical global directives
+ * implemented in this release.
+ *
+ * NEW Phase 1 Features:
+ * 1. Rate Limiting: maxconnrate, maxsslrate, maxsessrate
+ * 2. Process Control: nbproc
+ * 3. SSL/TLS: ca-base, crt-base, ssl-dh-param-file, ssl-default-server-ciphers, ssl-server-verify
+ * 4. Logging: log-tag, log-send-hostname
+ * 5. Environment Variables: setenv, presetenv, resetenv, unsetenv
+ */
+
+config phase1_demo {
+    global {
+        daemon: true
+        user: "haproxy"
+        group: "haproxy"
+
+        // Connection and rate limiting
+        maxconn: 10000
+        maxconnrate: 1000     // NEW: Max 1000 new connections/second
+        maxsslrate: 200       // NEW: Max 200 SSL handshakes/second
+        maxsessrate: 2000     // NEW: Max 2000 new sessions/second
+
+        // Process control
+        nbproc: 2             // NEW: Use 2 processes
+
+        // SSL/TLS base paths
+        ca-base: "/etc/ssl/certs"         // NEW: CA certificate directory
+        crt-base: "/etc/ssl/private"      // NEW: Server certificate directory
+
+        // SSL/TLS hardening
+        ssl-dh-param-file: "/etc/ssl/dhparam.pem"                                    // NEW: DH parameters
+        ssl-default-server-ciphers: "ECDHE-RSA-AES128-GCM-SHA256"                  // NEW: Server ciphers
+        ssl-server-verify: "required"                                                // NEW: Verify backends
+
+        // Existing SSL client configuration
+        ssl-default-bind-ciphers: "ECDHE-RSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384"
+        ssl-default-bind-options: ["no-sslv3", "no-tlsv10"]
+
+        // Logging
+        log "127.0.0.1" local0 info
+        log-tag: "phase1-demo"            // NEW: Tag for all log messages
+        log-send-hostname: "demo-lb"      // NEW: Hostname in logs
+
+        // Environment variables
+        setenv "APP_VERSION" "2.0"        // NEW: Set environment variable
+        setenv "DATACENTER" "us-east-1"   // NEW
+        presetenv "CONF_DIR" "/etc/haproxy"  // NEW: Preset variable
+        resetenv "PATH"                   // NEW: Reset to system default
+        unsetenv "TEMP_DEBUG"             // NEW: Remove variable
+    }
+
+    defaults {
+        mode: http
+        retries: 3
+
+        timeout: {
+            connect: 5s
+            client: 30s
+            server: 30s
+        }
+    }
+
+    frontend http_in {
+        bind *:80
+        bind *:443
+
+        default_backend: app_servers
+    }
+
+    backend app_servers {
+        balance: roundrobin
+
+        // Backend servers with SSL verification using new ssl-server-verify
+        servers {
+            server app1 {
+                address: "10.0.1.10"
+                port: 8443
+                ssl: true               // Connect via SSL
+                verify: "required"      // Uses global ssl-server-verify setting
+                check: true
+            }
+
+            server app2 {
+                address: "10.0.1.11"
+                port: 8443
+                ssl: true
+                verify: "required"
+                check: true
+            }
+        }
+    }
+}
