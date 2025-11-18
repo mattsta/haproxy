@@ -319,6 +319,54 @@ class HAProxyCodeGenerator:
             if global_config.profiling_memory_on:
                 lines.append(self._indent("profiling.memory.on"))
 
+        # Device Detection - DeviceAtlas (Phase 4B Part 4)
+        if global_config.deviceatlas_json_file:
+            lines.append(self._indent(f"deviceatlas-json-file {global_config.deviceatlas_json_file}"))
+
+        if global_config.deviceatlas_log_level is not None:
+            lines.append(self._indent(f"deviceatlas-log-level {global_config.deviceatlas_log_level}"))
+
+        if global_config.deviceatlas_separator:
+            lines.append(self._indent(f"deviceatlas-separator {global_config.deviceatlas_separator}"))
+
+        if global_config.deviceatlas_properties_cookie:
+            lines.append(self._indent(f"deviceatlas-properties-cookie {global_config.deviceatlas_properties_cookie}"))
+
+        # Device Detection - 51Degrees (Phase 4B Part 4)
+        if global_config.fiftyone_degrees_data_file:
+            lines.append(self._indent(f"51degrees-data-file {global_config.fiftyone_degrees_data_file}"))
+
+        if global_config.fiftyone_degrees_property_name_list:
+            lines.append(self._indent(f"51degrees-property-name-list {global_config.fiftyone_degrees_property_name_list}"))
+
+        if global_config.fiftyone_degrees_property_separator:
+            lines.append(self._indent(f"51degrees-property-separator {global_config.fiftyone_degrees_property_separator}"))
+
+        if global_config.fiftyone_degrees_cache_size is not None:
+            lines.append(self._indent(f"51degrees-cache-size {global_config.fiftyone_degrees_cache_size}"))
+
+        # Device Detection - WURFL (Phase 4B Part 4)
+        if global_config.wurfl_data_file:
+            lines.append(self._indent(f"wurfl-data-file {global_config.wurfl_data_file}"))
+
+        if global_config.wurfl_information_list:
+            lines.append(self._indent(f"wurfl-information-list {global_config.wurfl_information_list}"))
+
+        if global_config.wurfl_information_list_separator:
+            lines.append(self._indent(f"wurfl-information-list-separator {global_config.wurfl_information_list_separator}"))
+
+        if global_config.wurfl_patch_file:
+            lines.append(self._indent(f"wurfl-patch-file {global_config.wurfl_patch_file}"))
+
+        if global_config.wurfl_cache_size is not None:
+            lines.append(self._indent(f"wurfl-cache-size {global_config.wurfl_cache_size}"))
+
+        if global_config.wurfl_engine_mode:
+            lines.append(self._indent(f"wurfl-engine-mode {global_config.wurfl_engine_mode}"))
+
+        if global_config.wurfl_useragent_priority:
+            lines.append(self._indent(f"wurfl-useragent-priority {global_config.wurfl_useragent_priority}"))
+
         # Logging configuration
         if global_config.log_tag:
             lines.append(self._indent(f"log-tag {global_config.log_tag}"))

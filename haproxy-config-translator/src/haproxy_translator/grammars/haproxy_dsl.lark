@@ -162,6 +162,25 @@ global_section: "global" "{" global_property* "}"
                 | "tune.quic.retry-threshold" ":" number                  -> global_tune_quic_retry_threshold
                 | "tune.quic.socket.owner" ":" string                     -> global_tune_quic_socket_owner
                 | "tune.quic.max-frame-loss" ":" number                   -> global_tune_quic_max_frame_loss
+                // Phase 4B Part 4 - Device Detection (15 directives)
+                // DeviceAtlas (4 directives)
+                | "deviceatlas-json-file" ":" string                      -> global_deviceatlas_json_file
+                | "deviceatlas-log-level" ":" number                      -> global_deviceatlas_log_level
+                | "deviceatlas-separator" ":" string                      -> global_deviceatlas_separator
+                | "deviceatlas-properties-cookie" ":" string              -> global_deviceatlas_properties_cookie
+                // 51Degrees (4 directives)
+                | "51degrees-data-file" ":" string                        -> global_51degrees_data_file
+                | "51degrees-property-name-list" ":" string               -> global_51degrees_property_name_list
+                | "51degrees-property-separator" ":" string               -> global_51degrees_property_separator
+                | "51degrees-cache-size" ":" number                       -> global_51degrees_cache_size
+                // WURFL (7 directives)
+                | "wurfl-data-file" ":" string                            -> global_wurfl_data_file
+                | "wurfl-information-list" ":" string                     -> global_wurfl_information_list
+                | "wurfl-information-list-separator" ":" string           -> global_wurfl_information_list_separator
+                | "wurfl-patch-file" ":" string                           -> global_wurfl_patch_file
+                | "wurfl-cache-size" ":" number                           -> global_wurfl_cache_size
+                | "wurfl-engine-mode" ":" string                          -> global_wurfl_engine_mode
+                | "wurfl-useragent-priority" ":" string                   -> global_wurfl_useragent_priority
                 | "setenv" string string               -> global_setenv
                 | "presetenv" string string            -> global_presetenv
                 | "resetenv" string                    -> global_resetenv

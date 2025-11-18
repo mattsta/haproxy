@@ -239,6 +239,27 @@ class GlobalConfig(IRNode):
     profiling_tasks_automatic: bool | None = None
     profiling_memory_on: bool | None = None
 
+    # Device Detection - DeviceAtlas (Phase 4B Part 4)
+    deviceatlas_json_file: str | None = None
+    deviceatlas_log_level: int | None = None
+    deviceatlas_separator: str | None = None
+    deviceatlas_properties_cookie: str | None = None
+
+    # Device Detection - 51Degrees (Phase 4B Part 4)
+    fiftyone_degrees_data_file: str | None = None
+    fiftyone_degrees_property_name_list: str | None = None
+    fiftyone_degrees_property_separator: str | None = None
+    fiftyone_degrees_cache_size: int | None = None
+
+    # Device Detection - WURFL (Phase 4B Part 4)
+    wurfl_data_file: str | None = None
+    wurfl_information_list: str | None = None
+    wurfl_information_list_separator: str | None = None
+    wurfl_patch_file: str | None = None
+    wurfl_cache_size: int | None = None
+    wurfl_engine_mode: str | None = None
+    wurfl_useragent_priority: str | None = None
+
     # Lua scripts
     lua_scripts: list[LuaScript] = field(default_factory=list)
 

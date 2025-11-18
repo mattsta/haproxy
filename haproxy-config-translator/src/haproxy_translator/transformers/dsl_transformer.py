@@ -197,6 +197,27 @@ class DSLTransformer(Transformer):
         profiling_tasks_automatic = None
         profiling_memory_on = None
 
+        # Device Detection - DeviceAtlas (Phase 4B Part 4)
+        deviceatlas_json_file = None
+        deviceatlas_log_level = None
+        deviceatlas_separator = None
+        deviceatlas_properties_cookie = None
+
+        # Device Detection - 51Degrees (Phase 4B Part 4)
+        fiftyone_degrees_data_file = None
+        fiftyone_degrees_property_name_list = None
+        fiftyone_degrees_property_separator = None
+        fiftyone_degrees_cache_size = None
+
+        # Device Detection - WURFL (Phase 4B Part 4)
+        wurfl_data_file = None
+        wurfl_information_list = None
+        wurfl_information_list_separator = None
+        wurfl_patch_file = None
+        wurfl_cache_size = None
+        wurfl_engine_mode = None
+        wurfl_useragent_priority = None
+
         # Lua scripts
         lua_scripts = []
 
@@ -340,6 +361,39 @@ class DSLTransformer(Transformer):
                     profiling_tasks_automatic = value
                 elif key == "profiling_memory_on":
                     profiling_memory_on = value
+                # Phase 4B Part 4 - Device Detection - DeviceAtlas
+                elif key == "deviceatlas_json_file":
+                    deviceatlas_json_file = value
+                elif key == "deviceatlas_log_level":
+                    deviceatlas_log_level = value
+                elif key == "deviceatlas_separator":
+                    deviceatlas_separator = value
+                elif key == "deviceatlas_properties_cookie":
+                    deviceatlas_properties_cookie = value
+                # Phase 4B Part 4 - Device Detection - 51Degrees
+                elif key == "fiftyone_degrees_data_file":
+                    fiftyone_degrees_data_file = value
+                elif key == "fiftyone_degrees_property_name_list":
+                    fiftyone_degrees_property_name_list = value
+                elif key == "fiftyone_degrees_property_separator":
+                    fiftyone_degrees_property_separator = value
+                elif key == "fiftyone_degrees_cache_size":
+                    fiftyone_degrees_cache_size = value
+                # Phase 4B Part 4 - Device Detection - WURFL
+                elif key == "wurfl_data_file":
+                    wurfl_data_file = value
+                elif key == "wurfl_information_list":
+                    wurfl_information_list = value
+                elif key == "wurfl_information_list_separator":
+                    wurfl_information_list_separator = value
+                elif key == "wurfl_patch_file":
+                    wurfl_patch_file = value
+                elif key == "wurfl_cache_size":
+                    wurfl_cache_size = value
+                elif key == "wurfl_engine_mode":
+                    wurfl_engine_mode = value
+                elif key == "wurfl_useragent_priority":
+                    wurfl_useragent_priority = value
                 elif key == "setcap":
                     setcap = value
                 elif key == "set_dumpable":
@@ -507,6 +561,24 @@ class DSLTransformer(Transformer):
             profiling_tasks_on=profiling_tasks_on,
             profiling_tasks_automatic=profiling_tasks_automatic,
             profiling_memory_on=profiling_memory_on,
+            # Device Detection - DeviceAtlas (Phase 4B Part 4)
+            deviceatlas_json_file=deviceatlas_json_file,
+            deviceatlas_log_level=deviceatlas_log_level,
+            deviceatlas_separator=deviceatlas_separator,
+            deviceatlas_properties_cookie=deviceatlas_properties_cookie,
+            # Device Detection - 51Degrees (Phase 4B Part 4)
+            fiftyone_degrees_data_file=fiftyone_degrees_data_file,
+            fiftyone_degrees_property_name_list=fiftyone_degrees_property_name_list,
+            fiftyone_degrees_property_separator=fiftyone_degrees_property_separator,
+            fiftyone_degrees_cache_size=fiftyone_degrees_cache_size,
+            # Device Detection - WURFL (Phase 4B Part 4)
+            wurfl_data_file=wurfl_data_file,
+            wurfl_information_list=wurfl_information_list,
+            wurfl_information_list_separator=wurfl_information_list_separator,
+            wurfl_patch_file=wurfl_patch_file,
+            wurfl_cache_size=wurfl_cache_size,
+            wurfl_engine_mode=wurfl_engine_mode,
+            wurfl_useragent_priority=wurfl_useragent_priority,
             # Lua scripts
             lua_scripts=lua_scripts,
             # Stats
@@ -943,6 +1015,55 @@ class DSLTransformer(Transformer):
 
     def global_tune_quic_max_frame_loss(self, items: list[Any]) -> tuple[str, int]:
         return ("tune_quic_max_frame_loss", items[0])
+
+    # Phase 4B Part 4 - Device Detection directives
+    # DeviceAtlas
+    def global_deviceatlas_json_file(self, items: list[Any]) -> tuple[str, str]:
+        return ("deviceatlas_json_file", items[0])
+
+    def global_deviceatlas_log_level(self, items: list[Any]) -> tuple[str, int]:
+        return ("deviceatlas_log_level", items[0])
+
+    def global_deviceatlas_separator(self, items: list[Any]) -> tuple[str, str]:
+        return ("deviceatlas_separator", items[0])
+
+    def global_deviceatlas_properties_cookie(self, items: list[Any]) -> tuple[str, str]:
+        return ("deviceatlas_properties_cookie", items[0])
+
+    # 51Degrees
+    def global_51degrees_data_file(self, items: list[Any]) -> tuple[str, str]:
+        return ("fiftyone_degrees_data_file", items[0])
+
+    def global_51degrees_property_name_list(self, items: list[Any]) -> tuple[str, str]:
+        return ("fiftyone_degrees_property_name_list", items[0])
+
+    def global_51degrees_property_separator(self, items: list[Any]) -> tuple[str, str]:
+        return ("fiftyone_degrees_property_separator", items[0])
+
+    def global_51degrees_cache_size(self, items: list[Any]) -> tuple[str, int]:
+        return ("fiftyone_degrees_cache_size", items[0])
+
+    # WURFL
+    def global_wurfl_data_file(self, items: list[Any]) -> tuple[str, str]:
+        return ("wurfl_data_file", items[0])
+
+    def global_wurfl_information_list(self, items: list[Any]) -> tuple[str, str]:
+        return ("wurfl_information_list", items[0])
+
+    def global_wurfl_information_list_separator(self, items: list[Any]) -> tuple[str, str]:
+        return ("wurfl_information_list_separator", items[0])
+
+    def global_wurfl_patch_file(self, items: list[Any]) -> tuple[str, str]:
+        return ("wurfl_patch_file", items[0])
+
+    def global_wurfl_cache_size(self, items: list[Any]) -> tuple[str, int]:
+        return ("wurfl_cache_size", items[0])
+
+    def global_wurfl_engine_mode(self, items: list[Any]) -> tuple[str, str]:
+        return ("wurfl_engine_mode", items[0])
+
+    def global_wurfl_useragent_priority(self, items: list[Any]) -> tuple[str, str]:
+        return ("wurfl_useragent_priority", items[0])
 
     def log_target(self, items: list[Any]) -> LogTarget:
         address = items[0]
