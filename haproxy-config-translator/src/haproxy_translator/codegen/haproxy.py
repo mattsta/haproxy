@@ -853,6 +853,10 @@ class HAProxyCodeGenerator:
         if backend.dispatch:
             lines.append(self._indent(f"dispatch {backend.dispatch}"))
 
+        # FastCGI application
+        if backend.use_fcgi_app:
+            lines.append(self._indent(f"use-fcgi-app {backend.use_fcgi_app}"))
+
         # HTTP reuse (connection pooling)
         if backend.http_reuse:
             lines.append(self._indent(f"http-reuse {backend.http_reuse}"))

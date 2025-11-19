@@ -225,6 +225,23 @@ class ErrorFile(IRNode):
 
 
 @dataclass(frozen=True)
+class HttpError(IRNode):
+    """Custom HTTP error response definition (http-error directive)."""
+
+    status: int = 0  # HTTP status code
+    content_type: str | None = None  # Response content type
+    # Body source (exactly one should be set):
+    default_errorfiles: bool = False  # Use default HAProxy error files
+    errorfile: str | None = None  # Full HTTP response file
+    errorfiles_name: str | None = None  # Reference to http-errors section
+    file: str | None = None  # Raw file content
+    lf_file: str | None = None  # Log-format file
+    string: str | None = None  # Raw string payload
+    lf_string: str | None = None  # Log-format string payload
+    headers: dict[str, str] = field(default_factory=dict)  # Additional HTTP headers
+
+
+@dataclass(frozen=True)
 class HttpCheckRule(IRNode):
     """Advanced HTTP health check rule (http-check directive)."""
 
@@ -681,6 +698,7 @@ class Frontend(IRNode):
     errorloc: dict[int, str] = field(default_factory=dict)  # 302 redirect for error codes
     errorloc302: dict[int, str] = field(default_factory=dict)  # Explicit 302 redirect
     errorloc303: dict[int, str] = field(default_factory=dict)  # 303 See Other redirect
+    http_errors: list[HttpError] = field(default_factory=list)  # Custom HTTP error responses
 
 
 @dataclass(frozen=True)
@@ -728,8 +746,10 @@ class Backend(IRNode):
     errorloc: dict[int, str] = field(default_factory=dict)  # 302 redirect for error codes
     errorloc302: dict[int, str] = field(default_factory=dict)  # Explicit 302 redirect
     errorloc303: dict[int, str] = field(default_factory=dict)  # 303 See Other redirect
+    http_errors: list[HttpError] = field(default_factory=list)  # Custom HTTP error responses
     errorfiles: str | None = None  # Directory containing custom error files
     dispatch: str | None = None  # Simple dispatch target (IP:port) for load balancing without backend
+    use_fcgi_app: str | None = None  # FastCGI application name to use for this backend
     http_reuse: str | None = None  # Connection reuse mode: never, safe, aggressive, always
     http_send_name_header: str | None = None  # HTTP header name to send backend/server name
     retry_on: str | None = None  # Retry conditions (comma-separated keywords)

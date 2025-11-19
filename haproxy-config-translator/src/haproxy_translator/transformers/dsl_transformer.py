@@ -2411,6 +2411,7 @@ class DSLTransformer(Transformer):
         errorloc303: dict[int, str] = {}
         errorfiles = None
         dispatch = None
+        use_fcgi_app = None
         http_reuse = None
         http_send_name_header = None
         retry_on = None
@@ -2528,6 +2529,8 @@ class DSLTransformer(Transformer):
                     errorfiles = value
                 elif key == "dispatch":
                     dispatch = value
+                elif key == "use_fcgi_app":
+                    use_fcgi_app = value
                 elif key == "errorloc":
                     errorloc.update(value)
                 elif key == "errorloc302":
@@ -2596,6 +2599,7 @@ class DSLTransformer(Transformer):
             errorloc303=errorloc303,
             errorfiles=errorfiles,
             dispatch=dispatch,
+            use_fcgi_app=use_fcgi_app,
             http_reuse=http_reuse,
             http_send_name_header=http_send_name_header,
             retry_on=retry_on,
@@ -2714,6 +2718,10 @@ class DSLTransformer(Transformer):
     def backend_dispatch(self, items: list[Any]) -> tuple[str, str]:
         """Transform dispatch directive (simple load balancing target)."""
         return ("dispatch", str(items[0]))
+
+    def backend_use_fcgi_app(self, items: list[Any]) -> tuple[str, str]:
+        """Transform use-fcgi-app directive (FastCGI application reference)."""
+        return ("use_fcgi_app", str(items[0]))
 
     def backend_default_server(self, items: list[Any]) -> DefaultServer:
         """Handle default-server in backend."""

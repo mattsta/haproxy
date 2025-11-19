@@ -498,6 +498,7 @@ backend_section: "backend" identifier "{" backend_property* "}"
                  | errorloc_directive                       -> backend_errorloc
                  | "errorfiles" ":" string                  -> backend_errorfiles
                  | "dispatch" ":" string                    -> backend_dispatch
+                 | "use-fcgi-app" ":" string                -> backend_use_fcgi_app
                  | "http-reuse" ":" http_reuse_mode         -> backend_http_reuse
                  | "http-send-name-header" ":" string      -> backend_http_send_name_header
                  | "retry-on" ":" string                   -> backend_retry_on
