@@ -2031,6 +2031,10 @@ class DSLTransformer(Transformer):
         """Transform hash-balance-factor directive."""
         return ("hash_balance_factor", int(items[0]))
 
+    def backend_load_server_state_from(self, items: list[Any]) -> tuple[str, str]:
+        """Transform load-server-state-from-file directive."""
+        return ("load_server_state_from", str(items[0]))
+
     def hash_type_spec(self, items: list[Any]) -> str:
         """Build hash-type specification string from components."""
         # items: [method, function?, modifier?]
@@ -2432,6 +2436,7 @@ class DSLTransformer(Transformer):
         source = None
         hash_type = None
         hash_balance_factor = None
+        load_server_state_from = None
 
         for prop in properties:
             if isinstance(prop, Server):
@@ -2566,6 +2571,9 @@ class DSLTransformer(Transformer):
                     hash_type = value
                 elif key == "hash_balance_factor":
                     hash_balance_factor = value
+                elif key == "load_server_state_from":
+                    from ..ir.nodes import LoadServerStateFrom
+                    load_server_state_from = LoadServerStateFrom(value)
 
         # Build metadata with server loops if any
         metadata = {}
@@ -2629,6 +2637,7 @@ class DSLTransformer(Transformer):
             source=source,
             hash_type=hash_type,
             hash_balance_factor=hash_balance_factor,
+            load_server_state_from=load_server_state_from,
             metadata=metadata,
         )
 
@@ -2934,6 +2943,7 @@ class DSLTransformer(Transformer):
         timeout_connect = None
         maxconn = None
         health_check = None
+        load_server_state_from = None
 
         for prop in properties:
             if isinstance(prop, Bind):
@@ -2989,6 +2999,9 @@ class DSLTransformer(Transformer):
                     timeout_connect = value
                 elif key == "maxconn":
                     maxconn = value
+                elif key == "load_server_state_from":
+                    from ..ir.nodes import LoadServerStateFrom
+                    load_server_state_from = LoadServerStateFrom(value)
 
         # Build metadata
         metadata: dict[str, Any] = {}
@@ -3018,6 +3031,7 @@ class DSLTransformer(Transformer):
             servers=servers,
             acls=acls,
             options=options,
+            load_server_state_from=load_server_state_from,
             metadata=metadata,
         )
 
@@ -3067,6 +3081,10 @@ class DSLTransformer(Transformer):
 
     def listen_maxconn(self, items: list[Any]) -> tuple[str, int]:
         return ("maxconn", items[0])
+
+    def listen_load_server_state_from(self, items: list[Any]) -> tuple[str, str]:
+        """Transform load-server-state-from-file directive."""
+        return ("load_server_state_from", str(items[0]))
 
     def health_check_block(self, items: list[Any]) -> HealthCheck:
         method = "GET"

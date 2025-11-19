@@ -58,6 +58,14 @@ class LogFacility(Enum):
     DAEMON = "daemon"
 
 
+class LoadServerStateFrom(Enum):
+    """Source for loading server state during reload."""
+
+    GLOBAL = "global"  # Load from global server-state-file
+    LOCAL = "local"  # Load from local server-state-file-name
+    NONE = "none"  # Don't load server state
+
+
 # Base classes
 @dataclass(frozen=True)
 class IRNode:
@@ -763,6 +771,7 @@ class Backend(IRNode):
     source: str | None = None  # Source IP/port for backend connections
     hash_type: str | None = None  # Hash algorithm: map-based, consistent
     hash_balance_factor: int | None = None  # Hash balance factor (100-65535)
+    load_server_state_from: LoadServerStateFrom | None = None  # Server state loading mode for seamless reload
 
 
 @dataclass(frozen=True)
@@ -794,6 +803,7 @@ class Listen(IRNode):
     timeout_server: str | None = None
     timeout_connect: str | None = None
     maxconn: int | None = None
+    load_server_state_from: LoadServerStateFrom | None = None  # Server state loading mode for seamless reload
 
 
 # DSL-specific IR nodes (for advanced features)

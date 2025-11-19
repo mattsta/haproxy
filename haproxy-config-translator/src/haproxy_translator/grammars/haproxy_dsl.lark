@@ -512,6 +512,7 @@ backend_section: "backend" identifier "{" backend_property* "}"
                  | tcp_check_block                          -> backend_tcp_check
                  | "hash-type" ":" hash_type_spec           -> backend_hash_type
                  | "hash-balance-factor" ":" number         -> backend_hash_balance_factor
+                 | "load-server-state-from-file" ":" load_server_state_mode  -> backend_load_server_state_from
 
 ?http_reuse_mode: HTTP_REUSE_NEVER | HTTP_REUSE_SAFE | HTTP_REUSE_AGGRESSIVE | HTTP_REUSE_ALWAYS
 
@@ -519,6 +520,12 @@ HTTP_REUSE_NEVER: "never"
 HTTP_REUSE_SAFE: "safe"
 HTTP_REUSE_AGGRESSIVE: "aggressive"
 HTTP_REUSE_ALWAYS: "always"
+
+?load_server_state_mode: LOAD_SERVER_STATE_GLOBAL | LOAD_SERVER_STATE_LOCAL | LOAD_SERVER_STATE_NONE
+
+LOAD_SERVER_STATE_GLOBAL: "global"
+LOAD_SERVER_STATE_LOCAL: "local"
+LOAD_SERVER_STATE_NONE: "none"
 
 balance_algo: BALANCE_ROUNDROBIN | BALANCE_LEASTCONN | BALANCE_SOURCE | BALANCE_URI | BALANCE_URL_PARAM | BALANCE_RANDOM | BALANCE_STATIC_RR | BALANCE_FIRST | BALANCE_HDR | BALANCE_RDP_COOKIE
 
@@ -724,6 +731,7 @@ listen_section: "listen" identifier "{" listen_property* "}"
                 | "timeout_server" ":" duration            -> listen_timeout_server
                 | "timeout_connect" ":" duration           -> listen_timeout_connect
                 | "maxconn" ":" number                     -> listen_maxconn
+                | "load-server-state-from-file" ":" load_server_state_mode  -> listen_load_server_state_from
 
 // ===== Stats Socket =====
 stats_socket_item: "stats_socket" string "{" stats_socket_param* "}"

@@ -744,6 +744,10 @@ class HAProxyCodeGenerator:
         if backend.hash_balance_factor:
             lines.append(self._indent(f"hash-balance-factor {backend.hash_balance_factor}"))
 
+        # Load server state from file
+        if backend.load_server_state_from:
+            lines.append(self._indent(f"load-server-state-from-file {backend.load_server_state_from.value}"))
+
         # Retries
         if backend.retries is not None:
             lines.append(self._indent(f"retries {backend.retries}"))
@@ -952,6 +956,10 @@ class HAProxyCodeGenerator:
 
         # Balance
         lines.append(self._indent(f"balance {listen.balance.value}"))
+
+        # Load server state from file
+        if listen.load_server_state_from:
+            lines.append(self._indent(f"load-server-state-from-file {listen.load_server_state_from.value}"))
 
         # ACLs
         for acl in listen.acls:
