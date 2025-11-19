@@ -2035,6 +2035,10 @@ class DSLTransformer(Transformer):
         """Transform load-server-state-from-file directive."""
         return ("load_server_state_from", str(items[0]))
 
+    def backend_server_state_file_name(self, items: list[Any]) -> tuple[str, str]:
+        """Transform server-state-file-name directive (use-backend-name or file path)."""
+        return ("server_state_file_name", str(items[0]))
+
     def hash_type_spec(self, items: list[Any]) -> str:
         """Build hash-type specification string from components."""
         # items: [method, function?, modifier?]
@@ -2437,6 +2441,7 @@ class DSLTransformer(Transformer):
         hash_type = None
         hash_balance_factor = None
         load_server_state_from = None
+        server_state_file_name = None
 
         for prop in properties:
             if isinstance(prop, Server):
@@ -2574,6 +2579,8 @@ class DSLTransformer(Transformer):
                 elif key == "load_server_state_from":
                     from ..ir.nodes import LoadServerStateFrom
                     load_server_state_from = LoadServerStateFrom(value)
+                elif key == "server_state_file_name":
+                    server_state_file_name = value
 
         # Build metadata with server loops if any
         metadata = {}
@@ -2638,6 +2645,7 @@ class DSLTransformer(Transformer):
             hash_type=hash_type,
             hash_balance_factor=hash_balance_factor,
             load_server_state_from=load_server_state_from,
+            server_state_file_name=server_state_file_name,
             metadata=metadata,
         )
 
@@ -2944,6 +2952,7 @@ class DSLTransformer(Transformer):
         maxconn = None
         health_check = None
         load_server_state_from = None
+        server_state_file_name = None
 
         for prop in properties:
             if isinstance(prop, Bind):
@@ -3002,6 +3011,8 @@ class DSLTransformer(Transformer):
                 elif key == "load_server_state_from":
                     from ..ir.nodes import LoadServerStateFrom
                     load_server_state_from = LoadServerStateFrom(value)
+                elif key == "server_state_file_name":
+                    server_state_file_name = value
 
         # Build metadata
         metadata: dict[str, Any] = {}
@@ -3032,6 +3043,7 @@ class DSLTransformer(Transformer):
             acls=acls,
             options=options,
             load_server_state_from=load_server_state_from,
+            server_state_file_name=server_state_file_name,
             metadata=metadata,
         )
 
@@ -3085,6 +3097,10 @@ class DSLTransformer(Transformer):
     def listen_load_server_state_from(self, items: list[Any]) -> tuple[str, str]:
         """Transform load-server-state-from-file directive."""
         return ("load_server_state_from", str(items[0]))
+
+    def listen_server_state_file_name(self, items: list[Any]) -> tuple[str, str]:
+        """Transform server-state-file-name directive (use-backend-name or file path)."""
+        return ("server_state_file_name", str(items[0]))
 
     def health_check_block(self, items: list[Any]) -> HealthCheck:
         method = "GET"

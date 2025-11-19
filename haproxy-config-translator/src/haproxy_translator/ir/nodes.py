@@ -772,6 +772,7 @@ class Backend(IRNode):
     hash_type: str | None = None  # Hash algorithm: map-based, consistent
     hash_balance_factor: int | None = None  # Hash balance factor (100-65535)
     load_server_state_from: LoadServerStateFrom | None = None  # Server state loading mode for seamless reload
+    server_state_file_name: str | None = None  # Server state file name (use-backend-name or file path)
 
 
 @dataclass(frozen=True)
@@ -804,6 +805,7 @@ class Listen(IRNode):
     timeout_connect: str | None = None
     maxconn: int | None = None
     load_server_state_from: LoadServerStateFrom | None = None  # Server state loading mode for seamless reload
+    server_state_file_name: str | None = None  # Server state file name (use-backend-name or file path)
 
 
 # DSL-specific IR nodes (for advanced features)

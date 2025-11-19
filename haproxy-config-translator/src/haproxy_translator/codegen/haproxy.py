@@ -748,6 +748,10 @@ class HAProxyCodeGenerator:
         if backend.load_server_state_from:
             lines.append(self._indent(f"load-server-state-from-file {backend.load_server_state_from.value}"))
 
+        # Server state file name
+        if backend.server_state_file_name:
+            lines.append(self._indent(f"server-state-file-name {backend.server_state_file_name}"))
+
         # Retries
         if backend.retries is not None:
             lines.append(self._indent(f"retries {backend.retries}"))
@@ -960,6 +964,10 @@ class HAProxyCodeGenerator:
         # Load server state from file
         if listen.load_server_state_from:
             lines.append(self._indent(f"load-server-state-from-file {listen.load_server_state_from.value}"))
+
+        # Server state file name
+        if listen.server_state_file_name:
+            lines.append(self._indent(f"server-state-file-name {listen.server_state_file_name}"))
 
         # ACLs
         for acl in listen.acls:
