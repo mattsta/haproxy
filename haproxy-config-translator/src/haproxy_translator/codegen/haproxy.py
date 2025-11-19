@@ -212,6 +212,9 @@ class HAProxyCodeGenerator:
         for tune_key, tune_value in sorted(global_config.tuning.items()):
             if tune_key not in ("nbthread", "maxsslconn", "ulimit_n"):
                 # Keys already in HAProxy format from transformer
+                # Convert boolean values to on/off
+                if isinstance(tune_value, bool):
+                    tune_value = "on" if tune_value else "off"
                 lines.append(self._indent(f"{tune_key} {tune_value}"))
 
         # Environment variables

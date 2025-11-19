@@ -129,7 +129,7 @@ global_section: "global" "{" global_property* "}"
                 | "tune.rcvbuf.server" ":" number         -> global_tune_rcvbuf_server
                 | "tune.sndbuf.client" ":" number         -> global_tune_sndbuf_client
                 | "tune.sndbuf.server" ":" number         -> global_tune_sndbuf_server
-                // Phase 6 - Performance Tuning (7 directives)
+                // Phase 6 - Performance Tuning (14 directives)
                 | "tune.rcvbuf.frontend" ":" number       -> global_tune_rcvbuf_frontend
                 | "tune.rcvbuf.backend" ":" number        -> global_tune_rcvbuf_backend
                 | "tune.sndbuf.frontend" ":" number       -> global_tune_sndbuf_frontend
@@ -137,6 +137,13 @@ global_section: "global" "{" global_property* "}"
                 | "tune.maxaccept" ":" number             -> global_tune_maxaccept
                 | "tune.maxpollevents" ":" number         -> global_tune_maxpollevents
                 | "tune.bufsize.small" ":" number         -> global_tune_bufsize_small
+                | "tune.pipesize" ":" number              -> global_tune_pipesize
+                | "tune.recv_enough" ":" number           -> global_tune_recv_enough
+                | "tune.idletimer" ":" string             -> global_tune_idletimer
+                | "tune.runqueue-depth" ":" number        -> global_tune_runqueue_depth
+                | "tune.sched.low-latency" ":" boolean    -> global_tune_sched_low_latency
+                | "tune.max-checks-per-thread" ":" number -> global_tune_max_checks_per_thread
+                | "tune.max-rules-at-once" ":" number     -> global_tune_max_rules_at_once
                 // Phase 4B Part 1 - HTTP Client Configuration (6 directives)
                 | "httpclient.resolvers.disabled" ":" boolean     -> global_httpclient_resolvers_disabled
                 | "httpclient.resolvers.id" ":" string            -> global_httpclient_resolvers_id

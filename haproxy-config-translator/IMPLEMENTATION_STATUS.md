@@ -6,7 +6,7 @@
 ## Current Status
 
 ### Tests & Code Quality ✅
-- **Tests:** 897 passing, 0 skipped, 0 failures
+- **Tests:** 904 passing, 0 skipped, 0 failures
 - **Test Coverage:** ~95%
 - **Mypy:** 0 errors (100% type safe)
 - **Ruff:** 27 minor style warnings (non-blocking, only in existing code)
@@ -16,9 +16,9 @@
 
 #### Global Directives
 - **Total HAProxy Directives:** 172
-- **Implemented:** 86
-- **Coverage:** 50.0%
-- **Missing:** 86 directives
+- **Implemented:** 93
+- **Coverage:** 54.1%
+- **Missing:** 79 directives
 
 #### Proxy Keywords (Frontend/Backend/Listen/Defaults)
 - **Total HAProxy Keywords:** 89
@@ -58,8 +58,15 @@
 5. ✅ **tune.rcvbuf.backend** - Backend receive buffer size
 6. ✅ **tune.sndbuf.frontend** - Frontend send buffer size
 7. ✅ **tune.sndbuf.backend** - Backend send buffer size
+8. ✅ **tune.pipesize** - Pipe buffer size
+9. ✅ **tune.recv-enough** - Minimum recv size
+10. ✅ **tune.idletimer** - Idle timer
+11. ✅ **tune.runqueue-depth** - Run queue depth
+12. ✅ **tune.sched.low-latency** - Low latency scheduling
+13. ✅ **tune.max-checks-per-thread** - Max health checks per thread
+14. ✅ **tune.max-rules-at-once** - Max rules to process at once
 
-**Phase 6 Results:** +8 tests (889 → 897), 7 new global directives, 0 failures
+**Phase 6 Results:** +15 tests (889 → 904), 14 new global directives, 0 failures
 
 ### Features Implemented (Previous Sessions)
 1. ✅ **Phases 1-3:** Core directives, SSL/TLS, HTTP/2, system integration
@@ -121,15 +128,17 @@ Implement missing tune.* directives:
 3. ✅ **tune.bufsize.small** - Small buffer size (IMPLEMENTED)
 4. ✅ **tune.rcvbuf.frontend/backend** - Receive buffer sizes (IMPLEMENTED)
 5. ✅ **tune.sndbuf.frontend/backend** - Send buffer sizes (IMPLEMENTED)
-6. **tune.pipesize** - Pipe buffer size ❌ PENDING
-7. **tune.recv_enough** - Minimum recv size ❌ PENDING
-8. **tune.idletimer** - Idle timer ❌ PENDING
-9. **tune.runqueue-depth** - Run queue depth ❌ PENDING
-10. **tune.sched.low-latency** - Low latency scheduling ❌ PENDING
-11. +25 more tune.* directives ❌ PENDING
+6. ✅ **tune.pipesize** - Pipe buffer size (IMPLEMENTED)
+7. ✅ **tune.recv-enough** - Minimum recv size (IMPLEMENTED)
+8. ✅ **tune.idletimer** - Idle timer (IMPLEMENTED)
+9. ✅ **tune.runqueue-depth** - Run queue depth (IMPLEMENTED)
+10. ✅ **tune.sched.low-latency** - Low latency scheduling (IMPLEMENTED)
+11. ✅ **tune.max-checks-per-thread** - Max health checks per thread (IMPLEMENTED)
+12. ✅ **tune.max-rules-at-once** - Max rules to process at once (IMPLEMENTED)
+13. +23 more tune.* directives ❌ PENDING
 
-**Phase 6 Progress:** 7/37 directives implemented (19%)
-**Estimated Impact:** +30 global directives remaining
+**Phase 6 Progress:** 14/37 directives implemented (38%)
+**Estimated Impact:** +23 global directives remaining
 
 ### Priority 4: Debugging & Development (Phase 7)
 Implement debugging directives:

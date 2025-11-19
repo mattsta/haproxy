@@ -163,3 +163,125 @@ class TestPhase6PerformanceTuning:
         assert "tune.rcvbuf.backend 65536" in output
         assert "tune.sndbuf.frontend 32768" in output
         assert "tune.sndbuf.backend 65536" in output
+
+    def test_tune_pipesize(self):
+        """Test tune.pipesize directive."""
+        config = """
+        config test {
+            global {
+                tune.pipesize: 32768
+            }
+        }
+        """
+        parser = DSLParser()
+        ir = parser.parse(config)
+        assert ir.global_config.tuning.get("tune.pipesize") == 32768
+
+        codegen = HAProxyCodeGenerator()
+        output = codegen.generate(ir)
+        assert "tune.pipesize 32768" in output
+
+    def test_tune_recv_enough(self):
+        """Test tune.recv_enough directive."""
+        config = """
+        config test {
+            global {
+                tune.recv_enough: 10000
+            }
+        }
+        """
+        parser = DSLParser()
+        ir = parser.parse(config)
+        assert ir.global_config.tuning.get("tune.recv-enough") == 10000
+
+        codegen = HAProxyCodeGenerator()
+        output = codegen.generate(ir)
+        assert "tune.recv-enough 10000" in output
+
+    def test_tune_idletimer(self):
+        """Test tune.idletimer directive."""
+        config = """
+        config test {
+            global {
+                tune.idletimer: "1s"
+            }
+        }
+        """
+        parser = DSLParser()
+        ir = parser.parse(config)
+        assert ir.global_config.tuning.get("tune.idletimer") == "1s"
+
+        codegen = HAProxyCodeGenerator()
+        output = codegen.generate(ir)
+        assert "tune.idletimer 1s" in output
+
+    def test_tune_runqueue_depth(self):
+        """Test tune.runqueue-depth directive."""
+        config = """
+        config test {
+            global {
+                tune.runqueue-depth: 200
+            }
+        }
+        """
+        parser = DSLParser()
+        ir = parser.parse(config)
+        # Note: tune_runqueue_depth → tune.runqueue-depth
+        assert ir.global_config.tuning.get("tune.runqueue-depth") == 200
+
+        codegen = HAProxyCodeGenerator()
+        output = codegen.generate(ir)
+        assert "tune.runqueue-depth 200" in output
+
+    def test_tune_sched_low_latency(self):
+        """Test tune.sched.low-latency directive."""
+        config = """
+        config test {
+            global {
+                tune.sched.low-latency: true
+            }
+        }
+        """
+        parser = DSLParser()
+        ir = parser.parse(config)
+        assert ir.global_config.tuning.get("tune.sched.low-latency") is True
+
+        codegen = HAProxyCodeGenerator()
+        output = codegen.generate(ir)
+        assert "tune.sched.low-latency on" in output
+
+    def test_tune_max_checks_per_thread(self):
+        """Test tune.max-checks-per-thread directive."""
+        config = """
+        config test {
+            global {
+                tune.max-checks-per-thread: 256
+            }
+        }
+        """
+        parser = DSLParser()
+        ir = parser.parse(config)
+        # Note: tune_max_checks_per_thread → tune.max-checks-per-thread
+        assert ir.global_config.tuning.get("tune.max-checks-per-thread") == 256
+
+        codegen = HAProxyCodeGenerator()
+        output = codegen.generate(ir)
+        assert "tune.max-checks-per-thread 256" in output
+
+    def test_tune_max_rules_at_once(self):
+        """Test tune.max-rules-at-once directive."""
+        config = """
+        config test {
+            global {
+                tune.max-rules-at-once: 100
+            }
+        }
+        """
+        parser = DSLParser()
+        ir = parser.parse(config)
+        # Note: tune_max_rules_at_once → tune.max-rules-at-once
+        assert ir.global_config.tuning.get("tune.max-rules-at-once") == 100
+
+        codegen = HAProxyCodeGenerator()
+        output = codegen.generate(ir)
+        assert "tune.max-rules-at-once 100" in output

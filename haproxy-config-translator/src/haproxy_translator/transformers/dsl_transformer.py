@@ -492,6 +492,13 @@ class DSLTransformer(Transformer):
                             subcategory = parts[2]
                             directive_parts = parts[3:]
                             tune_key = f"tune.{category}.{subcategory}.{'-'.join(directive_parts)}"
+                        # Special case for top-level multi-word tune directives (Phase 6)
+                        elif len(parts) == 3 and parts[1] in ("recv", "runqueue", "pipesize"):
+                            # tune_recv_enough, tune_runqueue_depth, tune_pipesize
+                            tune_key = f"tune.{'-'.join(parts[1:])}"
+                        elif len(parts) >= 3 and parts[1] == "max":
+                            # tune_max_checks_per_thread, tune_max_rules_at_once
+                            tune_key = f"tune.{'-'.join(parts[1:])}"
                         else:
                             category = parts[1]
                             directive_parts = parts[2:]
@@ -972,6 +979,27 @@ class DSLTransformer(Transformer):
 
     def global_tune_bufsize_small(self, items: list[Any]) -> tuple[str, int]:
         return ("tune_bufsize_small", items[0])
+
+    def global_tune_pipesize(self, items: list[Any]) -> tuple[str, int]:
+        return ("tune_pipesize", items[0])
+
+    def global_tune_recv_enough(self, items: list[Any]) -> tuple[str, int]:
+        return ("tune_recv_enough", items[0])
+
+    def global_tune_idletimer(self, items: list[Any]) -> tuple[str, str]:
+        return ("tune_idletimer", items[0])
+
+    def global_tune_runqueue_depth(self, items: list[Any]) -> tuple[str, int]:
+        return ("tune_runqueue_depth", items[0])
+
+    def global_tune_sched_low_latency(self, items: list[Any]) -> tuple[str, bool]:
+        return ("tune_sched_low_latency", items[0])
+
+    def global_tune_max_checks_per_thread(self, items: list[Any]) -> tuple[str, int]:
+        return ("tune_max_checks_per_thread", items[0])
+
+    def global_tune_max_rules_at_once(self, items: list[Any]) -> tuple[str, int]:
+        return ("tune_max_rules_at_once", items[0])
 
     # Phase 4B Part 1 - HTTP Client Configuration directives
     def global_httpclient_resolvers_disabled(self, items: list[Any]) -> tuple[str, bool]:
