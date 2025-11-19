@@ -279,6 +279,28 @@ frontend_section: "frontend" identifier "{" frontend_property* "}"
                   | "log-format" ":" string                -> frontend_log_format
                   | "capture" "request" "header" string number  -> frontend_capture_request_header
                   | "capture" "response" "header" string number -> frontend_capture_response_header
+                  | redirect_rule                          -> frontend_redirect
+                  | errorfile_directive                    -> frontend_errorfile
+
+// Redirect rules
+redirect_rule: "redirect" redirect_type string redirect_options?
+
+?redirect_type: "location"     -> redirect_location
+              | "prefix"       -> redirect_prefix
+              | "scheme" string -> redirect_scheme
+
+?redirect_options: redirect_option+
+
+?redirect_option: "code" number          -> redirect_code
+                | "drop-query"           -> redirect_drop_query
+                | "append-slash"         -> redirect_append_slash
+                | "set-cookie" string    -> redirect_set_cookie
+                | "clear-cookie" string  -> redirect_clear_cookie
+                | "if" identifier        -> redirect_if
+                | "unless" identifier    -> redirect_unless
+
+// Error file directive
+errorfile_directive: "errorfile" number string
 
 bind_directive: "bind" bind_address bind_option*
 
@@ -424,6 +446,12 @@ backend_section: "backend" identifier "{" backend_property* "}"
                  | "timeout_server_fin" ":" duration        -> backend_timeout_server_fin
                  | "retries" ":" number                     -> backend_retries
                  | "log-format" ":" string                  -> backend_log_format
+                 | redirect_rule                            -> backend_redirect
+                 | errorfile_directive                      -> backend_errorfile
+                 | "http-reuse" ":" http_reuse_mode         -> backend_http_reuse
+                 | "source" ":" string                      -> backend_source
+
+?http_reuse_mode: "never" | "safe" | "aggressive" | "always"
 
 balance_algo: BALANCE_ROUNDROBIN | BALANCE_LEASTCONN | BALANCE_SOURCE | BALANCE_URI | BALANCE_URL_PARAM | BALANCE_RANDOM | BALANCE_STATIC_RR | BALANCE_FIRST | BALANCE_HDR | BALANCE_RDP_COOKIE
 

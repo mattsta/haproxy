@@ -216,6 +216,36 @@ class TcpResponseRule(IRNode):
 
 
 @dataclass(frozen=True)
+class RedirectRule(IRNode):
+    """HTTP redirect rule."""
+
+    type: str = "location"  # location, prefix, scheme
+    target: str = ""  # Redirect target (URL, path, scheme)
+    code: int | None = None  # HTTP status code (301, 302, 303, etc.)
+    condition: str | None = None  # ACL condition
+    options: dict[str, Any] = field(default_factory=dict)  # drop-query, append-slash, set-cookie, etc.
+
+
+@dataclass(frozen=True)
+class ErrorFile(IRNode):
+    """Custom error page file mapping."""
+
+    code: int = 0  # HTTP status code (400, 403, 500, etc.)
+    file: str = ""  # Path to error page file
+
+
+@dataclass(frozen=True)
+class HttpCheckRule(IRNode):
+    """Advanced HTTP health check rule."""
+
+    type: str = "send"  # send, expect, connect
+    parameters: dict[str, Any] = field(default_factory=dict)
+    # For send: method, uri, headers
+    # For expect: status, string, rstatus, rstring
+    # For connect: port, ssl, sni
+
+
+@dataclass(frozen=True)
 class GlobalConfig(IRNode):
     """Global configuration section."""
 
@@ -578,6 +608,8 @@ class Frontend(IRNode):
     log_format: str | None = None  # Custom log format string
     capture_request_headers: list[tuple[str, int]] = field(default_factory=list)  # [(header_name, length), ...]
     capture_response_headers: list[tuple[str, int]] = field(default_factory=list)  # [(header_name, length), ...]
+    redirect_rules: list[RedirectRule] = field(default_factory=list)  # HTTP redirect rules
+    error_files: list[ErrorFile] = field(default_factory=list)  # Custom error page files
 
 
 @dataclass(frozen=True)
@@ -608,6 +640,11 @@ class Backend(IRNode):
     timeout_tunnel: str | None = None  # Tunnel timeout (WebSocket, etc.)
     timeout_server_fin: str | None = None  # Server FIN timeout
     retries: int | None = None
+    redirect_rules: list[RedirectRule] = field(default_factory=list)  # HTTP redirect rules
+    error_files: list[ErrorFile] = field(default_factory=list)  # Custom error page files
+    http_reuse: str | None = None  # Connection reuse mode: never, safe, aggressive, always
+    http_check_rules: list[HttpCheckRule] = field(default_factory=list)  # Advanced HTTP health checks
+    source: str | None = None  # Source IP/port for backend connections
 
 
 @dataclass(frozen=True)
@@ -627,6 +664,13 @@ class Listen(IRNode):
     options: list[str] = field(default_factory=list)
     stick_table: Optional["StickTable"] = None
     stick_rules: list["StickRule"] = field(default_factory=list)
+    redirect_rules: list[RedirectRule] = field(default_factory=list)  # HTTP redirect rules
+    error_files: list[ErrorFile] = field(default_factory=list)  # Custom error page files
+    health_check: HealthCheck | None = None
+    timeout_client: str | None = None
+    timeout_server: str | None = None
+    timeout_connect: str | None = None
+    maxconn: int | None = None
 
 
 # DSL-specific IR nodes (for advanced features)

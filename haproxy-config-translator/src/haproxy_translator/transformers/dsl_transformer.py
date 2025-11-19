@@ -13,10 +13,12 @@ from ..ir.nodes import (
     ConfigIR,
     DefaultsConfig,
     DefaultServer,
+    ErrorFile,
     ForLoop,
     Frontend,
     GlobalConfig,
     HealthCheck,
+    HttpCheckRule,
     HttpRequestRule,
     HttpResponseRule,
     Listen,
@@ -30,6 +32,7 @@ from ..ir.nodes import (
     Nameserver,
     Peer,
     PeersSection,
+    RedirectRule,
     ResolversSection,
     Server,
     ServerTemplate,
@@ -1641,6 +1644,89 @@ class DSLTransformer(Transformer):
 
     def frontend_capture_response_header(self, items: list[Any]) -> tuple[str, tuple[str, int]]:
         return ("capture_response_header", (items[0], items[1]))
+
+    # ===== Redirect Rules =====
+    def frontend_redirect(self, items: list[Any]) -> RedirectRule:
+        return cast("RedirectRule", items[0])
+
+    def backend_redirect(self, items: list[Any]) -> RedirectRule:
+        return cast("RedirectRule", items[0])
+
+    def redirect_rule(self, items: list[Any]) -> RedirectRule:
+        """Transform redirect rule."""
+        redirect_type = str(items[0])  # location, prefix, or scheme
+        target = str(items[1])
+        code = None
+        condition = None
+        options = {}
+
+        # Process optional redirect options
+        if len(items) > 2:
+            for item in items[2:]:
+                if isinstance(item, tuple):
+                    key, value = item
+                    if key == "code":
+                        code = value
+                    elif key == "if":
+                        condition = f"if {value}"
+                    elif key == "unless":
+                        condition = f"unless {value}"
+                    elif key in ("drop-query", "append-slash"):
+                        options[key] = True
+                    elif key in ("set-cookie", "clear-cookie"):
+                        options[key] = value
+
+        return RedirectRule(type=redirect_type, target=target, code=code, condition=condition, options=options)
+
+    def redirect_location(self, items: list[Any]) -> str:
+        return "location"
+
+    def redirect_prefix(self, items: list[Any]) -> str:
+        return "prefix"
+
+    def redirect_scheme(self, items: list[Any]) -> str:
+        return "scheme"
+
+    def redirect_code(self, items: list[Any]) -> tuple[str, int]:
+        return ("code", items[0])
+
+    def redirect_drop_query(self, items: list[Any]) -> tuple[str, bool]:
+        return ("drop-query", True)
+
+    def redirect_append_slash(self, items: list[Any]) -> tuple[str, bool]:
+        return ("append-slash", True)
+
+    def redirect_set_cookie(self, items: list[Any]) -> tuple[str, str]:
+        return ("set-cookie", items[0])
+
+    def redirect_clear_cookie(self, items: list[Any]) -> tuple[str, str]:
+        return ("clear-cookie", items[0])
+
+    def redirect_if(self, items: list[Any]) -> tuple[str, str]:
+        return ("if", str(items[0]))
+
+    def redirect_unless(self, items: list[Any]) -> tuple[str, str]:
+        return ("unless", str(items[0]))
+
+    # ===== Error Files =====
+    def frontend_errorfile(self, items: list[Any]) -> ErrorFile:
+        return cast("ErrorFile", items[0])
+
+    def backend_errorfile(self, items: list[Any]) -> ErrorFile:
+        return cast("ErrorFile", items[0])
+
+    def errorfile_directive(self, items: list[Any]) -> ErrorFile:
+        """Transform errorfile directive."""
+        code = int(items[0])
+        file = str(items[1])
+        return ErrorFile(code=code, file=file)
+
+    # ===== HTTP Reuse =====
+    def backend_http_reuse(self, items: list[Any]) -> tuple[str, str]:
+        return ("http_reuse", str(items[0]))
+
+    def backend_source(self, items: list[Any]) -> tuple[str, str]:
+        return ("source", str(items[0]))
 
     def bind_directive(self, items: list[Any]) -> Bind:
         address = str(items[0])
