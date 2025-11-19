@@ -38,9 +38,11 @@ tests/test_capacity_planning.py
 tests/test_connection_management.py
 tests/test_coverage_100_percent.py
 tests/test_critical_features.py
+tests/test_declare_capture.py
 tests/test_description.py
 tests/test_disabled_enabled_id.py
 tests/test_dispatch.py
+tests/test_email_alert.py
 tests/test_error_log_format.py
 tests/test_errorfiles.py
 tests/test_external_check.py
@@ -54,6 +56,7 @@ tests/test_load_balancing.py
 tests/test_load_server_state.py
 tests/test_logging.py
 tests/test_monitoring.py
+tests/test_persist_directives.py
 tests/test_phase5a_errorloc.py
 tests/test_phase5a_logging.py
 tests/test_proxy_directives.py

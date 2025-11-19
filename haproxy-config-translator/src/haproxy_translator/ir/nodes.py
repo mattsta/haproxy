@@ -512,6 +512,13 @@ class DefaultsConfig(IRNode):
     errorloc303: dict[int, str] = field(default_factory=dict)  # 303 redirect
     http_check: Optional["HealthCheck"] = None
     email_alert: EmailAlert | None = None  # Email alert configuration
+    # TCP keepalive (Phase 5B) - both client and server side
+    clitcpka_cnt: int | None = None  # Max keepalive probes before dropping client connection
+    clitcpka_idle: str | None = None  # Time before sending client keepalive probes
+    clitcpka_intvl: str | None = None  # Interval between client keepalive probes
+    srvtcpka_cnt: int | None = None  # Max keepalive probes before dropping server connection
+    srvtcpka_idle: str | None = None  # Time before sending server keepalive probes
+    srvtcpka_intvl: str | None = None  # Interval between server keepalive probes
 
 
 @dataclass(frozen=True)
@@ -757,6 +764,10 @@ class Frontend(IRNode):
     declare_captures: list[DeclareCapture] = field(default_factory=list)  # Declare capture slots
     force_persist_rules: list[ForcePersistRule] = field(default_factory=list)  # Force persistence rules
     ignore_persist_rules: list[IgnorePersistRule] = field(default_factory=list)  # Ignore persistence rules
+    # TCP keepalive (Phase 5B)
+    clitcpka_cnt: int | None = None  # Max keepalive probes before dropping connection
+    clitcpka_idle: str | None = None  # Time before sending keepalive probes
+    clitcpka_intvl: str | None = None  # Interval between keepalive probes
 
 
 @dataclass(frozen=True)
@@ -827,6 +838,10 @@ class Backend(IRNode):
     declare_captures: list[DeclareCapture] = field(default_factory=list)  # Declare capture slots
     force_persist_rules: list[ForcePersistRule] = field(default_factory=list)  # Force persistence rules
     ignore_persist_rules: list[IgnorePersistRule] = field(default_factory=list)  # Ignore persistence rules
+    # TCP keepalive (Phase 5B)
+    srvtcpka_cnt: int | None = None  # Max keepalive probes before dropping connection
+    srvtcpka_idle: str | None = None  # Time before sending keepalive probes
+    srvtcpka_intvl: str | None = None  # Interval between keepalive probes
 
 
 @dataclass(frozen=True)
@@ -870,6 +885,13 @@ class Listen(IRNode):
     declare_captures: list[DeclareCapture] = field(default_factory=list)  # Declare capture slots
     force_persist_rules: list[ForcePersistRule] = field(default_factory=list)  # Force persistence rules
     ignore_persist_rules: list[IgnorePersistRule] = field(default_factory=list)  # Ignore persistence rules
+    # TCP keepalive (Phase 5B) - both client and server side
+    clitcpka_cnt: int | None = None  # Max keepalive probes before dropping client connection
+    clitcpka_idle: str | None = None  # Time before sending client keepalive probes
+    clitcpka_intvl: str | None = None  # Interval between client keepalive probes
+    srvtcpka_cnt: int | None = None  # Max keepalive probes before dropping server connection
+    srvtcpka_idle: str | None = None  # Time before sending server keepalive probes
+    srvtcpka_intvl: str | None = None  # Interval between server keepalive probes
 
 
 # DSL-specific IR nodes (for advanced features)

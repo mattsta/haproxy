@@ -314,7 +314,7 @@ class TestHttpAfterResponseIntegration:
 
         for action, params in actions:
             # Build params string
-            params_str = " ".join([f"{k}: \"{v}\"" for k, v in params.items()])
+            params_str = " ".join([f'{k}: "{v}"' for k, v in params.items()])
 
             config = f"""
             config test {{

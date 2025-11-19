@@ -1,6 +1,6 @@
 # HAProxy Config Translator - Feature Parity Report
 
-**Generated:** 2025-11-19 13:14:26
+**Generated:** 2025-11-19 19:55:56
 **HAProxy Version:** 3.3
 **Documentation Source:** `/home/user/haproxy/doc/configuration.txt`
 
@@ -24,16 +24,16 @@ configuration language and the haproxy-config-translator implementation.
 ### Proxy Keywords (Frontend/Backend/Listen/Defaults)
 
 - **Total HAProxy Keywords:** 89
-- **Implemented:** 42
-- **Coverage:** `47.2%`
+- **Implemented:** 55
+- **Coverage:** `61.8%`
 
 ### Test Coverage
 
-- **Total Test Files:** 66
+- **Total Test Files:** 84
 - **Global Directive Tests:** 10
 - **Proxy Tests:** 0
 - **Bind Option Tests:** 2
-- **Server Option Tests:** 5
+- **Server Option Tests:** 7
 - **Action Tests:** 2
 - **Parser Tests:** 1
 - **Codegen Tests:** 1
@@ -227,7 +227,6 @@ configuration language and the haproxy-config-translator implementation.
   - bind
   - load-server-state-from-file
   - server
-  - server-state-file-name
   - stick
   - timeout
   - use_backend
@@ -239,10 +238,7 @@ configuration language and the haproxy-config-translator implementation.
 <summary>Show Important Keywords</summary>
 
 ```
-  - error-log-format
-  - errorfiles
   - external-check
-  - log-format-sd
   - log-steps
   - monitor
 ```
@@ -263,18 +259,10 @@ configuration language and the haproxy-config-translator implementation.
   - clitcpka-intvl
   - crt
   - declare
-  - dispatch
-  - email-alert
-  - errorloc
   - errorloc302
   - errorloc303
   - filter
-  - force-persist
-  - guid
   - hash-preserve-affinity
-  - http-after-response
-  - http-error
-  - ignore-persist
   - limited
   - marked
   - persist
@@ -287,7 +275,6 @@ configuration language and the haproxy-config-translator implementation.
   - srvtcpka-intvl
   - they
   - transparent
-  - use-fcgi-app
   - with
 ```
 

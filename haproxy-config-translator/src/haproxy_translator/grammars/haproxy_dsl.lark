@@ -241,6 +241,12 @@ defaults_section: "defaults" "{" defaults_property* "}"
                   | "errorloc302" number string        -> defaults_errorloc302
                   | "errorloc303" number string        -> defaults_errorloc303
                   | email_alert_block                  -> defaults_email_alert
+                  | "clitcpka-cnt" ":" number          -> defaults_clitcpka_cnt
+                  | "clitcpka-idle" ":" duration       -> defaults_clitcpka_idle
+                  | "clitcpka-intvl" ":" duration      -> defaults_clitcpka_intvl
+                  | "srvtcpka-cnt" ":" number          -> defaults_srvtcpka_cnt
+                  | "srvtcpka-idle" ":" duration       -> defaults_srvtcpka_idle
+                  | "srvtcpka-intvl" ":" duration      -> defaults_srvtcpka_intvl
 
 timeout_block: "timeout" ":" "{" timeout_item+ "}"
 
@@ -307,6 +313,9 @@ frontend_section: "frontend" identifier "{" frontend_property* "}"
                   | declare_capture_directive              -> frontend_declare_capture
                   | force_persist_directive                -> frontend_force_persist
                   | ignore_persist_directive               -> frontend_ignore_persist
+                  | "clitcpka-cnt" ":" number              -> frontend_clitcpka_cnt
+                  | "clitcpka-idle" ":" duration           -> frontend_clitcpka_idle
+                  | "clitcpka-intvl" ":" duration          -> frontend_clitcpka_intvl
 
 // Redirect rules
 redirect_rule: "redirect" redirect_type string redirect_options?
@@ -565,6 +574,9 @@ backend_section: "backend" identifier "{" backend_property* "}"
                  | "hash-balance-factor" ":" number         -> backend_hash_balance_factor
                  | "load-server-state-from-file" ":" load_server_state_mode  -> backend_load_server_state_from
                  | "server-state-file-name" ":" server_state_file_name_value  -> backend_server_state_file_name
+                 | "srvtcpka-cnt" ":" number               -> backend_srvtcpka_cnt
+                 | "srvtcpka-idle" ":" duration            -> backend_srvtcpka_idle
+                 | "srvtcpka-intvl" ":" duration           -> backend_srvtcpka_intvl
 
 ?server_state_file_name_value: SERVER_STATE_USE_BACKEND_NAME | string
 
@@ -801,6 +813,12 @@ listen_section: "listen" identifier "{" listen_property* "}"
                 | declare_capture_directive                -> listen_declare_capture
                 | force_persist_directive                  -> listen_force_persist
                 | ignore_persist_directive                 -> listen_ignore_persist
+                | "clitcpka-cnt" ":" number                -> listen_clitcpka_cnt
+                | "clitcpka-idle" ":" duration             -> listen_clitcpka_idle
+                | "clitcpka-intvl" ":" duration            -> listen_clitcpka_intvl
+                | "srvtcpka-cnt" ":" number                -> listen_srvtcpka_cnt
+                | "srvtcpka-idle" ":" duration             -> listen_srvtcpka_idle
+                | "srvtcpka-intvl" ":" duration            -> listen_srvtcpka_intvl
 
 // ===== Stats Socket =====
 stats_socket_item: "stats_socket" string "{" stats_socket_param* "}"

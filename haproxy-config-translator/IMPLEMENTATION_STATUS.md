@@ -6,7 +6,7 @@
 ## Current Status
 
 ### Tests & Code Quality ✅
-- **Tests:** 863 passing, 1 skipped, 0 failures
+- **Tests:** 882 passing, 1 skipped, 0 failures
 - **Test Coverage:** ~95%
 - **Mypy:** 0 errors (100% type safe)
 - **Ruff:** 27 minor style warnings (non-blocking, only in existing code)
@@ -86,16 +86,18 @@ Status: 100% complete (10 of 10 directives implemented)
 ### Priority 2: Advanced Proxy Features (Phase 5B)
 Implement advanced proxy control keywords:
 
-1. **filter** - Content filtering
-2. **force-persist** - Force session persistence
-3. **ignore-persist** - Ignore persistence conditions
-4. **persist** - Persistence options
-5. **rate-limit** - Rate limiting configuration
-6. **clitcpka-*** - Client TCP keepalive options
-7. **srvtcpka-*** - Server TCP keepalive options
-8. **transparent** - Transparent proxy mode
-9. **guid** - Global unique identifier
-10. **errorloc/errorloc302/errorloc303** - Error location redirects
+1. **filter** - Content filtering ❌ PENDING
+2. ✅ **force-persist** - Force session persistence (IMPLEMENTED)
+3. ✅ **ignore-persist** - Ignore persistence conditions (IMPLEMENTED)
+4. **persist** - Persistence options ❌ PENDING
+5. **rate-limit** - Rate limiting configuration ❌ PENDING
+6. ✅ **clitcpka-*** - Client TCP keepalive options (IMPLEMENTED - cnt, idle, intvl)
+7. ✅ **srvtcpka-*** - Server TCP keepalive options (IMPLEMENTED - cnt, idle, intvl)
+8. ✅ **transparent** - Transparent proxy mode (via option mechanism)
+9. ✅ **guid** - Global unique identifier (IMPLEMENTED)
+10. ✅ **errorloc/errorloc302/errorloc303** - Error location redirects (IMPLEMENTED)
+
+**Phase 5B Progress:** 7/10 directives implemented (70%)
 
 **Estimated Impact:** +10-15 keywords (67/89, 75% coverage)
 

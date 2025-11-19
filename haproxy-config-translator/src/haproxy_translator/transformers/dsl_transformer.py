@@ -11,22 +11,22 @@ from ..ir.nodes import (
     Bind,
     CompressionConfig,
     ConfigIR,
+    DeclareCapture,
     DefaultsConfig,
     DefaultServer,
-    DeclareCapture,
     EmailAlert,
     ErrorFile,
     ForcePersistRule,
     ForLoop,
-    IgnorePersistRule,
     Frontend,
     GlobalConfig,
     HealthCheck,
+    HttpAfterResponseRule,
     HttpCheckRule,
     HttpError,
     HttpRequestRule,
     HttpResponseRule,
-    HttpAfterResponseRule,
+    IgnorePersistRule,
     Listen,
     LogFacility,
     LogLevel,
@@ -1399,6 +1399,13 @@ class DSLTransformer(Transformer):
         errorloc303 = {}
         error_log_format = None
         email_alert = None
+        # TCP keepalive (Phase 5B)
+        clitcpka_cnt = None
+        clitcpka_idle = None
+        clitcpka_intvl = None
+        srvtcpka_cnt = None
+        srvtcpka_idle = None
+        srvtcpka_intvl = None
 
         for item in items:
             if isinstance(item, tuple):
@@ -1414,6 +1421,18 @@ class DSLTransformer(Transformer):
                         options.extend(value)
                     else:
                         options.append(value)
+                elif key == "clitcpka_cnt":
+                    clitcpka_cnt = value
+                elif key == "clitcpka_idle":
+                    clitcpka_idle = value
+                elif key == "clitcpka_intvl":
+                    clitcpka_intvl = value
+                elif key == "srvtcpka_cnt":
+                    srvtcpka_cnt = value
+                elif key == "srvtcpka_idle":
+                    srvtcpka_idle = value
+                elif key == "srvtcpka_intvl":
+                    srvtcpka_intvl = value
                 elif key == "errorloc":
                     code, url = value
                     errorloc[code] = url
@@ -1470,6 +1489,12 @@ class DSLTransformer(Transformer):
             errorloc303=errorloc303,
             error_log_format=error_log_format,
             email_alert=email_alert,
+            clitcpka_cnt=clitcpka_cnt,
+            clitcpka_idle=clitcpka_idle,
+            clitcpka_intvl=clitcpka_intvl,
+            srvtcpka_cnt=srvtcpka_cnt,
+            srvtcpka_idle=srvtcpka_idle,
+            srvtcpka_intvl=srvtcpka_intvl,
         )
 
     def defaults_mode(self, items: list[Any]) -> tuple[str, str]:
@@ -1567,6 +1592,10 @@ class DSLTransformer(Transformer):
         errorloc = {}
         errorloc302 = {}
         errorloc303 = {}
+        # TCP keepalive (Phase 5B)
+        clitcpka_cnt = None
+        clitcpka_idle = None
+        clitcpka_intvl = None
 
         for prop in properties:
             if isinstance(prop, Bind):
@@ -1697,6 +1726,12 @@ class DSLTransformer(Transformer):
                     errorloc302.update(value)
                 elif key == "errorloc303":
                     errorloc303.update(value)
+                elif key == "clitcpka_cnt":
+                    clitcpka_cnt = value
+                elif key == "clitcpka_idle":
+                    clitcpka_idle = value
+                elif key == "clitcpka_intvl":
+                    clitcpka_intvl = value
 
         return Frontend(
             name=name,
@@ -1750,6 +1785,9 @@ class DSLTransformer(Transformer):
             errorloc=errorloc,
             errorloc302=errorloc302,
             errorloc303=errorloc303,
+            clitcpka_cnt=clitcpka_cnt,
+            clitcpka_idle=clitcpka_idle,
+            clitcpka_intvl=clitcpka_intvl,
         )
 
     def frontend_mode(self, items: list[Any]) -> tuple[str, str]:
@@ -2041,6 +2079,79 @@ class DSLTransformer(Transformer):
     def defaults_email_alert(self, items: list[Any]) -> EmailAlert:
         """Transform email-alert for defaults."""
         return cast("EmailAlert", items[0])
+
+    # TCP keepalive methods (Phase 5B)
+    def defaults_clitcpka_cnt(self, items: list[Any]) -> tuple[str, int]:
+        """Transform clitcpka-cnt for defaults."""
+        return ("clitcpka_cnt", int(items[0]))
+
+    def defaults_clitcpka_idle(self, items: list[Any]) -> tuple[str, str]:
+        """Transform clitcpka-idle for defaults."""
+        return ("clitcpka_idle", str(items[0]))
+
+    def defaults_clitcpka_intvl(self, items: list[Any]) -> tuple[str, str]:
+        """Transform clitcpka-intvl for defaults."""
+        return ("clitcpka_intvl", str(items[0]))
+
+    def defaults_srvtcpka_cnt(self, items: list[Any]) -> tuple[str, int]:
+        """Transform srvtcpka-cnt for defaults."""
+        return ("srvtcpka_cnt", int(items[0]))
+
+    def defaults_srvtcpka_idle(self, items: list[Any]) -> tuple[str, str]:
+        """Transform srvtcpka-idle for defaults."""
+        return ("srvtcpka_idle", str(items[0]))
+
+    def defaults_srvtcpka_intvl(self, items: list[Any]) -> tuple[str, str]:
+        """Transform srvtcpka-intvl for defaults."""
+        return ("srvtcpka_intvl", str(items[0]))
+
+    def frontend_clitcpka_cnt(self, items: list[Any]) -> tuple[str, int]:
+        """Transform clitcpka-cnt for frontend."""
+        return ("clitcpka_cnt", int(items[0]))
+
+    def frontend_clitcpka_idle(self, items: list[Any]) -> tuple[str, str]:
+        """Transform clitcpka-idle for frontend."""
+        return ("clitcpka_idle", str(items[0]))
+
+    def frontend_clitcpka_intvl(self, items: list[Any]) -> tuple[str, str]:
+        """Transform clitcpka-intvl for frontend."""
+        return ("clitcpka_intvl", str(items[0]))
+
+    def backend_srvtcpka_cnt(self, items: list[Any]) -> tuple[str, int]:
+        """Transform srvtcpka-cnt for backend."""
+        return ("srvtcpka_cnt", int(items[0]))
+
+    def backend_srvtcpka_idle(self, items: list[Any]) -> tuple[str, str]:
+        """Transform srvtcpka-idle for backend."""
+        return ("srvtcpka_idle", str(items[0]))
+
+    def backend_srvtcpka_intvl(self, items: list[Any]) -> tuple[str, str]:
+        """Transform srvtcpka-intvl for backend."""
+        return ("srvtcpka_intvl", str(items[0]))
+
+    def listen_clitcpka_cnt(self, items: list[Any]) -> tuple[str, int]:
+        """Transform clitcpka-cnt for listen."""
+        return ("clitcpka_cnt", int(items[0]))
+
+    def listen_clitcpka_idle(self, items: list[Any]) -> tuple[str, str]:
+        """Transform clitcpka-idle for listen."""
+        return ("clitcpka_idle", str(items[0]))
+
+    def listen_clitcpka_intvl(self, items: list[Any]) -> tuple[str, str]:
+        """Transform clitcpka-intvl for listen."""
+        return ("clitcpka_intvl", str(items[0]))
+
+    def listen_srvtcpka_cnt(self, items: list[Any]) -> tuple[str, int]:
+        """Transform srvtcpka-cnt for listen."""
+        return ("srvtcpka_cnt", int(items[0]))
+
+    def listen_srvtcpka_idle(self, items: list[Any]) -> tuple[str, str]:
+        """Transform srvtcpka-idle for listen."""
+        return ("srvtcpka_idle", str(items[0]))
+
+    def listen_srvtcpka_intvl(self, items: list[Any]) -> tuple[str, str]:
+        """Transform srvtcpka-intvl for listen."""
+        return ("srvtcpka_intvl", str(items[0]))
 
     def frontend_declare_capture(self, items: list[Any]) -> DeclareCapture:
         """Transform declare capture for frontend."""
@@ -2727,6 +2838,10 @@ class DSLTransformer(Transformer):
         errorloc: dict[int, str] = {}
         errorloc302: dict[int, str] = {}
         errorloc303: dict[int, str] = {}
+        # TCP keepalive (Phase 5B)
+        srvtcpka_cnt = None
+        srvtcpka_idle = None
+        srvtcpka_intvl = None
         errorfiles = None
         dispatch = None
         use_fcgi_app = None
@@ -2898,6 +3013,12 @@ class DSLTransformer(Transformer):
                     load_server_state_from = LoadServerStateFrom(value)
                 elif key == "server_state_file_name":
                     server_state_file_name = value
+                elif key == "srvtcpka_cnt":
+                    srvtcpka_cnt = value
+                elif key == "srvtcpka_idle":
+                    srvtcpka_idle = value
+                elif key == "srvtcpka_intvl":
+                    srvtcpka_intvl = value
 
         # Build metadata with server loops if any
         metadata = {}
@@ -2969,6 +3090,9 @@ class DSLTransformer(Transformer):
             declare_captures=declare_captures,
             force_persist_rules=force_persist_rules,
             ignore_persist_rules=ignore_persist_rules,
+            srvtcpka_cnt=srvtcpka_cnt,
+            srvtcpka_idle=srvtcpka_idle,
+            srvtcpka_intvl=srvtcpka_intvl,
             metadata=metadata,
         )
 
