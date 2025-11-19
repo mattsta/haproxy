@@ -1067,6 +1067,12 @@ class DSLTransformer(Transformer):
     def global_tune_vars_global_max_size(self, items: list[Any]) -> tuple[str, int]:
         return ("tune_vars_global_max_size", items[0])
 
+    def global_tune_vars_proc_max_size(self, items: list[Any]) -> tuple[str, int]:
+        return ("tune_vars_proc_max_size", items[0])
+
+    def global_tune_vars_txn_max_size(self, items: list[Any]) -> tuple[str, int]:
+        return ("tune_vars_txn_max_size", items[0])
+
     # Phase 4B Part 1 - HTTP Client Configuration directives
     def global_httpclient_resolvers_disabled(self, items: list[Any]) -> tuple[str, bool]:
         return ("httpclient_resolvers_disabled", items[0])

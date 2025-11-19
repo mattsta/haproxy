@@ -642,3 +642,37 @@ class TestPhase6PerformanceTuning:
         codegen = HAProxyCodeGenerator()
         output = codegen.generate(ir)
         assert "tune.vars.global-max-size 65536" in output
+
+    def test_tune_vars_proc_max_size(self):
+        """Test tune.vars.proc-max-size directive."""
+        config = """
+        config test {
+            global {
+                tune.vars.proc-max-size: 32768
+            }
+        }
+        """
+        parser = DSLParser()
+        ir = parser.parse(config)
+        assert ir.global_config.tuning.get("tune.vars.proc-max-size") == 32768
+
+        codegen = HAProxyCodeGenerator()
+        output = codegen.generate(ir)
+        assert "tune.vars.proc-max-size 32768" in output
+
+    def test_tune_vars_txn_max_size(self):
+        """Test tune.vars.txn-max-size directive."""
+        config = """
+        config test {
+            global {
+                tune.vars.txn-max-size: 16384
+            }
+        }
+        """
+        parser = DSLParser()
+        ir = parser.parse(config)
+        assert ir.global_config.tuning.get("tune.vars.txn-max-size") == 16384
+
+        codegen = HAProxyCodeGenerator()
+        output = codegen.generate(ir)
+        assert "tune.vars.txn-max-size 16384" in output
