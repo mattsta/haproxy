@@ -29,6 +29,7 @@ from ..ir.nodes import (
     Mailer,
     MailersSection,
     Mode,
+    MonitorFailRule,
     Nameserver,
     Peer,
     PeersSection,
@@ -1505,6 +1506,8 @@ class DSLTransformer(Transformer):
         timeout_client_fin = None
         timeout_tarpit = None
         monitor_uri = None
+        monitor_net = []
+        monitor_fail_rules = []
         maxconn = None
         log_format = None
         capture_request_headers = []
@@ -1521,6 +1524,8 @@ class DSLTransformer(Transformer):
                 redirect_rules.append(prop)
             elif isinstance(prop, ErrorFile):
                 error_files.append(prop)
+            elif isinstance(prop, MonitorFailRule):
+                monitor_fail_rules.append(prop)
             elif isinstance(prop, list) and all(isinstance(x, ACL) for x in prop):
                 acls.extend(prop)
             elif isinstance(prop, HttpRequestRule):
@@ -1579,6 +1584,8 @@ class DSLTransformer(Transformer):
                     timeout_tarpit = value
                 elif key == "monitor_uri":
                     monitor_uri = value
+                elif key == "monitor_net":
+                    monitor_net.append(value)
                 elif key == "maxconn":
                     maxconn = value
                 elif key == "log_format":
@@ -1608,6 +1615,8 @@ class DSLTransformer(Transformer):
             timeout_client_fin=timeout_client_fin,
             timeout_tarpit=timeout_tarpit,
             monitor_uri=monitor_uri,
+            monitor_net=monitor_net,
+            monitor_fail_rules=monitor_fail_rules,
             maxconn=maxconn,
             log_format=log_format,
             capture_request_headers=capture_request_headers,
@@ -1642,6 +1651,22 @@ class DSLTransformer(Transformer):
 
     def frontend_monitor_uri(self, items: list[Any]) -> tuple[str, str]:
         return ("monitor_uri", str(items[0]))
+
+    def frontend_monitor_net(self, items: list[Any]) -> tuple[str, str]:
+        """Transform monitor-net directive."""
+        return ("monitor_net", str(items[0]))
+
+    def frontend_monitor_fail(self, items: list[Any]) -> MonitorFailRule:
+        """Transform monitor fail directive."""
+        # items[0] is the if_condition tuple
+        condition = None
+        if items[0] is not None:
+            if isinstance(items[0], tuple):
+                _, acl_name = items[0]
+                condition = f"if {acl_name}"
+            else:
+                condition = str(items[0])
+        return MonitorFailRule(condition=condition or "")
 
     def frontend_maxconn(self, items: list[Any]) -> tuple[str, int]:
         return ("maxconn", items[0])

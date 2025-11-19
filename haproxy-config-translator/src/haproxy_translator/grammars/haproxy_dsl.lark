@@ -275,6 +275,8 @@ frontend_section: "frontend" identifier "{" frontend_property* "}"
                   | "timeout_client_fin" ":" duration      -> frontend_timeout_client_fin
                   | "timeout_tarpit" ":" duration          -> frontend_timeout_tarpit
                   | "monitor_uri" ":" string               -> frontend_monitor_uri
+                  | "monitor-net" string                   -> frontend_monitor_net
+                  | "monitor" "fail" if_condition          -> frontend_monitor_fail
                   | "maxconn" ":" number                   -> frontend_maxconn
                   | "log-format" ":" string                -> frontend_log_format
                   | "capture" "request" "header" string number  -> frontend_capture_request_header

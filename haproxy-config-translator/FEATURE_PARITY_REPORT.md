@@ -1,6 +1,6 @@
 # HAProxy Config Translator - Feature Parity Report
 
-**Generated:** 2025-11-19 01:38:09
+**Generated:** 2025-11-19 01:55:07
 **HAProxy Version:** 3.3
 **Documentation Source:** `/home/user/haproxy/doc/configuration.txt`
 
@@ -24,12 +24,12 @@ configuration language and the haproxy-config-translator implementation.
 ### Proxy Keywords (Frontend/Backend/Listen/Defaults)
 
 - **Total HAProxy Keywords:** 89
-- **Implemented:** 25
-- **Coverage:** `28.1%`
+- **Implemented:** 27
+- **Coverage:** `30.3%`
 
 ### Test Coverage
 
-- **Total Test Files:** 56
+- **Total Test Files:** 57
 - **Global Directive Tests:** 10
 - **Proxy Tests:** 0
 - **Bind Option Tests:** 2
@@ -225,7 +225,6 @@ configuration language and the haproxy-config-translator implementation.
 
 ```
   - bind
-  - hash-balance-factor
   - load-server-state-from-file
   - server
   - server-state-file-name
@@ -281,7 +280,6 @@ configuration language and the haproxy-config-translator implementation.
   - fullconn
   - guid
   - hash-preserve-affinity
-  - hash-type
   - http-after-response
   - http-error
   - http-send-name-header

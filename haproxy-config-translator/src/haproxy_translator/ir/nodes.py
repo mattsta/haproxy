@@ -286,6 +286,13 @@ class UseServerRule(IRNode):
 
 
 @dataclass(frozen=True)
+class MonitorFailRule(IRNode):
+    """monitor fail directive for conditional monitoring failures."""
+
+    condition: str = ""  # ACL condition (if/unless)
+
+
+@dataclass(frozen=True)
 class GlobalConfig(IRNode):
     """Global configuration section."""
 
@@ -645,6 +652,8 @@ class Frontend(IRNode):
     timeout_tarpit: str | None = None  # Tarpit timeout
     maxconn: int | None = None
     monitor_uri: str | None = None  # Monitor URI for health checks
+    monitor_net: list[str] = field(default_factory=list)  # Network sources for monitoring requests
+    monitor_fail_rules: list[MonitorFailRule] = field(default_factory=list)  # Conditional monitoring failures
     log_format: str | None = None  # Custom log format string
     capture_request_headers: list[tuple[str, int]] = field(default_factory=list)  # [(header_name, length), ...]
     capture_response_headers: list[tuple[str, int]] = field(default_factory=list)  # [(header_name, length), ...]

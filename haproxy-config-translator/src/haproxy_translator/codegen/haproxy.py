@@ -558,6 +558,14 @@ class HAProxyCodeGenerator:
         if frontend.monitor_uri:
             lines.append(self._indent(f"monitor-uri {frontend.monitor_uri}"))
 
+        # Monitor network sources
+        for net in frontend.monitor_net:
+            lines.append(self._indent(f"monitor-net {net}"))
+
+        # Monitor fail conditions
+        for fail_rule in frontend.monitor_fail_rules:
+            lines.append(self._indent(f"monitor fail {fail_rule.condition}"))
+
         # Log format
         if frontend.log_format:
             lines.append(self._indent(f"log-format {frontend.log_format}"))
