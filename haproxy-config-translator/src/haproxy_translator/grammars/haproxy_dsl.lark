@@ -305,6 +305,8 @@ frontend_section: "frontend" identifier "{" frontend_property* "}"
                   | http_error_block                       -> frontend_http_error
                   | email_alert_block                      -> frontend_email_alert
                   | declare_capture_directive              -> frontend_declare_capture
+                  | force_persist_directive                -> frontend_force_persist
+                  | ignore_persist_directive               -> frontend_ignore_persist
 
 // Redirect rules
 redirect_rule: "redirect" redirect_type string redirect_options?
@@ -360,6 +362,11 @@ declare_capture_directive: "declare" "capture" capture_type "len" number
 
 CAPTURE_REQUEST: "request"
 CAPTURE_RESPONSE: "response"
+
+// Force persist and ignore persist directives
+force_persist_directive: "force-persist" if_condition
+
+ignore_persist_directive: "ignore-persist" if_condition
 
 // Stats block (proxy-level)
 stats_block: "stats" "{" proxy_stats_property* "}"
@@ -540,6 +547,8 @@ backend_section: "backend" identifier "{" backend_property* "}"
                  | http_error_block                         -> backend_http_error
                  | email_alert_block                        -> backend_email_alert
                  | declare_capture_directive                -> backend_declare_capture
+                 | force_persist_directive                  -> backend_force_persist
+                 | ignore_persist_directive                 -> backend_ignore_persist
                  | "errorfiles" ":" string                  -> backend_errorfiles
                  | "dispatch" ":" string                    -> backend_dispatch
                  | "use-fcgi-app" ":" string                -> backend_use_fcgi_app
@@ -790,6 +799,8 @@ listen_section: "listen" identifier "{" listen_property* "}"
                 | http_error_block                         -> listen_http_error
                 | email_alert_block                        -> listen_email_alert
                 | declare_capture_directive                -> listen_declare_capture
+                | force_persist_directive                  -> listen_force_persist
+                | ignore_persist_directive                 -> listen_ignore_persist
 
 // ===== Stats Socket =====
 stats_socket_item: "stats_socket" string "{" stats_socket_param* "}"

@@ -269,6 +269,20 @@ class DeclareCapture(IRNode):
 
 
 @dataclass(frozen=True)
+class ForcePersistRule(IRNode):
+    """Force persistence rule (force-persist directive)."""
+
+    condition: str | None = None  # ACL condition (if/unless)
+
+
+@dataclass(frozen=True)
+class IgnorePersistRule(IRNode):
+    """Ignore persistence rule (ignore-persist directive)."""
+
+    condition: str | None = None  # ACL condition (if/unless)
+
+
+@dataclass(frozen=True)
 class HttpCheckRule(IRNode):
     """Advanced HTTP health check rule (http-check directive)."""
 
@@ -741,6 +755,8 @@ class Frontend(IRNode):
     http_errors: list[HttpError] = field(default_factory=list)  # Custom HTTP error responses
     email_alert: EmailAlert | None = None  # Email alert configuration
     declare_captures: list[DeclareCapture] = field(default_factory=list)  # Declare capture slots
+    force_persist_rules: list[ForcePersistRule] = field(default_factory=list)  # Force persistence rules
+    ignore_persist_rules: list[IgnorePersistRule] = field(default_factory=list)  # Ignore persistence rules
 
 
 @dataclass(frozen=True)
@@ -809,6 +825,8 @@ class Backend(IRNode):
     server_state_file_name: str | None = None  # Server state file name (use-backend-name or file path)
     email_alert: EmailAlert | None = None  # Email alert configuration
     declare_captures: list[DeclareCapture] = field(default_factory=list)  # Declare capture slots
+    force_persist_rules: list[ForcePersistRule] = field(default_factory=list)  # Force persistence rules
+    ignore_persist_rules: list[IgnorePersistRule] = field(default_factory=list)  # Ignore persistence rules
 
 
 @dataclass(frozen=True)
@@ -850,6 +868,8 @@ class Listen(IRNode):
     log_format_sd: str | None = None  # Structured data log format (RFC 5424)
     email_alert: EmailAlert | None = None  # Email alert configuration
     declare_captures: list[DeclareCapture] = field(default_factory=list)  # Declare capture slots
+    force_persist_rules: list[ForcePersistRule] = field(default_factory=list)  # Force persistence rules
+    ignore_persist_rules: list[IgnorePersistRule] = field(default_factory=list)  # Ignore persistence rules
 
 
 # DSL-specific IR nodes (for advanced features)

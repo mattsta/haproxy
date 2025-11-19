@@ -16,7 +16,9 @@ from ..ir.nodes import (
     DeclareCapture,
     EmailAlert,
     ErrorFile,
+    ForcePersistRule,
     ForLoop,
+    IgnorePersistRule,
     Frontend,
     GlobalConfig,
     HealthCheck,
@@ -1560,6 +1562,8 @@ class DSLTransformer(Transformer):
         http_errors = []
         email_alert = None
         declare_captures = []
+        force_persist_rules = []
+        ignore_persist_rules = []
         errorloc = {}
         errorloc302 = {}
         errorloc303 = {}
@@ -1579,6 +1583,10 @@ class DSLTransformer(Transformer):
                 email_alert = prop
             elif isinstance(prop, DeclareCapture):
                 declare_captures.append(prop)
+            elif isinstance(prop, ForcePersistRule):
+                force_persist_rules.append(prop)
+            elif isinstance(prop, IgnorePersistRule):
+                ignore_persist_rules.append(prop)
             elif isinstance(prop, StatsConfig):
                 stats_config = prop
             elif isinstance(prop, MonitorFailRule):
@@ -1737,6 +1745,8 @@ class DSLTransformer(Transformer):
             http_errors=http_errors,
             email_alert=email_alert,
             declare_captures=declare_captures,
+            force_persist_rules=force_persist_rules,
+            ignore_persist_rules=ignore_persist_rules,
             errorloc=errorloc,
             errorloc302=errorloc302,
             errorloc303=errorloc303,
@@ -2043,6 +2053,30 @@ class DSLTransformer(Transformer):
     def listen_declare_capture(self, items: list[Any]) -> DeclareCapture:
         """Transform declare capture for listen."""
         return cast("DeclareCapture", items[0])
+
+    def frontend_force_persist(self, items: list[Any]) -> ForcePersistRule:
+        """Transform force-persist for frontend."""
+        return cast("ForcePersistRule", items[0])
+
+    def backend_force_persist(self, items: list[Any]) -> ForcePersistRule:
+        """Transform force-persist for backend."""
+        return cast("ForcePersistRule", items[0])
+
+    def listen_force_persist(self, items: list[Any]) -> ForcePersistRule:
+        """Transform force-persist for listen."""
+        return cast("ForcePersistRule", items[0])
+
+    def frontend_ignore_persist(self, items: list[Any]) -> IgnorePersistRule:
+        """Transform ignore-persist for frontend."""
+        return cast("IgnorePersistRule", items[0])
+
+    def backend_ignore_persist(self, items: list[Any]) -> IgnorePersistRule:
+        """Transform ignore-persist for backend."""
+        return cast("IgnorePersistRule", items[0])
+
+    def listen_ignore_persist(self, items: list[Any]) -> IgnorePersistRule:
+        """Transform ignore-persist for listen."""
+        return cast("IgnorePersistRule", items[0])
 
     def listen_http_after_response(self, items: list[Any]) -> list[HttpAfterResponseRule]:
         """Transform http-after-response for listen."""
@@ -2405,6 +2439,24 @@ class DSLTransformer(Transformer):
         length = int(items[1])
         return DeclareCapture(capture_type=capture_type, length=length)
 
+    def force_persist_directive(self, items: list[Any]) -> ForcePersistRule:
+        """Build ForcePersistRule from force-persist directive."""
+        # items[0] is the if_condition tuple ("condition", "acl_name")
+        condition = None
+        if items and isinstance(items[0], tuple) and len(items[0]) == 2:
+            # Reconstruct the condition as "if acl_name"
+            condition = f"if {items[0][1]}"
+        return ForcePersistRule(condition=condition)
+
+    def ignore_persist_directive(self, items: list[Any]) -> IgnorePersistRule:
+        """Build IgnorePersistRule from ignore-persist directive."""
+        # items[0] is the if_condition tuple ("condition", "acl_name")
+        condition = None
+        if items and isinstance(items[0], tuple) and len(items[0]) == 2:
+            # Reconstruct the condition as "if acl_name"
+            condition = f"if {items[0][1]}"
+        return IgnorePersistRule(condition=condition)
+
     # ===== tcp-check Block =====
     def backend_tcp_check(self, items: list[Any]) -> list[TcpCheckRule]:
         """Backend tcp-check block returns list of rules."""
@@ -2670,6 +2722,8 @@ class DSLTransformer(Transformer):
         http_errors = []
         email_alert = None
         declare_captures = []
+        force_persist_rules = []
+        ignore_persist_rules = []
         errorloc: dict[int, str] = {}
         errorloc302: dict[int, str] = {}
         errorloc303: dict[int, str] = {}
@@ -2709,6 +2763,10 @@ class DSLTransformer(Transformer):
                 email_alert = prop
             elif isinstance(prop, DeclareCapture):
                 declare_captures.append(prop)
+            elif isinstance(prop, ForcePersistRule):
+                force_persist_rules.append(prop)
+            elif isinstance(prop, IgnorePersistRule):
+                ignore_persist_rules.append(prop)
             elif isinstance(prop, HttpCheckRule):
                 http_check_rules.append(prop)
             elif isinstance(prop, TcpCheckRule):
@@ -2909,6 +2967,8 @@ class DSLTransformer(Transformer):
             server_state_file_name=server_state_file_name,
             email_alert=email_alert,
             declare_captures=declare_captures,
+            force_persist_rules=force_persist_rules,
+            ignore_persist_rules=ignore_persist_rules,
             metadata=metadata,
         )
 
@@ -3229,6 +3289,8 @@ class DSLTransformer(Transformer):
         http_errors = []
         email_alert = None
         declare_captures = []
+        force_persist_rules = []
+        ignore_persist_rules = []
 
         for prop in properties:
             if isinstance(prop, Bind):
@@ -3267,6 +3329,10 @@ class DSLTransformer(Transformer):
                 email_alert = prop
             elif isinstance(prop, DeclareCapture):
                 declare_captures.append(prop)
+            elif isinstance(prop, ForcePersistRule):
+                force_persist_rules.append(prop)
+            elif isinstance(prop, IgnorePersistRule):
+                ignore_persist_rules.append(prop)
             elif isinstance(prop, list) and all(isinstance(x, HttpAfterResponseRule) for x in prop):
                 http_after_response_rules.extend(prop)
             elif isinstance(prop, tuple):
@@ -3352,6 +3418,8 @@ class DSLTransformer(Transformer):
             http_errors=http_errors,
             email_alert=email_alert,
             declare_captures=declare_captures,
+            force_persist_rules=force_persist_rules,
+            ignore_persist_rules=ignore_persist_rules,
             metadata=metadata,
         )
 

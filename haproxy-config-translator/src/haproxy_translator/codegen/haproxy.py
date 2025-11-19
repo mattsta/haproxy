@@ -12,7 +12,9 @@ from ..ir.nodes import (
     DefaultServer,
     DeclareCapture,
     EmailAlert,
+    ForcePersistRule,
     Frontend,
+    IgnorePersistRule,
     GlobalConfig,
     HealthCheck,
     HttpCheckRule,
@@ -713,6 +715,16 @@ class HAProxyCodeGenerator:
             for line in self._format_declare_captures(frontend.declare_captures):
                 lines.append(self._indent(line))
 
+        # Force persist rules
+        if frontend.force_persist_rules:
+            for line in self._format_force_persist_rules(frontend.force_persist_rules):
+                lines.append(self._indent(line))
+
+        # Ignore persist rules
+        if frontend.ignore_persist_rules:
+            for line in self._format_ignore_persist_rules(frontend.ignore_persist_rules):
+                lines.append(self._indent(line))
+
         # Error location redirects
         for code, location in frontend.errorloc.items():
             lines.append(self._indent(f'errorloc {code} "{location}"'))
@@ -902,6 +914,16 @@ class HAProxyCodeGenerator:
             for line in self._format_declare_captures(backend.declare_captures):
                 lines.append(self._indent(line))
 
+        # Force persist rules
+        if backend.force_persist_rules:
+            for line in self._format_force_persist_rules(backend.force_persist_rules):
+                lines.append(self._indent(line))
+
+        # Ignore persist rules
+        if backend.ignore_persist_rules:
+            for line in self._format_ignore_persist_rules(backend.ignore_persist_rules):
+                lines.append(self._indent(line))
+
         # Error location redirects
         for code, location in backend.errorloc.items():
             lines.append(self._indent(f'errorloc {code} "{location}"'))
@@ -1063,6 +1085,16 @@ class HAProxyCodeGenerator:
         # Declare capture slots
         if listen.declare_captures:
             for line in self._format_declare_captures(listen.declare_captures):
+                lines.append(self._indent(line))
+
+        # Force persist rules
+        if listen.force_persist_rules:
+            for line in self._format_force_persist_rules(listen.force_persist_rules):
+                lines.append(self._indent(line))
+
+        # Ignore persist rules
+        if listen.ignore_persist_rules:
+            for line in self._format_ignore_persist_rules(listen.ignore_persist_rules):
                 lines.append(self._indent(line))
 
         # Servers
@@ -1277,6 +1309,26 @@ class HAProxyCodeGenerator:
         lines = []
         for capture in declare_captures:
             lines.append(f"declare capture {capture.capture_type} len {capture.length}")
+        return lines
+
+    def _format_force_persist_rules(self, rules: list["ForcePersistRule"]) -> list[str]:
+        """Format force-persist directives."""
+        lines = []
+        for rule in rules:
+            line = "force-persist"
+            if rule.condition:
+                line += f" {rule.condition}"
+            lines.append(line)
+        return lines
+
+    def _format_ignore_persist_rules(self, rules: list["IgnorePersistRule"]) -> list[str]:
+        """Format ignore-persist directives."""
+        lines = []
+        for rule in rules:
+            line = "ignore-persist"
+            if rule.condition:
+                line += f" {rule.condition}"
+            lines.append(line)
         return lines
 
     def _format_use_server_rule(self, use_server: "UseServerRule") -> str:
