@@ -669,6 +669,8 @@ class Frontend(IRNode):
     log: list[str] = field(default_factory=list)  # Log targets (global or specific)
     log_tag: str | None = None  # Tag for log messages
     log_format: str | None = None  # Custom log format string
+    error_log_format: str | None = None  # Custom error log format string
+    log_format_sd: str | None = None  # Structured data log format (RFC 5424)
     unique_id_format: str | None = None  # Format string for unique request IDs
     unique_id_header: str | None = None  # HTTP header name for unique request ID
     stats_config: StatsConfig | None = None  # Statistics reporting configuration
@@ -701,6 +703,8 @@ class Backend(IRNode):
     log: list[str] = field(default_factory=list)  # Log targets (global or specific)
     log_tag: str | None = None  # Tag for log messages
     log_format: str | None = None  # Custom log format string
+    error_log_format: str | None = None  # Custom error log format string
+    log_format_sd: str | None = None  # Structured data log format (RFC 5424)
     tcp_response_rules: list["TcpResponseRule"] = field(default_factory=list)
     compression: CompressionConfig | None = None
     cookie: str | None = None
@@ -718,6 +722,8 @@ class Backend(IRNode):
     max_session_srv_conns: int | None = None  # Maximum connections per session to server
     redirect_rules: list[RedirectRule] = field(default_factory=list)  # HTTP redirect rules
     error_files: list[ErrorFile] = field(default_factory=list)  # Custom error page files
+    errorfiles: str | None = None  # Directory containing custom error files
+    dispatch: str | None = None  # Simple dispatch target (IP:port) for load balancing without backend
     http_reuse: str | None = None  # Connection reuse mode: never, safe, aggressive, always
     http_send_name_header: str | None = None  # HTTP header name to send backend/server name
     retry_on: str | None = None  # Retry conditions (comma-separated keywords)

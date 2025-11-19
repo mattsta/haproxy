@@ -1530,6 +1530,8 @@ class DSLTransformer(Transformer):
         log = []
         log_tag = None
         log_format = None
+        error_log_format = None
+        log_format_sd = None
         unique_id_format = None
         unique_id_header = None
         stats_config = None
@@ -1633,6 +1635,10 @@ class DSLTransformer(Transformer):
                     log_tag = value
                 elif key == "log_format":
                     log_format = value
+                elif key == "error_log_format":
+                    error_log_format = value
+                elif key == "log_format_sd":
+                    log_format_sd = value
                 elif key == "unique_id_format":
                     unique_id_format = value
                 elif key == "unique_id_header":
@@ -1675,6 +1681,8 @@ class DSLTransformer(Transformer):
             log=log,
             log_tag=log_tag,
             log_format=log_format,
+            error_log_format=error_log_format,
+            log_format_sd=log_format_sd,
             unique_id_format=unique_id_format,
             unique_id_header=unique_id_header,
             stats_config=stats_config,
@@ -1776,6 +1784,14 @@ class DSLTransformer(Transformer):
 
     def frontend_log_format(self, items: list[Any]) -> tuple[str, str]:
         return ("log_format", items[0])
+
+    def frontend_error_log_format(self, items: list[Any]) -> tuple[str, str]:
+        """Transform error-log-format directive."""
+        return ("error_log_format", str(items[0]))
+
+    def frontend_log_format_sd(self, items: list[Any]) -> tuple[str, str]:
+        """Transform log-format-sd directive (RFC 5424 structured data)."""
+        return ("log_format_sd", str(items[0]))
 
     def frontend_stats(self, items: list[Any]) -> StatsConfig:
         """Transform stats block."""
@@ -2615,6 +2631,22 @@ class DSLTransformer(Transformer):
 
     def backend_log_format(self, items: list[Any]) -> tuple[str, str]:
         return ("log_format", items[0])
+
+    def backend_error_log_format(self, items: list[Any]) -> tuple[str, str]:
+        """Transform error-log-format directive."""
+        return ("error_log_format", str(items[0]))
+
+    def backend_log_format_sd(self, items: list[Any]) -> tuple[str, str]:
+        """Transform log-format-sd directive (RFC 5424 structured data)."""
+        return ("log_format_sd", str(items[0]))
+
+    def backend_errorfiles(self, items: list[Any]) -> tuple[str, str]:
+        """Transform errorfiles directive (directory for custom error files)."""
+        return ("errorfiles", str(items[0]))
+
+    def backend_dispatch(self, items: list[Any]) -> tuple[str, str]:
+        """Transform dispatch directive (simple load balancing target)."""
+        return ("dispatch", str(items[0]))
 
     def backend_default_server(self, items: list[Any]) -> DefaultServer:
         """Handle default-server in backend."""

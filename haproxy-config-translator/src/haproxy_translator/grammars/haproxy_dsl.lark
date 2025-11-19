@@ -290,6 +290,8 @@ frontend_section: "frontend" identifier "{" frontend_property* "}"
                   | "log" ":" string                       -> frontend_log
                   | "log-tag" ":" string                   -> frontend_log_tag
                   | "log-format" ":" string                -> frontend_log_format
+                  | "error-log-format" ":" string          -> frontend_error_log_format
+                  | "log-format-sd" ":" string             -> frontend_log_format_sd
                   | stats_block                            -> frontend_stats
                   | "capture" "request" "header" string number  -> frontend_capture_request_header
                   | "capture" "response" "header" string number -> frontend_capture_response_header
@@ -483,8 +485,12 @@ backend_section: "backend" identifier "{" backend_property* "}"
                  | "log" ":" string                         -> backend_log
                  | "log-tag" ":" string                     -> backend_log_tag
                  | "log-format" ":" string                  -> backend_log_format
+                 | "error-log-format" ":" string            -> backend_error_log_format
+                 | "log-format-sd" ":" string               -> backend_log_format_sd
                  | redirect_rule                            -> backend_redirect
                  | errorfile_directive                      -> backend_errorfile
+                 | "errorfiles" ":" string                  -> backend_errorfiles
+                 | "dispatch" ":" string                    -> backend_dispatch
                  | "http-reuse" ":" http_reuse_mode         -> backend_http_reuse
                  | "http-send-name-header" ":" string      -> backend_http_send_name_header
                  | "retry-on" ":" string                   -> backend_retry_on
