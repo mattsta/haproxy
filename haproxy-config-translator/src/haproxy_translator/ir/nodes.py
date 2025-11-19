@@ -512,6 +512,7 @@ class DefaultsConfig(IRNode):
     errorloc303: dict[int, str] = field(default_factory=dict)  # 303 redirect
     http_check: Optional["HealthCheck"] = None
     email_alert: EmailAlert | None = None  # Email alert configuration
+    rate_limit_sessions: int | None = None  # Max new sessions per second (Phase 5B)
     # TCP keepalive (Phase 5B) - both client and server side
     clitcpka_cnt: int | None = None  # Max keepalive probes before dropping client connection
     clitcpka_idle: str | None = None  # Time before sending client keepalive probes
@@ -741,6 +742,7 @@ class Frontend(IRNode):
     backlog: int | None = None  # Socket listen backlog size
     fullconn: int | None = None  # Backend saturation threshold for dynamic weights
     max_keep_alive_queue: int | None = None  # Maximum idle connections in keep-alive queue
+    rate_limit_sessions: int | None = None  # Max new sessions per second (Phase 5B)
     monitor_uri: str | None = None  # Monitor URI for health checks
     monitor_net: list[str] = field(default_factory=list)  # Network sources for monitoring requests
     monitor_fail_rules: list[MonitorFailRule] = field(default_factory=list)  # Conditional monitoring failures
@@ -875,6 +877,7 @@ class Listen(IRNode):
     timeout_server: str | None = None
     timeout_connect: str | None = None
     maxconn: int | None = None
+    rate_limit_sessions: int | None = None  # Max new sessions per second (Phase 5B)
     load_server_state_from: LoadServerStateFrom | None = None  # Server state loading mode for seamless reload
     server_state_file_name: str | None = None  # Server state file name (use-backend-name or file path)
     log_tag: str | None = None  # Tag for log messages

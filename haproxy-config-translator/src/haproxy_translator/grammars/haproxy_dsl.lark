@@ -247,6 +247,7 @@ defaults_section: "defaults" "{" defaults_property* "}"
                   | "srvtcpka-cnt" ":" number          -> defaults_srvtcpka_cnt
                   | "srvtcpka-idle" ":" duration       -> defaults_srvtcpka_idle
                   | "srvtcpka-intvl" ":" duration      -> defaults_srvtcpka_intvl
+                  | "rate-limit" "sessions" ":" number -> defaults_rate_limit_sessions
 
 timeout_block: "timeout" ":" "{" timeout_item+ "}"
 
@@ -316,6 +317,7 @@ frontend_section: "frontend" identifier "{" frontend_property* "}"
                   | "clitcpka-cnt" ":" number              -> frontend_clitcpka_cnt
                   | "clitcpka-idle" ":" duration           -> frontend_clitcpka_idle
                   | "clitcpka-intvl" ":" duration          -> frontend_clitcpka_intvl
+                  | "rate-limit" "sessions" ":" number     -> frontend_rate_limit_sessions
 
 // Redirect rules
 redirect_rule: "redirect" redirect_type string redirect_options?
@@ -819,6 +821,7 @@ listen_section: "listen" identifier "{" listen_property* "}"
                 | "srvtcpka-cnt" ":" number                -> listen_srvtcpka_cnt
                 | "srvtcpka-idle" ":" duration             -> listen_srvtcpka_idle
                 | "srvtcpka-intvl" ":" duration            -> listen_srvtcpka_intvl
+                | "rate-limit" "sessions" ":" number       -> listen_rate_limit_sessions
 
 // ===== Stats Socket =====
 stats_socket_item: "stats_socket" string "{" stats_socket_param* "}"

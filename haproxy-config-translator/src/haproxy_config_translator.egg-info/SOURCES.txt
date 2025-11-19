@@ -62,5 +62,6 @@ tests/test_phase5a_logging.py
 tests/test_proxy_directives.py
 tests/test_server_state_file_name.py
 tests/test_stats.py
+tests/test_tcp_keepalive.py
 tests/test_unique_id.py
 tests/test_use_fcgi_app.py

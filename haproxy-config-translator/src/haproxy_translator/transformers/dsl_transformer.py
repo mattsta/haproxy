@@ -1399,6 +1399,7 @@ class DSLTransformer(Transformer):
         errorloc303 = {}
         error_log_format = None
         email_alert = None
+        rate_limit_sessions = None  # Phase 5B
         # TCP keepalive (Phase 5B)
         clitcpka_cnt = None
         clitcpka_idle = None
@@ -1433,6 +1434,8 @@ class DSLTransformer(Transformer):
                     srvtcpka_idle = value
                 elif key == "srvtcpka_intvl":
                     srvtcpka_intvl = value
+                elif key == "rate_limit_sessions":
+                    rate_limit_sessions = value
                 elif key == "errorloc":
                     code, url = value
                     errorloc[code] = url
@@ -1489,6 +1492,7 @@ class DSLTransformer(Transformer):
             errorloc303=errorloc303,
             error_log_format=error_log_format,
             email_alert=email_alert,
+            rate_limit_sessions=rate_limit_sessions,
             clitcpka_cnt=clitcpka_cnt,
             clitcpka_idle=clitcpka_idle,
             clitcpka_intvl=clitcpka_intvl,
@@ -1592,6 +1596,7 @@ class DSLTransformer(Transformer):
         errorloc = {}
         errorloc302 = {}
         errorloc303 = {}
+        rate_limit_sessions = None  # Phase 5B
         # TCP keepalive (Phase 5B)
         clitcpka_cnt = None
         clitcpka_idle = None
@@ -1732,6 +1737,8 @@ class DSLTransformer(Transformer):
                     clitcpka_idle = value
                 elif key == "clitcpka_intvl":
                     clitcpka_intvl = value
+                elif key == "rate_limit_sessions":
+                    rate_limit_sessions = value
 
         return Frontend(
             name=name,
@@ -1785,6 +1792,7 @@ class DSLTransformer(Transformer):
             errorloc=errorloc,
             errorloc302=errorloc302,
             errorloc303=errorloc303,
+            rate_limit_sessions=rate_limit_sessions,
             clitcpka_cnt=clitcpka_cnt,
             clitcpka_idle=clitcpka_idle,
             clitcpka_intvl=clitcpka_intvl,
@@ -2152,6 +2160,19 @@ class DSLTransformer(Transformer):
     def listen_srvtcpka_intvl(self, items: list[Any]) -> tuple[str, str]:
         """Transform srvtcpka-intvl for listen."""
         return ("srvtcpka_intvl", str(items[0]))
+
+    # Rate limit methods (Phase 5B)
+    def defaults_rate_limit_sessions(self, items: list[Any]) -> tuple[str, int]:
+        """Transform rate-limit sessions for defaults."""
+        return ("rate_limit_sessions", int(items[0]))
+
+    def frontend_rate_limit_sessions(self, items: list[Any]) -> tuple[str, int]:
+        """Transform rate-limit sessions for frontend."""
+        return ("rate_limit_sessions", int(items[0]))
+
+    def listen_rate_limit_sessions(self, items: list[Any]) -> tuple[str, int]:
+        """Transform rate-limit sessions for listen."""
+        return ("rate_limit_sessions", int(items[0]))
 
     def frontend_declare_capture(self, items: list[Any]) -> DeclareCapture:
         """Transform declare capture for frontend."""

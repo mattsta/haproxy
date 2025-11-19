@@ -1,6 +1,6 @@
 # HAProxy Config Translator - Feature Parity Report
 
-**Generated:** 2025-11-19 19:55:56
+**Generated:** 2025-11-19 20:30:25
 **HAProxy Version:** 3.3
 **Documentation Source:** `/home/user/haproxy/doc/configuration.txt`
 
@@ -24,17 +24,17 @@ configuration language and the haproxy-config-translator implementation.
 ### Proxy Keywords (Frontend/Backend/Listen/Defaults)
 
 - **Total HAProxy Keywords:** 89
-- **Implemented:** 55
-- **Coverage:** `61.8%`
+- **Implemented:** 61
+- **Coverage:** `68.5%`
 
 ### Test Coverage
 
-- **Total Test Files:** 84
+- **Total Test Files:** 85
 - **Global Directive Tests:** 10
 - **Proxy Tests:** 0
 - **Bind Option Tests:** 2
 - **Server Option Tests:** 7
-- **Action Tests:** 2
+- **Action Tests:** 3
 - **Parser Tests:** 1
 - **Codegen Tests:** 1
 
@@ -254,9 +254,6 @@ configuration language and the haproxy-config-translator implementation.
   - and
   - anonymous
   - capture
-  - clitcpka-cnt
-  - clitcpka-idle
-  - clitcpka-intvl
   - crt
   - declare
   - errorloc302
@@ -270,9 +267,6 @@ configuration language and the haproxy-config-translator implementation.
   - rate-limit
   - sections
   - specified
-  - srvtcpka-cnt
-  - srvtcpka-idle
-  - srvtcpka-intvl
   - they
   - transparent
   - with
