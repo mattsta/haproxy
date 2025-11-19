@@ -158,6 +158,13 @@ global_section: "global" "{" global_property* "}"
                 | "tune.http.logurilen" ":" number        -> global_tune_http_logurilen
                 | "tune.http.maxhdr" ":" number           -> global_tune_http_maxhdr
                 | "tune.ssl.cachesize" ":" number         -> global_tune_ssl_cachesize
+                | "tune.ssl.default-dh-param" ":" number -> global_tune_ssl_default_dh_param
+                | "tune.ssl.force-private-cache" ":" boolean -> global_tune_ssl_force_private_cache
+                | "tune.ssl.keylog" ":" string          -> global_tune_ssl_keylog
+                | "tune.ssl.lifetime" ":" number        -> global_tune_ssl_lifetime
+                | "tune.ssl.maxrecord" ":" number       -> global_tune_ssl_maxrecord
+                | "tune.pattern.cache-size" ":" number  -> global_tune_pattern_cache_size
+                | "tune.vars.global-max-size" ":" number -> global_tune_vars_global_max_size
                 // Phase 4B Part 1 - HTTP Client Configuration (6 directives)
                 | "httpclient.resolvers.disabled" ":" boolean     -> global_httpclient_resolvers_disabled
                 | "httpclient.resolvers.id" ":" string            -> global_httpclient_resolvers_id

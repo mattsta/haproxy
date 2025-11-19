@@ -6,7 +6,7 @@
 ## Current Status
 
 ### Tests & Code Quality ✅
-- **Tests:** 918 passing, 0 skipped, 0 failures
+- **Tests:** 925 passing, 0 skipped, 0 failures
 - **Test Coverage:** ~95%
 - **Mypy:** 0 errors (100% type safe)
 - **Ruff:** 27 minor style warnings (non-blocking, only in existing code)
@@ -16,9 +16,9 @@
 
 #### Global Directives
 - **Total HAProxy Directives:** 172
-- **Implemented:** 107
-- **Coverage:** 62.2%
-- **Missing:** 65 directives
+- **Implemented:** 114
+- **Coverage:** 66.3%
+- **Missing:** 58 directives
 
 #### Proxy Keywords (Frontend/Backend/Listen/Defaults)
 - **Total HAProxy Keywords:** 89
@@ -79,8 +79,15 @@
 26. ✅ **tune.http.logurilen** - HTTP log URI length
 27. ✅ **tune.http.maxhdr** - HTTP max headers
 28. ✅ **tune.ssl.cachesize** - SSL session cache size
+29. ✅ **tune.ssl.default-dh-param** - SSL default DH parameter size
+30. ✅ **tune.ssl.force-private-cache** - Force private SSL session cache
+31. ✅ **tune.ssl.keylog** - SSL key logging path
+32. ✅ **tune.ssl.lifetime** - SSL session lifetime
+33. ✅ **tune.ssl.maxrecord** - SSL max record size
+34. ✅ **tune.pattern.cache-size** - Pattern cache size
+35. ✅ **tune.vars.global-max-size** - Global variables max size
 
-**Phase 6 Results:** +29 tests (889 → 918), 28 new global directives, 0 failures
+**Phase 6 Results:** +36 tests (889 → 925), 35 new global directives, 0 failures
 
 ### Features Implemented (Previous Sessions)
 1. ✅ **Phases 1-3:** Core directives, SSL/TLS, HTTP/2, system integration
@@ -163,10 +170,17 @@ Implement missing tune.* directives:
 24. ✅ **tune.http.logurilen** - HTTP log URI length (IMPLEMENTED)
 25. ✅ **tune.http.maxhdr** - HTTP max headers (IMPLEMENTED)
 26. ✅ **tune.ssl.cachesize** - SSL session cache size (IMPLEMENTED)
-27. +9 more tune.* directives ❌ PENDING
+27. ✅ **tune.ssl.default-dh-param** - SSL default DH parameter size (IMPLEMENTED)
+28. ✅ **tune.ssl.force-private-cache** - Force private SSL session cache (IMPLEMENTED)
+29. ✅ **tune.ssl.keylog** - SSL key logging path (IMPLEMENTED)
+30. ✅ **tune.ssl.lifetime** - SSL session lifetime (IMPLEMENTED)
+31. ✅ **tune.ssl.maxrecord** - SSL max record size (IMPLEMENTED)
+32. ✅ **tune.pattern.cache-size** - Pattern cache size (IMPLEMENTED)
+33. ✅ **tune.vars.global-max-size** - Global variables max size (IMPLEMENTED)
+34. +2 more tune.* directives ❌ PENDING
 
-**Phase 6 Progress:** 28/37 directives implemented (76%)
-**Estimated Impact:** +9 global directives remaining
+**Phase 6 Progress:** 35/37 directives implemented (95%)
+**Estimated Impact:** +2 global directives remaining
 
 ### Priority 4: Debugging & Development (Phase 7)
 Implement debugging directives:

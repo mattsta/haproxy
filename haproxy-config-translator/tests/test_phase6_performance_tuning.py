@@ -523,3 +523,122 @@ class TestPhase6PerformanceTuning:
         codegen = HAProxyCodeGenerator()
         output = codegen.generate(ir)
         assert "tune.ssl.cachesize 20000" in output
+
+    def test_tune_ssl_default_dh_param(self):
+        """Test tune.ssl.default-dh-param directive."""
+        config = """
+        config test {
+            global {
+                tune.ssl.default-dh-param: 2048
+            }
+        }
+        """
+        parser = DSLParser()
+        ir = parser.parse(config)
+        assert ir.global_config.tuning.get("tune.ssl.default-dh-param") == 2048
+
+        codegen = HAProxyCodeGenerator()
+        output = codegen.generate(ir)
+        assert "tune.ssl.default-dh-param 2048" in output
+
+    def test_tune_ssl_force_private_cache(self):
+        """Test tune.ssl.force-private-cache directive."""
+        config = """
+        config test {
+            global {
+                tune.ssl.force-private-cache: true
+            }
+        }
+        """
+        parser = DSLParser()
+        ir = parser.parse(config)
+        assert ir.global_config.tuning.get("tune.ssl.force-private-cache") is True
+
+        codegen = HAProxyCodeGenerator()
+        output = codegen.generate(ir)
+        assert "tune.ssl.force-private-cache on" in output
+
+    def test_tune_ssl_keylog(self):
+        """Test tune.ssl.keylog directive."""
+        config = """
+        config test {
+            global {
+                tune.ssl.keylog: "/var/log/haproxy/ssl-keys.log"
+            }
+        }
+        """
+        parser = DSLParser()
+        ir = parser.parse(config)
+        assert ir.global_config.tuning.get("tune.ssl.keylog") == "/var/log/haproxy/ssl-keys.log"
+
+        codegen = HAProxyCodeGenerator()
+        output = codegen.generate(ir)
+        assert "tune.ssl.keylog /var/log/haproxy/ssl-keys.log" in output
+
+    def test_tune_ssl_lifetime(self):
+        """Test tune.ssl.lifetime directive."""
+        config = """
+        config test {
+            global {
+                tune.ssl.lifetime: 300
+            }
+        }
+        """
+        parser = DSLParser()
+        ir = parser.parse(config)
+        assert ir.global_config.tuning.get("tune.ssl.lifetime") == 300
+
+        codegen = HAProxyCodeGenerator()
+        output = codegen.generate(ir)
+        assert "tune.ssl.lifetime 300" in output
+
+    def test_tune_ssl_maxrecord(self):
+        """Test tune.ssl.maxrecord directive."""
+        config = """
+        config test {
+            global {
+                tune.ssl.maxrecord: 16384
+            }
+        }
+        """
+        parser = DSLParser()
+        ir = parser.parse(config)
+        assert ir.global_config.tuning.get("tune.ssl.maxrecord") == 16384
+
+        codegen = HAProxyCodeGenerator()
+        output = codegen.generate(ir)
+        assert "tune.ssl.maxrecord 16384" in output
+
+    def test_tune_pattern_cache_size(self):
+        """Test tune.pattern.cache-size directive."""
+        config = """
+        config test {
+            global {
+                tune.pattern.cache-size: 100000
+            }
+        }
+        """
+        parser = DSLParser()
+        ir = parser.parse(config)
+        assert ir.global_config.tuning.get("tune.pattern.cache-size") == 100000
+
+        codegen = HAProxyCodeGenerator()
+        output = codegen.generate(ir)
+        assert "tune.pattern.cache-size 100000" in output
+
+    def test_tune_vars_global_max_size(self):
+        """Test tune.vars.global-max-size directive."""
+        config = """
+        config test {
+            global {
+                tune.vars.global-max-size: 65536
+            }
+        }
+        """
+        parser = DSLParser()
+        ir = parser.parse(config)
+        assert ir.global_config.tuning.get("tune.vars.global-max-size") == 65536
+
+        codegen = HAProxyCodeGenerator()
+        output = codegen.generate(ir)
+        assert "tune.vars.global-max-size 65536" in output
