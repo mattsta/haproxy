@@ -632,6 +632,14 @@ class HAProxyCodeGenerator:
         # Balance algorithm
         lines.append(self._indent(f"balance {backend.balance.value}"))
 
+        # Hash type (for hash-based load balancing)
+        if backend.hash_type:
+            lines.append(self._indent(f"hash-type {backend.hash_type}"))
+
+        # Hash balance factor (tuning for hash-based load balancing)
+        if backend.hash_balance_factor:
+            lines.append(self._indent(f"hash-balance-factor {backend.hash_balance_factor}"))
+
         # Retries
         if backend.retries is not None:
             lines.append(self._indent(f"retries {backend.retries}"))

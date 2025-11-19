@@ -1742,6 +1742,36 @@ class DSLTransformer(Transformer):
     def backend_source(self, items: list[Any]) -> tuple[str, str]:
         return ("source", str(items[0]))
 
+    def backend_hash_type(self, items: list[Any]) -> tuple[str, str]:
+        """Transform hash-type directive."""
+        hash_spec = items[0]  # Result from hash_type_spec
+        return ("hash_type", hash_spec)
+
+    def backend_hash_balance_factor(self, items: list[Any]) -> tuple[str, int]:
+        """Transform hash-balance-factor directive."""
+        return ("hash_balance_factor", int(items[0]))
+
+    def hash_type_spec(self, items: list[Any]) -> str:
+        """Build hash-type specification string from components."""
+        # items: [method, function?, modifier?]
+        parts = []
+        for item in items:
+            if item is not None:
+                parts.append(str(item))
+        return " ".join(parts)
+
+    def hash_method(self, items: list[Any]) -> str:
+        """Transform hash method (map-based or consistent)."""
+        return str(items[0])
+
+    def hash_function(self, items: list[Any]) -> str:
+        """Transform hash function (sdbm, djb2, wt6, crc32)."""
+        return str(items[0])
+
+    def hash_modifier(self, items: list[Any]) -> str:
+        """Transform hash modifier (avalanche)."""
+        return str(items[0])
+
     # ===== use-server Directive =====
     def backend_use_server(self, items: list[Any]) -> UseServerRule:
         return cast("UseServerRule", items[0])
@@ -2097,6 +2127,8 @@ class DSLTransformer(Transformer):
         tcp_check_rules = []
         use_server_rules = []
         source = None
+        hash_type = None
+        hash_balance_factor = None
 
         for prop in properties:
             if isinstance(prop, Server):
@@ -2181,6 +2213,10 @@ class DSLTransformer(Transformer):
                     http_reuse = value
                 elif key == "source":
                     source = value
+                elif key == "hash_type":
+                    hash_type = value
+                elif key == "hash_balance_factor":
+                    hash_balance_factor = value
 
         # Build metadata with server loops if any
         metadata = {}
@@ -2219,6 +2255,8 @@ class DSLTransformer(Transformer):
             tcp_check_rules=tcp_check_rules,
             use_server_rules=use_server_rules,
             source=source,
+            hash_type=hash_type,
+            hash_balance_factor=hash_balance_factor,
             metadata=metadata,
         )
 

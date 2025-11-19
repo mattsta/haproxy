@@ -687,6 +687,8 @@ class Backend(IRNode):
     tcp_check_rules: list[TcpCheckRule] = field(default_factory=list)  # Advanced TCP health checks
     use_server_rules: list[UseServerRule] = field(default_factory=list)  # Conditional server selection
     source: str | None = None  # Source IP/port for backend connections
+    hash_type: str | None = None  # Hash algorithm: map-based, consistent
+    hash_balance_factor: int | None = None  # Hash balance factor (100-65535)
 
 
 @dataclass(frozen=True)

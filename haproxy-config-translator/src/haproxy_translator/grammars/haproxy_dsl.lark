@@ -453,6 +453,8 @@ backend_section: "backend" identifier "{" backend_property* "}"
                  | use_server_rule                          -> backend_use_server
                  | http_check_block                         -> backend_http_check
                  | tcp_check_block                          -> backend_tcp_check
+                 | "hash-type" ":" hash_type_spec           -> backend_hash_type
+                 | "hash-balance-factor" ":" number         -> backend_hash_balance_factor
 
 ?http_reuse_mode: HTTP_REUSE_NEVER | HTTP_REUSE_SAFE | HTTP_REUSE_AGGRESSIVE | HTTP_REUSE_ALWAYS
 
@@ -473,6 +475,21 @@ BALANCE_STATIC_RR: "static-rr"
 BALANCE_FIRST: "first"
 BALANCE_HDR: "hdr"
 BALANCE_RDP_COOKIE: "rdp-cookie"
+
+// Hash-type specification
+hash_type_spec: hash_method hash_function? hash_modifier?
+
+hash_method: HASH_MAP_BASED | HASH_CONSISTENT
+hash_function: HASH_SDBM | HASH_DJB2 | HASH_WT6 | HASH_CRC32
+hash_modifier: HASH_MOD_AVALANCHE
+
+HASH_MAP_BASED: "map-based"
+HASH_CONSISTENT: "consistent"
+HASH_SDBM: "sdbm"
+HASH_DJB2: "djb2"
+HASH_WT6: "wt6"
+HASH_CRC32: "crc32"
+HASH_MOD_AVALANCHE: "avalanche"
 
 health_check_block: "health-check" "{" health_check_property* "}"
 
