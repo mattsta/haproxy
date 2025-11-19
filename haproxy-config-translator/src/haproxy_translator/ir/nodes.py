@@ -261,6 +261,14 @@ class EmailAlert(IRNode):
 
 
 @dataclass(frozen=True)
+class DeclareCapture(IRNode):
+    """Declare capture slot (declare capture directive)."""
+
+    capture_type: str = "request"  # "request" or "response"
+    length: int = 0  # Maximum capture length
+
+
+@dataclass(frozen=True)
 class HttpCheckRule(IRNode):
     """Advanced HTTP health check rule (http-check directive)."""
 
@@ -732,6 +740,7 @@ class Frontend(IRNode):
     errorloc303: dict[int, str] = field(default_factory=dict)  # 303 See Other redirect
     http_errors: list[HttpError] = field(default_factory=list)  # Custom HTTP error responses
     email_alert: EmailAlert | None = None  # Email alert configuration
+    declare_captures: list[DeclareCapture] = field(default_factory=list)  # Declare capture slots
 
 
 @dataclass(frozen=True)
@@ -799,6 +808,7 @@ class Backend(IRNode):
     load_server_state_from: LoadServerStateFrom | None = None  # Server state loading mode for seamless reload
     server_state_file_name: str | None = None  # Server state file name (use-backend-name or file path)
     email_alert: EmailAlert | None = None  # Email alert configuration
+    declare_captures: list[DeclareCapture] = field(default_factory=list)  # Declare capture slots
 
 
 @dataclass(frozen=True)
@@ -839,6 +849,7 @@ class Listen(IRNode):
     error_log_format: str | None = None  # Custom error log format string
     log_format_sd: str | None = None  # Structured data log format (RFC 5424)
     email_alert: EmailAlert | None = None  # Email alert configuration
+    declare_captures: list[DeclareCapture] = field(default_factory=list)  # Declare capture slots
 
 
 # DSL-specific IR nodes (for advanced features)

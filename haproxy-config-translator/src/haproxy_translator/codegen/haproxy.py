@@ -10,6 +10,7 @@ from ..ir.nodes import (
     ConfigIR,
     DefaultsConfig,
     DefaultServer,
+    DeclareCapture,
     EmailAlert,
     Frontend,
     GlobalConfig,
@@ -707,6 +708,11 @@ class HAProxyCodeGenerator:
             for line in self._format_email_alert(frontend.email_alert):
                 lines.append(self._indent(line))
 
+        # Declare capture slots
+        if frontend.declare_captures:
+            for line in self._format_declare_captures(frontend.declare_captures):
+                lines.append(self._indent(line))
+
         # Error location redirects
         for code, location in frontend.errorloc.items():
             lines.append(self._indent(f'errorloc {code} "{location}"'))
@@ -891,6 +897,11 @@ class HAProxyCodeGenerator:
             for line in self._format_email_alert(backend.email_alert):
                 lines.append(self._indent(line))
 
+        # Declare capture slots
+        if backend.declare_captures:
+            for line in self._format_declare_captures(backend.declare_captures):
+                lines.append(self._indent(line))
+
         # Error location redirects
         for code, location in backend.errorloc.items():
             lines.append(self._indent(f'errorloc {code} "{location}"'))
@@ -1047,6 +1058,11 @@ class HAProxyCodeGenerator:
         # Email alert configuration
         if listen.email_alert:
             for line in self._format_email_alert(listen.email_alert):
+                lines.append(self._indent(line))
+
+        # Declare capture slots
+        if listen.declare_captures:
+            for line in self._format_declare_captures(listen.declare_captures):
                 lines.append(self._indent(line))
 
         # Servers
@@ -1254,6 +1270,13 @@ class HAProxyCodeGenerator:
         if email_alert.myhostname:
             lines.append(f"email-alert myhostname {email_alert.myhostname}")
 
+        return lines
+
+    def _format_declare_captures(self, declare_captures: list["DeclareCapture"]) -> list[str]:
+        """Format declare capture directives."""
+        lines = []
+        for capture in declare_captures:
+            lines.append(f"declare capture {capture.capture_type} len {capture.length}")
         return lines
 
     def _format_use_server_rule(self, use_server: "UseServerRule") -> str:

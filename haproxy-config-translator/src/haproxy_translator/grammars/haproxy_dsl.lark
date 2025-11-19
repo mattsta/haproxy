@@ -304,6 +304,7 @@ frontend_section: "frontend" identifier "{" frontend_property* "}"
                   | errorloc_directive                     -> frontend_errorloc
                   | http_error_block                       -> frontend_http_error
                   | email_alert_block                      -> frontend_email_alert
+                  | declare_capture_directive              -> frontend_declare_capture
 
 // Redirect rules
 redirect_rule: "redirect" redirect_type string redirect_options?
@@ -351,6 +352,14 @@ email_alert_block: "email-alert" "{" email_alert_property+ "}"
                      | "from" ":" string                      -> email_alert_from
                      | "to" ":" string                        -> email_alert_to
                      | "myhostname" ":" string                -> email_alert_myhostname
+
+// Declare capture directive
+declare_capture_directive: "declare" "capture" capture_type "len" number
+
+?capture_type: CAPTURE_REQUEST | CAPTURE_RESPONSE
+
+CAPTURE_REQUEST: "request"
+CAPTURE_RESPONSE: "response"
 
 // Stats block (proxy-level)
 stats_block: "stats" "{" proxy_stats_property* "}"
@@ -530,6 +539,7 @@ backend_section: "backend" identifier "{" backend_property* "}"
                  | errorloc_directive                       -> backend_errorloc
                  | http_error_block                         -> backend_http_error
                  | email_alert_block                        -> backend_email_alert
+                 | declare_capture_directive                -> backend_declare_capture
                  | "errorfiles" ":" string                  -> backend_errorfiles
                  | "dispatch" ":" string                    -> backend_dispatch
                  | "use-fcgi-app" ":" string                -> backend_use_fcgi_app
@@ -779,6 +789,7 @@ listen_section: "listen" identifier "{" listen_property* "}"
                 | http_after_response_block              -> listen_http_after_response
                 | http_error_block                         -> listen_http_error
                 | email_alert_block                        -> listen_email_alert
+                | declare_capture_directive                -> listen_declare_capture
 
 // ===== Stats Socket =====
 stats_socket_item: "stats_socket" string "{" stats_socket_param* "}"

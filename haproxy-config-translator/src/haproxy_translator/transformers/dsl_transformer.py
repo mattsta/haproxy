@@ -13,6 +13,7 @@ from ..ir.nodes import (
     ConfigIR,
     DefaultsConfig,
     DefaultServer,
+    DeclareCapture,
     EmailAlert,
     ErrorFile,
     ForLoop,
@@ -1558,6 +1559,7 @@ class DSLTransformer(Transformer):
         error_files = []
         http_errors = []
         email_alert = None
+        declare_captures = []
         errorloc = {}
         errorloc302 = {}
         errorloc303 = {}
@@ -1575,6 +1577,8 @@ class DSLTransformer(Transformer):
                 http_errors.append(prop)
             elif isinstance(prop, EmailAlert):
                 email_alert = prop
+            elif isinstance(prop, DeclareCapture):
+                declare_captures.append(prop)
             elif isinstance(prop, StatsConfig):
                 stats_config = prop
             elif isinstance(prop, MonitorFailRule):
@@ -1732,6 +1736,7 @@ class DSLTransformer(Transformer):
             error_files=error_files,
             http_errors=http_errors,
             email_alert=email_alert,
+            declare_captures=declare_captures,
             errorloc=errorloc,
             errorloc302=errorloc302,
             errorloc303=errorloc303,
@@ -2026,6 +2031,18 @@ class DSLTransformer(Transformer):
     def defaults_email_alert(self, items: list[Any]) -> EmailAlert:
         """Transform email-alert for defaults."""
         return cast("EmailAlert", items[0])
+
+    def frontend_declare_capture(self, items: list[Any]) -> DeclareCapture:
+        """Transform declare capture for frontend."""
+        return cast("DeclareCapture", items[0])
+
+    def backend_declare_capture(self, items: list[Any]) -> DeclareCapture:
+        """Transform declare capture for backend."""
+        return cast("DeclareCapture", items[0])
+
+    def listen_declare_capture(self, items: list[Any]) -> DeclareCapture:
+        """Transform declare capture for listen."""
+        return cast("DeclareCapture", items[0])
 
     def errorfile_directive(self, items: list[Any]) -> ErrorFile:
         """Transform errorfile directive."""
@@ -2376,6 +2393,14 @@ class DSLTransformer(Transformer):
         """Transform email-alert myhostname property."""
         return ("myhostname", str(items[0]))
 
+    def declare_capture_directive(self, items: list[Any]) -> DeclareCapture:
+        """Build DeclareCapture from declare capture directive."""
+        # items[0] is the capture_type token (CAPTURE_REQUEST or CAPTURE_RESPONSE)
+        # items[1] is the length (number)
+        capture_type = str(items[0])
+        length = int(items[1])
+        return DeclareCapture(capture_type=capture_type, length=length)
+
     # ===== tcp-check Block =====
     def backend_tcp_check(self, items: list[Any]) -> list[TcpCheckRule]:
         """Backend tcp-check block returns list of rules."""
@@ -2640,6 +2665,7 @@ class DSLTransformer(Transformer):
         error_files = []
         http_errors = []
         email_alert = None
+        declare_captures = []
         errorloc: dict[int, str] = {}
         errorloc302: dict[int, str] = {}
         errorloc303: dict[int, str] = {}
@@ -2677,6 +2703,8 @@ class DSLTransformer(Transformer):
                 http_errors.append(prop)
             elif isinstance(prop, EmailAlert):
                 email_alert = prop
+            elif isinstance(prop, DeclareCapture):
+                declare_captures.append(prop)
             elif isinstance(prop, HttpCheckRule):
                 http_check_rules.append(prop)
             elif isinstance(prop, TcpCheckRule):
@@ -2876,6 +2904,7 @@ class DSLTransformer(Transformer):
             load_server_state_from=load_server_state_from,
             server_state_file_name=server_state_file_name,
             email_alert=email_alert,
+            declare_captures=declare_captures,
             metadata=metadata,
         )
 
@@ -3192,6 +3221,7 @@ class DSLTransformer(Transformer):
         log_format_sd = None
         http_errors = []
         email_alert = None
+        declare_captures = []
 
         for prop in properties:
             if isinstance(prop, Bind):
@@ -3228,6 +3258,8 @@ class DSLTransformer(Transformer):
                 http_errors.append(prop)
             elif isinstance(prop, EmailAlert):
                 email_alert = prop
+            elif isinstance(prop, DeclareCapture):
+                declare_captures.append(prop)
             elif isinstance(prop, tuple):
                 key, value = prop
                 if key == "mode":
@@ -3310,6 +3342,7 @@ class DSLTransformer(Transformer):
             log_format_sd=log_format_sd,
             http_errors=http_errors,
             email_alert=email_alert,
+            declare_captures=declare_captures,
             metadata=metadata,
         )
 
