@@ -36,7 +36,7 @@ class TestHttpAfterResponseParsing:
             backend app {
                 mode: http
                 http-after-response {
-                    add_header name:"X-Backend-Server" value: "%s" }
+                    add_header name:"X-Backend-Server" value: "%s"
                 }
                 servers {
                     server s1 { address: "10.0.1.1" port: 8080 }
@@ -119,7 +119,7 @@ class TestHttpAfterResponseParsing:
                 mode: http
                 balance: roundrobin
                 http-after-response {
-                    set_header name:"Cache-Control" value: "no-cache" }
+                    set_header name:"Cache-Control" value: "no-cache"
                 }
                 servers {
                     server s1 { address: "127.0.0.1" port: 9001 }
@@ -168,7 +168,7 @@ class TestHttpAfterResponseCodegen:
             backend app {
                 mode: http
                 http-after-response {
-                    add_header name:"X-Backend" value: "app-server" }
+                    add_header name:"X-Backend" value: "app-server"
                 }
                 servers {
                     server s1 { address: "10.0.1.1" port: 8080 }
@@ -217,10 +217,10 @@ class TestHttpAfterResponseIntegration:
                 bind *:80
                 mode: http
                 http-after-response {
-                    set_header name:"X-Frame-Options" value: "DENY" }
+                    set_header name:"X-Frame-Options" value: "DENY"
                 }
                 http-after-response {
-                    set_header name:"X-Content-Type-Options" value: "nosniff" }
+                    set_header name:"X-Content-Type-Options" value: "nosniff"
                 }
                 http-after-response {
                     del_header name:"Server"
@@ -243,13 +243,13 @@ class TestHttpAfterResponseIntegration:
                 bind *:80
                 mode: http
                 http-request {
-                    set_header name:"X-Forwarded-Proto" value: "https" }
+                    set_header name:"X-Forwarded-Proto" value: "https"
                 }
                 http-response {
-                    set_header name:"X-Response-Time" value: "%Tr" }
+                    set_header name:"X-Response-Time" value: "%Tr"
                 }
                 http-after-response {
-                    set_header name:"X-Final-Header" value: "processed" }
+                    set_header name:"X-Final-Header" value: "processed"
                 }
             }
         }
@@ -270,10 +270,10 @@ class TestHttpAfterResponseIntegration:
                 mode: http
                 option: "httplog"
                 http-after-response {
-                    set_header name:"Strict-Transport-Security" value: "max-age=31536000" }
+                    set_header name:"Strict-Transport-Security" value: "max-age=31536000"
                 }
                 http-after-response {
-                    del_header name:"X-Powered-By" }
+                    del_header name:"X-Powered-By"
                 }
                 default_backend: app
             }
@@ -282,7 +282,7 @@ class TestHttpAfterResponseIntegration:
                 mode: http
                 balance: roundrobin
                 http-after-response {
-                    set_header name:"X-Backend-ID" value: "%s" }
+                    set_header name:"X-Backend-ID" value: "%s"
                 }
                 servers {
                     server app1 { address: "10.0.1.1" port: 8080 check: true }
@@ -297,10 +297,10 @@ class TestHttpAfterResponseIntegration:
         output = codegen.generate(ir)
 
         assert "frontend web" in output
-        assert "http-after-response set_header name Strict-Transport-Security" in output
-        assert "http-after-response del_header name X-Powered-By" in output
+        assert "http-after-response set-header name Strict-Transport-Security" in output
+        assert "http-after-response del-header name X-Powered-By" in output
         assert "backend app" in output
-        assert "http-after-response set_header name X-Backend-ID" in output
+        assert "http-after-response set-header name X-Backend-ID" in output
 
     def test_http_after_response_various_actions(self):
         """Test http-after-response with various action types."""
@@ -365,10 +365,10 @@ class TestHttpAfterResponseIntegration:
             backend api {
                 mode: http
                 http-after-response {
-                    set_header name:"Access-Control-Allow-Origin" value: "*" }
+                    set_header name:"Access-Control-Allow-Origin" value: "*"
                 }
                 http-after-response {
-                    set_header name:"Access-Control-Allow-Methods" value: "GET, POST" }
+                    set_header name:"Access-Control-Allow-Methods" value: "GET, POST"
                 }
                 servers {
                     server api1 { address: "10.0.1.1" port: 8080 }
@@ -382,5 +382,5 @@ class TestHttpAfterResponseIntegration:
         output = codegen.generate(ir)
 
         assert "backend api" in output
-        assert "http-after-response set_header name Access-Control-Allow-Origin" in output
-        assert "http-after-response set_header name Access-Control-Allow-Methods" in output
+        assert "http-after-response set-header name Access-Control-Allow-Origin" in output
+        assert "http-after-response set-header name Access-Control-Allow-Methods" in output

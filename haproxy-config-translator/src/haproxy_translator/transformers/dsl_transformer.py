@@ -2044,6 +2044,10 @@ class DSLTransformer(Transformer):
         """Transform declare capture for listen."""
         return cast("DeclareCapture", items[0])
 
+    def listen_http_after_response(self, items: list[Any]) -> list[HttpAfterResponseRule]:
+        """Transform http-after-response for listen."""
+        return cast("list[HttpAfterResponseRule]", items[0])
+
     def errorfile_directive(self, items: list[Any]) -> ErrorFile:
         """Transform errorfile directive."""
         code = int(items[0])
@@ -2958,6 +2962,9 @@ class DSLTransformer(Transformer):
     def backend_http_response(self, items: list[Any]) -> list[HttpResponseRule]:
         return cast("list[HttpResponseRule]", items[0])
 
+    def backend_http_after_response(self, items: list[Any]) -> list[HttpAfterResponseRule]:
+        return cast("list[HttpAfterResponseRule]", items[0])
+
     def backend_timeout_server(self, items: list[Any]) -> tuple[str, str]:
         return ("timeout_server", str(items[0]))
 
@@ -3260,6 +3267,8 @@ class DSLTransformer(Transformer):
                 email_alert = prop
             elif isinstance(prop, DeclareCapture):
                 declare_captures.append(prop)
+            elif isinstance(prop, list) and all(isinstance(x, HttpAfterResponseRule) for x in prop):
+                http_after_response_rules.extend(prop)
             elif isinstance(prop, tuple):
                 key, value = prop
                 if key == "mode":
