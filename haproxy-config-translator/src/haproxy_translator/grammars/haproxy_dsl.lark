@@ -129,6 +129,14 @@ global_section: "global" "{" global_property* "}"
                 | "tune.rcvbuf.server" ":" number         -> global_tune_rcvbuf_server
                 | "tune.sndbuf.client" ":" number         -> global_tune_sndbuf_client
                 | "tune.sndbuf.server" ":" number         -> global_tune_sndbuf_server
+                // Phase 6 - Performance Tuning (7 directives)
+                | "tune.rcvbuf.frontend" ":" number       -> global_tune_rcvbuf_frontend
+                | "tune.rcvbuf.backend" ":" number        -> global_tune_rcvbuf_backend
+                | "tune.sndbuf.frontend" ":" number       -> global_tune_sndbuf_frontend
+                | "tune.sndbuf.backend" ":" number        -> global_tune_sndbuf_backend
+                | "tune.maxaccept" ":" number             -> global_tune_maxaccept
+                | "tune.maxpollevents" ":" number         -> global_tune_maxpollevents
+                | "tune.bufsize.small" ":" number         -> global_tune_bufsize_small
                 // Phase 4B Part 1 - HTTP Client Configuration (6 directives)
                 | "httpclient.resolvers.disabled" ":" boolean     -> global_httpclient_resolvers_disabled
                 | "httpclient.resolvers.id" ":" string            -> global_httpclient_resolvers_id

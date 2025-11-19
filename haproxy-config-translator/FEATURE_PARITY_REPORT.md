@@ -1,6 +1,6 @@
 # HAProxy Config Translator - Feature Parity Report
 
-**Generated:** 2025-11-19 20:30:25
+**Generated:** 2025-11-19 21:00:47
 **HAProxy Version:** 3.3
 **Documentation Source:** `/home/user/haproxy/doc/configuration.txt`
 
@@ -24,12 +24,12 @@ configuration language and the haproxy-config-translator implementation.
 ### Proxy Keywords (Frontend/Backend/Listen/Defaults)
 
 - **Total HAProxy Keywords:** 89
-- **Implemented:** 61
-- **Coverage:** `68.5%`
+- **Implemented:** 62
+- **Coverage:** `69.7%`
 
 ### Test Coverage
 
-- **Total Test Files:** 85
+- **Total Test Files:** 87
 - **Global Directive Tests:** 10
 - **Proxy Tests:** 0
 - **Bind Option Tests:** 2
@@ -259,7 +259,6 @@ configuration language and the haproxy-config-translator implementation.
   - errorloc302
   - errorloc303
   - filter
-  - hash-preserve-affinity
   - limited
   - marked
   - persist

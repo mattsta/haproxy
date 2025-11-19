@@ -951,6 +951,28 @@ class DSLTransformer(Transformer):
     def global_tune_sndbuf_server(self, items: list[Any]) -> tuple[str, int]:
         return ("tune_sndbuf_server", items[0])
 
+    # Phase 6 - Performance Tuning directives
+    def global_tune_rcvbuf_frontend(self, items: list[Any]) -> tuple[str, int]:
+        return ("tune_rcvbuf_frontend", items[0])
+
+    def global_tune_rcvbuf_backend(self, items: list[Any]) -> tuple[str, int]:
+        return ("tune_rcvbuf_backend", items[0])
+
+    def global_tune_sndbuf_frontend(self, items: list[Any]) -> tuple[str, int]:
+        return ("tune_sndbuf_frontend", items[0])
+
+    def global_tune_sndbuf_backend(self, items: list[Any]) -> tuple[str, int]:
+        return ("tune_sndbuf_backend", items[0])
+
+    def global_tune_maxaccept(self, items: list[Any]) -> tuple[str, int]:
+        return ("tune_maxaccept", items[0])
+
+    def global_tune_maxpollevents(self, items: list[Any]) -> tuple[str, int]:
+        return ("tune_maxpollevents", items[0])
+
+    def global_tune_bufsize_small(self, items: list[Any]) -> tuple[str, int]:
+        return ("tune_bufsize_small", items[0])
+
     # Phase 4B Part 1 - HTTP Client Configuration directives
     def global_httpclient_resolvers_disabled(self, items: list[Any]) -> tuple[str, bool]:
         return ("httpclient_resolvers_disabled", items[0])
