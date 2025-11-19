@@ -1,6 +1,5 @@
 """Test missing server options for 100% coverage."""
 
-import pytest
 from haproxy_translator.parsers import DSLParser
 
 

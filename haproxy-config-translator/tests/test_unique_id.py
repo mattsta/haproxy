@@ -1,8 +1,7 @@
 """Tests for unique-id-format and unique-id-header directives (Phases 4K, 4L)."""
 
-import pytest
-from haproxy_translator.parsers import DSLParser
 from haproxy_translator.codegen.haproxy import HAProxyCodeGenerator
+from haproxy_translator.parsers import DSLParser
 
 
 class TestUniqueIdFormat:

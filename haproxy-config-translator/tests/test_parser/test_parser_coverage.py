@@ -1,7 +1,8 @@
 """Tests to cover dsl_parser coverage gaps."""
 
+from unittest.mock import patch
+
 import pytest
-from unittest.mock import patch, MagicMock
 
 from haproxy_translator.parsers import DSLParser
 from haproxy_translator.utils.errors import ParseError
@@ -20,7 +21,7 @@ class TestParserCoverage:
         # during the transformation phase
 
         # Mock DSLTransformer to raise a generic exception
-        with patch('haproxy_translator.parsers.dsl_parser.DSLTransformer') as mock_transformer_class:
+        with patch("haproxy_translator.parsers.dsl_parser.DSLTransformer") as mock_transformer_class:
             mock_transformer = mock_transformer_class.return_value
             mock_transformer.transform.side_effect = RuntimeError("Unexpected transformer error")
 

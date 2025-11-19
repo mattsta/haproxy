@@ -1,8 +1,7 @@
 """Tests for advanced health checks and use-server directives (Phase 3)."""
 
-import pytest
-from haproxy_translator.parsers import DSLParser
 from haproxy_translator.codegen.haproxy import HAProxyCodeGenerator
+from haproxy_translator.parsers import DSLParser
 
 
 class TestAdvancedHealthChecks:

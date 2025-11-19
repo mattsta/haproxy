@@ -13,15 +13,22 @@ from ..ir.nodes import (
     Frontend,
     GlobalConfig,
     HealthCheck,
+    HttpCheckRule,
     HttpRequestRule,
     HttpResponseRule,
     Listen,
+    MailersSection,
+    PeersSection,
+    RedirectRule,
+    ResolversSection,
     Server,
     ServerTemplate,
     StickRule,
     StickTable,
+    TcpCheckRule,
     TcpRequestRule,
     TcpResponseRule,
+    UseServerRule,
 )
 
 
@@ -161,18 +168,16 @@ class HAProxyCodeGenerator:
         if global_config.hard_stop_after:
             lines.append(self._indent(f"hard-stop-after {global_config.hard_stop_after}"))
 
-        if global_config.external_check is not None:
-            if global_config.external_check:
-                lines.append(self._indent("external-check"))
+        if global_config.external_check is not None and global_config.external_check:
+            lines.append(self._indent("external-check"))
 
         # Connection tuning
         if global_config.maxpipes:
             lines.append(self._indent(f"maxpipes {global_config.maxpipes}"))
 
         # Master-worker mode
-        if global_config.master_worker is not None:
-            if global_config.master_worker:
-                lines.append(self._indent("master-worker"))
+        if global_config.master_worker is not None and global_config.master_worker:
+            lines.append(self._indent("master-worker"))
 
         if global_config.mworker_max_reloads:
             lines.append(self._indent(f"mworker-max-reloads {global_config.mworker_max_reloads}"))
@@ -218,7 +223,7 @@ class HAProxyCodeGenerator:
             lines.append(self._indent(f"setcap {global_config.setcap}"))
 
         if global_config.set_dumpable is not None:
-            lines.append(self._indent(f"set-dumpable"))
+            lines.append(self._indent("set-dumpable"))
 
         if global_config.unix_bind:
             lines.append(self._indent(f"unix-bind {global_config.unix_bind}"))
@@ -227,9 +232,8 @@ class HAProxyCodeGenerator:
             lines.append(self._indent(f"cpu-map {process_thread} {cpu_list}"))
 
         # Performance & Runtime (Phase 4A)
-        if global_config.busy_polling is not None:
-            if global_config.busy_polling:
-                lines.append(self._indent("busy-polling"))
+        if global_config.busy_polling is not None and global_config.busy_polling:
+            lines.append(self._indent("busy-polling"))
 
         if global_config.max_spread_checks is not None:
             lines.append(self._indent(f"max-spread-checks {global_config.max_spread_checks}"))
@@ -267,33 +271,26 @@ class HAProxyCodeGenerator:
             lines.append(self._indent(f"httpclient.ssl.ca-file {global_config.httpclient_ssl_ca_file}"))
 
         # Platform-Specific Options (Phase 4B Part 1)
-        if global_config.noepoll is not None:
-            if global_config.noepoll:
-                lines.append(self._indent("noepoll"))
+        if global_config.noepoll is not None and global_config.noepoll:
+            lines.append(self._indent("noepoll"))
 
-        if global_config.nokqueue is not None:
-            if global_config.nokqueue:
-                lines.append(self._indent("nokqueue"))
+        if global_config.nokqueue is not None and global_config.nokqueue:
+            lines.append(self._indent("nokqueue"))
 
-        if global_config.nopoll is not None:
-            if global_config.nopoll:
-                lines.append(self._indent("nopoll"))
+        if global_config.nopoll is not None and global_config.nopoll:
+            lines.append(self._indent("nopoll"))
 
-        if global_config.nosplice is not None:
-            if global_config.nosplice:
-                lines.append(self._indent("nosplice"))
+        if global_config.nosplice is not None and global_config.nosplice:
+            lines.append(self._indent("nosplice"))
 
-        if global_config.nogetaddrinfo is not None:
-            if global_config.nogetaddrinfo:
-                lines.append(self._indent("nogetaddrinfo"))
+        if global_config.nogetaddrinfo is not None and global_config.nogetaddrinfo:
+            lines.append(self._indent("nogetaddrinfo"))
 
-        if global_config.noreuseport is not None:
-            if global_config.noreuseport:
-                lines.append(self._indent("noreuseport"))
+        if global_config.noreuseport is not None and global_config.noreuseport:
+            lines.append(self._indent("noreuseport"))
 
-        if global_config.limited_quic is not None:
-            if global_config.limited_quic:
-                lines.append(self._indent("limited-quic"))
+        if global_config.limited_quic is not None and global_config.limited_quic:
+            lines.append(self._indent("limited-quic"))
 
         if global_config.localpeer:
             lines.append(self._indent(f"localpeer {global_config.localpeer}"))
@@ -305,9 +302,8 @@ class HAProxyCodeGenerator:
         if global_config.ssl_load_extra_del_ext:
             lines.append(self._indent(f"ssl-load-extra-del-ext {global_config.ssl_load_extra_del_ext}"))
 
-        if global_config.ssl_mode_async is not None:
-            if global_config.ssl_mode_async:
-                lines.append(self._indent("ssl-mode-async"))
+        if global_config.ssl_mode_async is not None and global_config.ssl_mode_async:
+            lines.append(self._indent("ssl-mode-async"))
 
         if global_config.ssl_propquery:
             lines.append(self._indent(f"ssl-propquery {global_config.ssl_propquery}"))
@@ -1070,7 +1066,7 @@ class HAProxyCodeGenerator:
                     parts.append(f"hdr {header_name} {header_value}")
             return " ".join(parts)
 
-        elif http_check.type == "expect":
+        if http_check.type == "expect":
             parts = ["http-check expect"]
             if http_check.expect_negate:
                 parts.append("!")
@@ -1084,7 +1080,7 @@ class HAProxyCodeGenerator:
                 parts.append(f"rstring {http_check.expect_value}")
             return " ".join(parts)
 
-        elif http_check.type == "connect":
+        if http_check.type == "connect":
             parts = ["http-check connect"]
             if http_check.port:
                 parts.append(f"port {http_check.port}")
@@ -1096,7 +1092,7 @@ class HAProxyCodeGenerator:
                 parts.append(f"alpn {http_check.alpn}")
             return " ".join(parts)
 
-        elif http_check.type == "disable-on-404":
+        if http_check.type == "disable-on-404":
             return "http-check disable-on-404"
 
         return ""
@@ -1115,19 +1111,19 @@ class HAProxyCodeGenerator:
                 parts.append(f"alpn {tcp_check.alpn}")
             return " ".join(parts)
 
-        elif tcp_check.type == "send":
+        if tcp_check.type == "send":
             return f"tcp-check send {tcp_check.data}"
 
-        elif tcp_check.type == "send-binary":
+        if tcp_check.type == "send-binary":
             return f"tcp-check send-binary {tcp_check.data}"
 
-        elif tcp_check.type == "expect":
+        if tcp_check.type == "expect":
             parts = ["tcp-check expect"]
             if tcp_check.pattern:
                 parts.append(tcp_check.pattern)
             return " ".join(parts)
 
-        elif tcp_check.type == "comment":
+        if tcp_check.type == "comment":
             return f"tcp-check comment {tcp_check.comment}"
 
         return ""

@@ -2,8 +2,8 @@
 
 import pytest
 
-from haproxy_translator.parsers import DSLParser
 from haproxy_translator.codegen.haproxy import HAProxyCodeGenerator
+from haproxy_translator.parsers import DSLParser
 from haproxy_translator.utils.errors import ParseError
 
 
@@ -66,7 +66,7 @@ class TestLoopUnrollerCoverage:
         """Test for loop with unsupported iterable type raises error."""
         # This would need to be constructed programmatically since
         # the grammar doesn't allow invalid iterables
-        from haproxy_translator.ir.nodes import Backend, ForLoop, Server, ConfigIR
+        from haproxy_translator.ir.nodes import Backend, ConfigIR, ForLoop, Server
         from haproxy_translator.transformers.loop_unroller import LoopUnroller
 
         # Create a loop with invalid iterable (a string instead of tuple/list)
@@ -112,12 +112,12 @@ class TestLoopUnrollerCoverage:
         """
         # This should raise an error during parsing/transformation due to undefined variable
         with pytest.raises(ParseError, match="Failed to evaluate expression"):
-            ir = parser.parse(source)
+            parser.parse(source)
 
     def test_backend_with_single_loop_not_list(self, parser, codegen):
         """Test backend with single loop (not wrapped in list) in metadata."""
         # This tests the code path where loops is not a list and gets converted
-        from haproxy_translator.ir.nodes import Backend, ForLoop, Server, ConfigIR
+        from haproxy_translator.ir.nodes import Backend, ConfigIR, ForLoop, Server
         from haproxy_translator.transformers.loop_unroller import LoopUnroller
 
         # Create a loop
@@ -177,7 +177,7 @@ class TestLoopUnrollerCoverage:
     def test_for_loop_with_nested_list_body(self, parser, codegen):
         """Test for loop with nested list in body."""
         # This would need to be constructed programmatically
-        from haproxy_translator.ir.nodes import Backend, ForLoop, Server, ConfigIR
+        from haproxy_translator.ir.nodes import Backend, ConfigIR, ForLoop, Server
         from haproxy_translator.transformers.loop_unroller import LoopUnroller
 
         server1 = Server(name="srv${i}", address="10.0.1.${i}", port=8080)

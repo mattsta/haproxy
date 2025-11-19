@@ -1,8 +1,7 @@
 """Tests for critical missing features: stats socket, peers, resolvers, mailers."""
 
-import pytest
-from haproxy_translator.parsers import DSLParser
 from haproxy_translator.codegen.haproxy import HAProxyCodeGenerator
+from haproxy_translator.parsers import DSLParser
 
 
 class TestCriticalFeatures:

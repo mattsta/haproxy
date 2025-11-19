@@ -1,10 +1,12 @@
 """Final push to 100% test coverage - targeting remaining 138 lines."""
 
-import pytest
 import sys
-from haproxy_translator.parsers import DSLParser
+
+import pytest
+
 from haproxy_translator.codegen.haproxy import HAProxyCodeGenerator
 from haproxy_translator.ir.nodes import TcpRequestRule, TcpResponseRule
+from haproxy_translator.parsers import DSLParser
 
 
 class TestFinal100PercentCoverage:
@@ -15,7 +17,7 @@ class TestFinal100PercentCoverage:
     def test_tcp_request_with_named_parameters(self):
         """Test TCP request rule with explicit named parameters (line 1039)."""
         # Create IR directly with named parameters
-        from haproxy_translator.ir.nodes import Backend, Server, ConfigIR
+        from haproxy_translator.ir.nodes import Backend, ConfigIR, Server
 
         tcp_rule = TcpRequestRule(
             rule_type="content",
@@ -41,7 +43,7 @@ class TestFinal100PercentCoverage:
 
     def test_tcp_response_with_named_parameters(self):
         """Test TCP response rule with explicit named parameters (line 1056)."""
-        from haproxy_translator.ir.nodes import Backend, Server, ConfigIR
+        from haproxy_translator.ir.nodes import Backend, ConfigIR, Server
 
         tcp_rule = TcpResponseRule(
             rule_type="content",
@@ -313,7 +315,7 @@ class TestFinal100PercentCoverage:
 
     def test_template_spreads_single_value_not_list(self):
         """Test template_spreads as single string (line 40 in template_expander.py)."""
-        from haproxy_translator.ir.nodes import Server, Backend, ConfigIR, Template
+        from haproxy_translator.ir.nodes import Backend, ConfigIR, Server, Template
         from haproxy_translator.transformers.template_expander import TemplateExpander
 
         # Create a template
@@ -353,7 +355,7 @@ class TestFinal100PercentCoverage:
 
     def test_variable_dict_value_resolution(self):
         """Test variable with dict value requiring resolution (line 105 in variable_resolver.py)."""
-        from haproxy_translator.ir.nodes import ConfigIR, Backend, Server, Variable
+        from haproxy_translator.ir.nodes import Backend, ConfigIR, Server, Variable
         from haproxy_translator.transformers.variable_resolver import VariableResolver
 
         # Create variables

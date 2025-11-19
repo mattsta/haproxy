@@ -1,8 +1,7 @@
 """Comprehensive tests to achieve 100% code coverage."""
 
-import pytest
-from haproxy_translator.parsers import DSLParser
 from haproxy_translator.codegen.haproxy import HAProxyCodeGenerator
+from haproxy_translator.parsers import DSLParser
 
 
 class TestCoverage100Percent:
@@ -177,7 +176,7 @@ class TestCoverage100Percent:
         assert ir.global_config.stats is not None
         assert ir.global_config.stats.enable is True
         assert ir.global_config.stats.uri == "/haproxy-stats"
-        assert ir.global_config.stats.auth == "admin:password"
+        assert ir.global_config.stats.auth == ["admin:password"]
 
     def test_frontend_tcp_request_response_rules(self):
         """Test TCP request/response rules in frontend (lines 1300, 1304, 1039, 1056)."""

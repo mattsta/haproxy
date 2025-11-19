@@ -429,9 +429,7 @@ class DSLTransformer(Transformer):
                 elif key == "cpu_map":
                     # cpu_map returns tuple (process/thread, cpu_list)
                     cpu_map[value[0]] = value[1]
-                elif key == "setenv":
-                    env_vars[value[0]] = value[1]
-                elif key == "presetenv":
+                elif key in {"setenv", "presetenv"}:
                     env_vars[value[0]] = value[1]
                 elif key == "resetenv":
                     reset_env_vars.append(value)
@@ -1108,9 +1106,11 @@ class DSLTransformer(Transformer):
         return LogTarget(address=address, facility=facility, level=level)
 
     def stats_section(self, items: list[Any]) -> StatsConfig:
+        """Transform global stats section (simple version for backwards compatibility)."""
         enable = True
         uri = "/stats"
-        auth = None
+        auth_list: list[str] = []
+        refresh = None
 
         for item in items:
             if isinstance(item, tuple):
@@ -1120,18 +1120,29 @@ class DSLTransformer(Transformer):
                 elif key == "uri":
                     uri = value
                 elif key == "auth":
-                    auth = value
+                    # Convert single auth string to list for compatibility with new StatsConfig
+                    auth_list = [value] if value else []
+                elif key == "refresh":
+                    refresh = value
 
-        return StatsConfig(enable=enable, uri=uri, auth=auth)
+        # Use the comprehensive StatsConfig with basic values
+        return StatsConfig(
+            enable=enable,
+            uri=uri,
+            auth=auth_list,
+            refresh=refresh,
+        )
 
     def stats_enable(self, items: list[Any]) -> tuple[str, bool]:
-        return ("enable", items[0])
+        """Transform stats enable (works for both global and proxy stats)."""
+        # If items provided, use the boolean value; otherwise default to True
+        return ("enable", items[0] if items else True)
 
     def stats_uri(self, items: list[Any]) -> tuple[str, str]:
-        return ("uri", items[0])
+        return ("uri", str(items[0]))
 
     def stats_auth(self, items: list[Any]) -> tuple[str, str]:
-        return ("auth", items[0])
+        return ("auth", str(items[0]))
 
     # ===== Stats Socket (Runtime API) =====
     def global_stats_socket(self, items: list[Any]) -> StatsSocket:
@@ -1768,7 +1779,7 @@ class DSLTransformer(Transformer):
 
     def frontend_stats(self, items: list[Any]) -> StatsConfig:
         """Transform stats block."""
-        return cast(StatsConfig, items[0])
+        return cast("StatsConfig", items[0])
 
     def stats_block(self, items: list[Any]) -> StatsConfig:
         """Build StatsConfig from stats properties."""
@@ -1816,21 +1827,9 @@ class DSLTransformer(Transformer):
             admin_rules=admin_rules,
         )
 
-    def stats_enable(self, items: list[Any]) -> tuple[str, bool]:
-        """Transform stats enable."""
-        return ("enable", True)
-
-    def stats_uri(self, items: list[Any]) -> tuple[str, str]:
-        """Transform stats uri."""
-        return ("uri", str(items[0]))
-
     def stats_realm(self, items: list[Any]) -> tuple[str, str]:
         """Transform stats realm."""
         return ("realm", str(items[0]))
-
-    def stats_auth(self, items: list[Any]) -> tuple[str, str]:
-        """Transform stats auth."""
-        return ("auth", str(items[0]))
 
     def stats_hide_version(self, items: list[Any]) -> tuple[str, bool]:
         """Transform stats hide-version."""
@@ -2012,7 +2011,7 @@ class DSLTransformer(Transformer):
     # ===== http-check Block =====
     def backend_http_check(self, items: list[Any]) -> list[HttpCheckRule]:
         """Backend http-check block returns list of rules."""
-        return items[0]  # http_check_block already returns a list
+        return cast("list[HttpCheckRule]", items[0])  # http_check_block already returns a list
 
     def http_check_block(self, items: list[Any]) -> list[HttpCheckRule]:
         """Transform http-check block."""
@@ -2048,7 +2047,7 @@ class DSLTransformer(Transformer):
 
         method = None
         uri = None
-        headers = {}
+        headers: dict[str, str] = {}
 
         if isinstance(send_opts, tuple) and len(send_opts) >= 2:
             method = send_opts[0]
@@ -2079,12 +2078,12 @@ class DSLTransformer(Transformer):
 
     def _parse_ssl_options(self, items: list[Any]) -> dict[str, Any]:
         """Parse SSL options from inlined ssl_options rule."""
-        opts = {"ssl": False, "sni": None, "alpn": None}
+        opts: dict[str, bool | str | None] = {"ssl": False, "sni": None, "alpn": None}
         if not items:
             return opts
 
         # Items will be tokens from the inlined rule: may contain sni and alpn strings
-        for i, item in enumerate(items):
+        for _i, item in enumerate(items):
             if isinstance(item, str):
                 # First string after ssl is sni, second is alpn
                 if opts["sni"] is None:
@@ -2116,7 +2115,7 @@ class DSLTransformer(Transformer):
     # ===== tcp-check Block =====
     def backend_tcp_check(self, items: list[Any]) -> list[TcpCheckRule]:
         """Backend tcp-check block returns list of rules."""
-        return items[0]  # tcp_check_block already returns a list
+        return cast("list[TcpCheckRule]", items[0])  # tcp_check_block already returns a list
 
     def tcp_check_block(self, items: list[Any]) -> list[TcpCheckRule]:
         """Transform tcp-check block."""
@@ -2619,7 +2618,7 @@ class DSLTransformer(Transformer):
 
     def backend_default_server(self, items: list[Any]) -> DefaultServer:
         """Handle default-server in backend."""
-        return cast(DefaultServer, items[0])
+        return cast("DefaultServer", items[0])
 
     # ===== Default Server =====
     def default_server_directive(self, items: list[Any]) -> DefaultServer:
@@ -3488,7 +3487,7 @@ class DSLTransformer(Transformer):
         var_name = items[0]
         default = items[1] if len(items) > 1 else None
 
-        return resolve_env_variable(var_name, default)
+        return str(resolve_env_variable(var_name, default))
 
     # ===== Primitives =====
     def identifier(self, items: list[Token]) -> str:
@@ -3789,7 +3788,7 @@ class DSLTransformer(Transformer):
     # ===== Backend ACL Support =====
     def backend_acl(self, items: list[Any]) -> ACL:
         """Transform ACL in backend."""
-        return cast(ACL, items[0])
+        return cast("ACL", items[0])
 
     def backend_tcp_request(self, items: list[Any]) -> list[TcpRequestRule]:
         """Transform tcp-request in backend."""
@@ -3801,8 +3800,8 @@ class DSLTransformer(Transformer):
 
     def backend_stick_table(self, items: list[Any]) -> StickTable:
         """Transform stick-table in backend."""
-        return cast(StickTable, items[0]) if items else cast(StickTable, None)
+        return cast("StickTable", items[0]) if items else cast("StickTable", None)
 
     def backend_stick_rule(self, items: list[Any]) -> StickRule:
         """Transform stick rule in backend."""
-        return cast(StickRule, items[0]) if items else cast(StickRule, None)
+        return cast("StickRule", items[0]) if items else cast("StickRule", None)

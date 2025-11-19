@@ -1,8 +1,7 @@
 """Tests for disabled, enabled, and id directives (Phases 4I, 4J)."""
 
-import pytest
-from haproxy_translator.parsers import DSLParser
 from haproxy_translator.codegen.haproxy import HAProxyCodeGenerator
+from haproxy_translator.parsers import DSLParser
 
 
 class TestFrontendDisabled:
@@ -35,7 +34,7 @@ class TestFrontendDisabled:
         codegen = HAProxyCodeGenerator()
         output = codegen.generate(ir)
 
-        assert ir.frontends[0].disabled == True
+        assert ir.frontends[0].disabled
         assert "disabled" in output
 
 
@@ -69,7 +68,7 @@ class TestFrontendEnabled:
         codegen = HAProxyCodeGenerator()
         output = codegen.generate(ir)
 
-        assert ir.frontends[0].enabled == False
+        assert not ir.frontends[0].enabled
         assert "disabled" in output
 
 
@@ -132,7 +131,7 @@ class TestBackendDisabledEnabledId:
         codegen = HAProxyCodeGenerator()
         output = codegen.generate(ir)
 
-        assert ir.backends[0].disabled == True
+        assert ir.backends[0].disabled
         assert "disabled" in output
 
     def test_backend_enabled_false(self):
@@ -157,7 +156,7 @@ class TestBackendDisabledEnabledId:
         codegen = HAProxyCodeGenerator()
         output = codegen.generate(ir)
 
-        assert ir.backends[0].enabled == False
+        assert not ir.backends[0].enabled
         assert "disabled" in output
 
     def test_backend_id(self):
@@ -212,7 +211,7 @@ class TestListenDisabledEnabledId:
         codegen = HAProxyCodeGenerator()
         output = codegen.generate(ir)
 
-        assert ir.listens[0].disabled == True
+        assert ir.listens[0].disabled
         assert "disabled" in output
 
     def test_listen_id(self):
@@ -276,7 +275,7 @@ class TestIntegration:
 
         frontend = ir.frontends[0]
         assert frontend.description == "API gateway for external requests"
-        assert frontend.disabled == True
+        assert frontend.disabled
         assert frontend.id == 1000
 
         assert "description API gateway for external requests" in output
@@ -411,7 +410,7 @@ class TestIntegration:
 
         frontend = ir.frontends[0]
         assert frontend.description == "Maintenance mode - frontend disabled"
-        assert frontend.disabled == True
+        assert frontend.disabled
 
         assert "disabled" in output
         assert "Maintenance mode - frontend disabled" in output

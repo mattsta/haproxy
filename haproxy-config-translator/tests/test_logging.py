@@ -1,8 +1,7 @@
 """Tests for proxy-level logging features (Phase 4C)."""
 
-import pytest
-from haproxy_translator.parsers import DSLParser
 from haproxy_translator.codegen.haproxy import HAProxyCodeGenerator
+from haproxy_translator.parsers import DSLParser
 
 
 class TestFrontendLog:

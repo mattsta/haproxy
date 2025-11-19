@@ -1,10 +1,11 @@
 """Tests to cover variable_resolver coverage gaps."""
 
 import os
+
 import pytest
 
-from haproxy_translator.parsers import DSLParser
 from haproxy_translator.codegen.haproxy import HAProxyCodeGenerator
+from haproxy_translator.parsers import DSLParser
 
 
 class TestVariableResolverCoverage:
@@ -220,4 +221,4 @@ class TestVariableResolverCoverage:
         from haproxy_translator.utils.errors import ParseError
 
         with pytest.raises(ParseError, match="Environment variable not set"):
-            ir = parser.parse(source)
+            parser.parse(source)

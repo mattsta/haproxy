@@ -5,9 +5,8 @@ with the haproxy-config-translator implementation.
 """
 
 import re
-from collections import defaultdict
-from pathlib import Path
 from datetime import datetime
+from pathlib import Path
 
 
 class DirectiveExtractor:
@@ -15,58 +14,54 @@ class DirectiveExtractor:
 
     def __init__(self, doc_path):
         self.doc_path = Path(doc_path)
-        with open(self.doc_path, 'r', encoding='utf-8', errors='ignore') as f:
+        with open(self.doc_path, encoding="utf-8", errors="ignore") as f:
             self.content = f.read()
-            self.lines = self.content.split('\n')
+            self.lines = self.content.split("\n")
 
     def extract_global_directives(self):
         """Extract all global directives."""
         directives = {
-            'process_management': [],
-            'performance_tuning': [],
-            'debugging': [],
-            'httpclient': [],
-            'ssl_tls': [],
-            'lua': [],
-            'quic_http3': [],
-            'device_detection': [],
-            'other': []
+            "process_management": [],
+            "performance_tuning": [],
+            "debugging": [],
+            "httpclient": [],
+            "ssl_tls": [],
+            "lua": [],
+            "quic_http3": [],
+            "device_detection": [],
+            "other": []
         }
 
         # Find global section keywords list
-        in_process = False
-        in_performance = False
-        in_debugging = False
-        in_httpclient = False
         current_category = None
 
         for line in self.lines[1735:2014]:  # Global directives section
-            if 'Process management and security' in line:
-                current_category = 'process_management'
+            if "Process management and security" in line:
+                current_category = "process_management"
                 continue
-            elif 'Performance tuning' in line:
-                current_category = 'performance_tuning'
+            if "Performance tuning" in line:
+                current_category = "performance_tuning"
                 continue
-            elif 'Debugging' in line:
-                current_category = 'debugging'
+            if "Debugging" in line:
+                current_category = "debugging"
                 continue
-            elif 'HTTPClient' in line:
-                current_category = 'httpclient'
+            if "HTTPClient" in line:
+                current_category = "httpclient"
                 continue
 
             # Extract directive name
-            match = re.match(r'^\s+-\s+([a-zA-Z0-9._-]+)', line)
+            match = re.match(r"^\s+-\s+([a-zA-Z0-9._-]+)", line)
             if match and current_category:
                 directive = match.group(1)
                 # Categorize by name patterns
-                if 'ssl' in directive or 'crt' in directive or 'ca-' in directive:
-                    directives['ssl_tls'].append(directive)
-                elif 'lua' in directive:
-                    directives['lua'].append(directive)
-                elif 'quic' in directive or 'h2' in directive or 'h3' in directive:
-                    directives['quic_http3'].append(directive)
-                elif '51degrees' in directive or 'deviceatlas' in directive or 'wurfl' in directive:
-                    directives['device_detection'].append(directive)
+                if "ssl" in directive or "crt" in directive or "ca-" in directive:
+                    directives["ssl_tls"].append(directive)
+                elif "lua" in directive:
+                    directives["lua"].append(directive)
+                elif "quic" in directive or "h2" in directive or "h3" in directive:
+                    directives["quic_http3"].append(directive)
+                elif "51degrees" in directive or "deviceatlas" in directive or "wurfl" in directive:
+                    directives["device_detection"].append(directive)
                 else:
                     directives[current_category].append(directive)
 
@@ -78,22 +73,22 @@ class DirectiveExtractor:
 
         # Find the proxy keywords matrix
         in_matrix = False
-        for i, line in enumerate(self.lines):
-            if '4.1. Proxy keywords matrix' in line:
+        for _i, line in enumerate(self.lines):
+            if "4.1. Proxy keywords matrix" in line:
                 in_matrix = True
                 continue
 
-            if in_matrix and (line.startswith('4.2.') or line.startswith('4.3.')):
+            if in_matrix and (line.startswith("4.2.") or line.startswith("4.3.")):
                 break
 
-            if in_matrix and line.strip() and not line.startswith('---') and not line.startswith(' keyword'):
+            if in_matrix and line.strip() and not line.startswith("---") and not line.startswith(" keyword"):
                 # Try to parse keyword line
-                match = re.match(r'^([a-z][a-zA-Z0-9_-]+(?:\s*\([^)]*\))?)\s+', line)
+                match = re.match(r"^([a-z][a-zA-Z0-9_-]+(?:\s*\([^)]*\))?)\s+", line)
                 if match:
                     keyword = match.group(1).strip()
                     # Remove trailing (deprecated) or (*) markers
-                    keyword = re.sub(r'\s*\(.*?\)\s*$', '', keyword)
-                    keyword = re.sub(r'\s*\(\*\)\s*$', '', keyword)
+                    keyword = re.sub(r"\s*\(.*?\)\s*$", "", keyword)
+                    keyword = re.sub(r"\s*\(\*\)\s*$", "", keyword)
                     if keyword and len(keyword) > 1:
                         keywords.append(keyword)
 
@@ -105,18 +100,18 @@ class DirectiveExtractor:
 
         in_matrix = False
         for line in self.lines:
-            if '4.3. Actions keywords matrix' in line:
+            if "4.3. Actions keywords matrix" in line:
                 in_matrix = True
                 continue
 
-            if in_matrix and line.startswith('4.4.'):
+            if in_matrix and line.startswith("4.4."):
                 break
 
             if in_matrix:
-                match = re.match(r'^([a-z][a-zA-Z0-9_-]+)\s+', line)
+                match = re.match(r"^([a-z][a-zA-Z0-9_-]+)\s+", line)
                 if match:
                     action = match.group(1).strip()
-                    if action and action not in ['keyword'] and len(action) > 1:
+                    if action and action not in ["keyword"] and len(action) > 1:
                         actions.append(action)
 
         return sorted(set(actions))
@@ -127,20 +122,20 @@ class DirectiveExtractor:
         in_section = False
 
         for line in self.lines:
-            if '5.1. Bind options' in line:
+            if "5.1. Bind options" in line:
                 in_section = True
                 continue
 
-            if in_section and '5.2. Server and default-server options' in line:
+            if in_section and "5.2. Server and default-server options" in line:
                 break
 
             if in_section:
                 # Look for option definitions (start of line, lowercase)
-                match = re.match(r'^([a-z][a-z0-9_-]+)', line)
+                match = re.match(r"^([a-z][a-z0-9_-]+)", line)
                 if match:
                     option = match.group(1)
                     # Filter out common words
-                    if option not in ['see', 'this', 'the', 'it', 'if', 'is', 'be', 'to', 'for', 'and', 'or', 'on', 'of', 'in', 'at', 'by', 'from']:
+                    if option not in ["see", "this", "the", "it", "if", "is", "be", "to", "for", "and", "or", "on", "of", "in", "at", "by", "from"]:
                         options.append(option)
 
         return sorted(set(options))
@@ -151,19 +146,19 @@ class DirectiveExtractor:
         in_section = False
 
         for line in self.lines:
-            if '5.2. Server and default-server options' in line:
+            if "5.2. Server and default-server options" in line:
                 in_section = True
                 continue
 
-            if in_section and '5.3. Server DNS resolution' in line:
+            if in_section and "5.3. Server DNS resolution" in line:
                 break
 
             if in_section:
-                match = re.match(r'^([a-z][a-z0-9_-]+)', line)
+                match = re.match(r"^([a-z][a-z0-9_-]+)", line)
                 if match:
                     option = match.group(1)
                     # Filter common words
-                    if option not in ['see', 'this', 'the', 'it', 'if', 'is', 'be', 'to', 'for', 'and', 'or', 'on', 'of', 'in', 'at', 'by', 'from', 'when', 'may', 'are', 'not', 'all', 'can', 'will', 'example']:
+                    if option not in ["see", "this", "the", "it", "if", "is", "be", "to", "for", "and", "or", "on", "of", "in", "at", "by", "from", "when", "may", "are", "not", "all", "can", "will", "example"]:
                         options.append(option)
 
         return sorted(set(options))
@@ -177,90 +172,89 @@ class ImplementationAnalyzer:
 
     def extract_grammar_directives(self):
         """Extract directives from Lark grammar."""
-        grammar_path = self.base_path / 'src/haproxy_translator/grammars/haproxy_dsl.lark'
+        grammar_path = self.base_path / "src/haproxy_translator/grammars/haproxy_dsl.lark"
 
-        with open(grammar_path, 'r') as f:
+        with open(grammar_path) as f:
             content = f.read()
 
         directives = {
-            'global': [],
-            'frontend': [],
-            'backend': [],
-            'defaults': [],
-            'listen': [],
-            'bind': [],
-            'server': [],
-            'actions': []
+            "global": [],
+            "frontend": [],
+            "backend": [],
+            "defaults": [],
+            "listen": [],
+            "bind": [],
+            "server": [],
+            "actions": []
         }
 
         # Extract global directives
         global_pattern = r'"([a-zA-Z0-9._-]+)"\s*":"\s*.*?->\s*global_'
-        directives['global'] = sorted(set(re.findall(global_pattern, content)))
+        directives["global"] = sorted(set(re.findall(global_pattern, content)))
 
         # Extract frontend directives
-        frontend_pattern = r'->\s*frontend_([a-zA-Z0-9_]+)'
-        directives['frontend'] = sorted(set(re.findall(frontend_pattern, content)))
+        frontend_pattern = r"->\s*frontend_([a-zA-Z0-9_]+)"
+        directives["frontend"] = sorted(set(re.findall(frontend_pattern, content)))
 
         # Extract backend directives
-        backend_pattern = r'->\s*backend_([a-zA-Z0-9_]+)'
-        directives['backend'] = sorted(set(re.findall(backend_pattern, content)))
+        backend_pattern = r"->\s*backend_([a-zA-Z0-9_]+)"
+        directives["backend"] = sorted(set(re.findall(backend_pattern, content)))
 
         # Extract defaults directives
-        defaults_pattern = r'->\s*defaults_([a-zA-Z0-9_]+)'
-        directives['defaults'] = sorted(set(re.findall(defaults_pattern, content)))
+        defaults_pattern = r"->\s*defaults_([a-zA-Z0-9_]+)"
+        directives["defaults"] = sorted(set(re.findall(defaults_pattern, content)))
 
         # Extract listen directives
-        listen_pattern = r'->\s*listen_([a-zA-Z0-9_]+)'
-        directives['listen'] = sorted(set(re.findall(listen_pattern, content)))
+        listen_pattern = r"->\s*listen_([a-zA-Z0-9_]+)"
+        directives["listen"] = sorted(set(re.findall(listen_pattern, content)))
 
         # Extract bind options
-        bind_pattern = r'bind_option|ssl_property|BIND_OPTION_NAME'
         # Count SSL properties
-        ssl_prop_count = len(re.findall(r'ssl_[a-z_]+', content))
-        directives['bind'] = [f'ssl_properties({ssl_prop_count})', 'generic_options']
+        ssl_prop_count = len(re.findall(r"ssl_[a-z_]+", content))
+        directives["bind"] = [f"ssl_properties({ssl_prop_count})", "generic_options"]
 
         # Extract server options
-        server_pattern = r'->\s*server_([a-zA-Z0-9_]+)'
-        directives['server'] = sorted(set(re.findall(server_pattern, content)))
+        server_pattern = r"->\s*server_([a-zA-Z0-9_]+)"
+        directives["server"] = sorted(set(re.findall(server_pattern, content)))
 
         return directives
 
     def count_test_coverage(self):
         """Count test files and coverage."""
-        tests_path = self.base_path / 'tests'
-        test_files = list(tests_path.rglob('test_*.py'))
+        tests_path = self.base_path / "tests"
+        test_files = list(tests_path.rglob("test_*.py"))
 
         categories = {
-            'global': 0,
-            'proxy': 0,
-            'bind': 0,
-            'server': 0,
-            'actions': 0,
-            'parser': 0,
-            'codegen': 0,
-            'other': 0
+            "global": 0,
+            "proxy": 0,
+            "bind": 0,
+            "server": 0,
+            "actions": 0,
+            "parser": 0,
+            "codegen": 0,
+            "other": 0
         }
 
         for test_file in test_files:
             name = test_file.name.lower()
-            if 'global' in name:
-                categories['global'] += 1
-            elif 'bind' in name:
-                categories['bind'] += 1
-            elif 'server' in name:
-                categories['server'] += 1
-            elif 'http_actions' in name or 'tcp' in name:
-                categories['actions'] += 1
-            elif 'parser' in name:
-                categories['parser'] += 1
-            elif 'codegen' in name:
-                categories['codegen'] += 1
+            if "global" in name:
+                categories["global"] += 1
+            elif "bind" in name:
+                categories["bind"] += 1
+            elif "server" in name:
+                categories["server"] += 1
+            elif "http_actions" in name or "tcp" in name:
+                categories["actions"] += 1
+            elif "parser" in name:
+                categories["parser"] += 1
+            elif "codegen" in name:
+                categories["codegen"] += 1
             else:
-                categories['other'] += 1
+                categories["other"] += 1
 
         return {
-            'total_files': len(test_files),
-            'categories': categories
+            "total_files": len(test_files),
+            "categories": categories
         }
 
 
@@ -268,10 +262,10 @@ def calculate_coverage(doc_items, impl_items):
     """Calculate coverage percentage."""
     # Normalize names for comparison
     def normalize(s):
-        return s.replace('-', '_').replace('.', '_').lower()
+        return s.replace("-", "_").replace(".", "_").lower()
 
-    doc_set = set(normalize(d) for d in doc_items)
-    impl_set = set(normalize(i) for i in impl_items)
+    doc_set = {normalize(d) for d in doc_items}
+    impl_set = {normalize(i) for i in impl_items}
 
     covered = doc_set & impl_set
     missing = doc_set - impl_set
@@ -281,10 +275,10 @@ def calculate_coverage(doc_items, impl_items):
     coverage_pct = (covered_count / total * 100) if total > 0 else 0
 
     return {
-        'total': total,
-        'covered': covered_count,
-        'missing': sorted([d for d in doc_items if normalize(d) in missing]),
-        'coverage_pct': coverage_pct
+        "total": total,
+        "covered": covered_count,
+        "missing": sorted([d for d in doc_items if normalize(d) in missing]),
+        "coverage_pct": coverage_pct
     }
 
 
@@ -292,14 +286,14 @@ def categorize_missing_by_priority(missing_directives):
     """Categorize missing directives by priority."""
     # Define critical keywords
     critical_keywords = [
-        'timeout', 'maxconn', 'retries', 'balance', 'mode', 'bind', 'server',
-        'backend', 'frontend', 'acl', 'http-request', 'http-response',
-        'ssl', 'redirect', 'cookie', 'stick', 'option'
+        "timeout", "maxconn", "retries", "balance", "mode", "bind", "server",
+        "backend", "frontend", "acl", "http-request", "http-response",
+        "ssl", "redirect", "cookie", "stick", "option"
     ]
 
     important_keywords = [
-        'log', 'stats', 'monitor', 'check', 'health', 'compression',
-        'cache', 'tcp-request', 'tcp-response', 'errorfile'
+        "log", "stats", "monitor", "check", "health", "compression",
+        "cache", "tcp-request", "tcp-response", "errorfile"
     ]
 
     critical = []
@@ -319,9 +313,9 @@ def categorize_missing_by_priority(missing_directives):
             optional.append(directive)
 
     return {
-        'critical': critical,
-        'important': important,
-        'optional': optional
+        "critical": critical,
+        "important": important,
+        "optional": optional
     }
 
 
@@ -332,8 +326,8 @@ def generate_report(output_path, doc_data, impl_data, test_data):
     report.append("# HAProxy Config Translator - Feature Parity Report")
     report.append("")
     report.append(f"**Generated:** {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-    report.append(f"**HAProxy Version:** 3.3")
-    report.append(f"**Documentation Source:** `/home/user/haproxy/doc/configuration.txt`")
+    report.append("**HAProxy Version:** 3.3")
+    report.append("**Documentation Source:** `/home/user/haproxy/doc/configuration.txt`")
     report.append("")
 
     # Executive Summary
@@ -349,8 +343,8 @@ def generate_report(output_path, doc_data, impl_data, test_data):
 
     # Global directives coverage
     global_cov = calculate_coverage(
-        [d for cat in doc_data['global'].values() for d in cat],
-        impl_data['global']
+        [d for cat in doc_data["global"].values() for d in cat],
+        impl_data["global"]
     )
 
     report.append("### Global Directives")
@@ -365,7 +359,7 @@ def generate_report(output_path, doc_data, impl_data, test_data):
     report.append("")
 
     # Proxy keywords coverage
-    proxy_cov = calculate_coverage(doc_data['proxy'], impl_data['frontend'] + impl_data['backend'])
+    proxy_cov = calculate_coverage(doc_data["proxy"], impl_data["frontend"] + impl_data["backend"])
 
     report.append("### Proxy Keywords (Frontend/Backend/Listen/Defaults)")
     report.append("")
@@ -375,7 +369,7 @@ def generate_report(output_path, doc_data, impl_data, test_data):
     report.append("")
 
     # Actions coverage
-    actions_cov = calculate_coverage(doc_data['actions'], [])  # Actions extracted from grammar differently
+    calculate_coverage(doc_data["actions"], [])  # Actions extracted from grammar differently
 
     # Test Coverage
     report.append("### Test Coverage")
@@ -398,23 +392,23 @@ def generate_report(output_path, doc_data, impl_data, test_data):
     report.append("### Global Directives")
     report.append("")
 
-    for category, directives in doc_data['global'].items():
+    for category, directives in doc_data["global"].items():
         if directives:
-            cat_cov = calculate_coverage(directives, impl_data['global'])
+            cat_cov = calculate_coverage(directives, impl_data["global"])
             report.append(f"#### {category.replace('_', ' ').title()}")
             report.append("")
             report.append(f"- **Total:** {cat_cov['total']}")
             report.append(f"- **Implemented:** {cat_cov['covered']}")
             report.append(f"- **Missing:** {len(cat_cov['missing'])}")
             report.append("")
-            if cat_cov['missing']:
+            if cat_cov["missing"]:
                 report.append("<details>")
                 report.append(f"<summary>Missing Directives ({len(cat_cov['missing'])})</summary>")
                 report.append("")
                 report.append("```")
-                for directive in cat_cov['missing'][:50]:  # Limit to first 50
+                for directive in cat_cov["missing"][:50]:  # Limit to first 50
                     report.append(f"  - {directive}")
-                if len(cat_cov['missing']) > 50:
+                if len(cat_cov["missing"]) > 50:
                     report.append(f"  ... and {len(cat_cov['missing']) - 50} more")
                 report.append("```")
                 report.append("")
@@ -424,42 +418,42 @@ def generate_report(output_path, doc_data, impl_data, test_data):
     # Missing proxy keywords
     report.append("### Proxy Keywords")
     report.append("")
-    if proxy_cov['missing']:
-        priority = categorize_missing_by_priority(proxy_cov['missing'])
+    if proxy_cov["missing"]:
+        priority = categorize_missing_by_priority(proxy_cov["missing"])
 
-        if priority['critical']:
+        if priority["critical"]:
             report.append("#### Critical Missing Keywords")
             report.append("")
             report.append("```")
-            for kw in priority['critical'][:30]:
+            for kw in priority["critical"][:30]:
                 report.append(f"  - {kw}")
             report.append("```")
             report.append("")
 
-        if priority['important']:
+        if priority["important"]:
             report.append("#### Important Missing Keywords")
             report.append("")
             report.append("<details>")
             report.append("<summary>Show Important Keywords</summary>")
             report.append("")
             report.append("```")
-            for kw in priority['important']:
+            for kw in priority["important"]:
                 report.append(f"  - {kw}")
             report.append("```")
             report.append("")
             report.append("</details>")
             report.append("")
 
-        if priority['optional']:
+        if priority["optional"]:
             report.append("#### Optional Missing Keywords")
             report.append("")
             report.append("<details>")
             report.append("<summary>Show Optional Keywords</summary>")
             report.append("")
             report.append("```")
-            for kw in priority['optional'][:50]:
+            for kw in priority["optional"][:50]:
                 report.append(f"  - {kw}")
-            if len(priority['optional']) > 50:
+            if len(priority["optional"]) > 50:
                 report.append(f"  ... and {len(priority['optional']) - 50} more")
             report.append("```")
             report.append("")
@@ -625,7 +619,7 @@ def generate_report(output_path, doc_data, impl_data, test_data):
     report.append(f"<summary>All Implemented Global Directives ({len(impl_data['global'])})</summary>")
     report.append("")
     report.append("```")
-    for directive in impl_data['global']:
+    for directive in impl_data["global"]:
         report.append(f"  ✓ {directive}")
     report.append("```")
     report.append("")
@@ -638,7 +632,7 @@ def generate_report(output_path, doc_data, impl_data, test_data):
     report.append(f"<summary>All Implemented Server Options ({len(impl_data['server'])})</summary>")
     report.append("")
     report.append("```")
-    for option in impl_data['server']:
+    for option in impl_data["server"]:
         report.append(f"  ✓ {option}")
     report.append("```")
     report.append("")
@@ -646,8 +640,8 @@ def generate_report(output_path, doc_data, impl_data, test_data):
     report.append("")
 
     # Write report
-    with open(output_path, 'w') as f:
-        f.write('\n'.join(report))
+    with open(output_path, "w") as f:
+        f.write("\n".join(report))
 
 
 def main():
@@ -656,19 +650,19 @@ def main():
     print()
 
     # Paths
-    doc_path = '/home/user/haproxy/doc/configuration.txt'
-    base_path = '/home/user/haproxy/haproxy-config-translator'
-    output_path = '/home/user/haproxy/haproxy-config-translator/FEATURE_PARITY_REPORT.md'
+    doc_path = "/home/user/haproxy/doc/configuration.txt"
+    base_path = "/home/user/haproxy/haproxy-config-translator"
+    output_path = "/home/user/haproxy/haproxy-config-translator/FEATURE_PARITY_REPORT.md"
 
     # Extract documentation data
     print("📖 Extracting from HAProxy documentation...")
     extractor = DirectiveExtractor(doc_path)
     doc_data = {
-        'global': extractor.extract_global_directives(),
-        'proxy': extractor.extract_proxy_keywords(),
-        'actions': extractor.extract_actions(),
-        'bind': extractor.extract_bind_options(),
-        'server': extractor.extract_server_options()
+        "global": extractor.extract_global_directives(),
+        "proxy": extractor.extract_proxy_keywords(),
+        "actions": extractor.extract_actions(),
+        "bind": extractor.extract_bind_options(),
+        "server": extractor.extract_server_options()
     }
 
     print(f"   ✓ Global directives: {sum(len(v) for v in doc_data['global'].values())}")
@@ -699,5 +693,5 @@ def main():
     print()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

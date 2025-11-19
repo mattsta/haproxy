@@ -1,8 +1,7 @@
 """Tests for capacity planning directives: backlog, fullconn, maxconn (Phases 4E, 4F, 4G)."""
 
-import pytest
-from haproxy_translator.parsers import DSLParser
 from haproxy_translator.codegen.haproxy import HAProxyCodeGenerator
+from haproxy_translator.parsers import DSLParser
 
 
 class TestFrontendBacklog:

@@ -1,8 +1,7 @@
 """Tests for advanced load balancing features (Phase 4A)."""
 
-import pytest
-from haproxy_translator.parsers import DSLParser
 from haproxy_translator.codegen.haproxy import HAProxyCodeGenerator
+from haproxy_translator.parsers import DSLParser
 
 
 class TestHashType:

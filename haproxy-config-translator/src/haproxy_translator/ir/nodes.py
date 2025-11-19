@@ -89,16 +89,6 @@ class LuaScript(IRNode):
 
 
 @dataclass(frozen=True)
-class StatsConfig(IRNode):
-    """Stats configuration."""
-
-    enable: bool = True
-    uri: str = "/stats"
-    auth: str | None = None
-    refresh: str | None = None
-
-
-@dataclass(frozen=True)
 class StatsSocket(IRNode):
     """Stats socket configuration for runtime API."""
 

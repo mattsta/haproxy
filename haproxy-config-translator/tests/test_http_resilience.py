@@ -1,8 +1,7 @@
 """Tests for HTTP resilience directives: http-send-name-header and retry-on (Phases 4O, 4P)."""
 
-import pytest
-from haproxy_translator.parsers import DSLParser
 from haproxy_translator.codegen.haproxy import HAProxyCodeGenerator
+from haproxy_translator.parsers import DSLParser
 
 
 class TestHttpSendNameHeader:

@@ -1,8 +1,7 @@
 """Tests for connection management directives: max-keep-alive-queue and max-session-srv-conns (Phases 4M, 4N)."""
 
-import pytest
-from haproxy_translator.parsers import DSLParser
 from haproxy_translator.codegen.haproxy import HAProxyCodeGenerator
+from haproxy_translator.parsers import DSLParser
 
 
 class TestFrontendMaxKeepAliveQueue:

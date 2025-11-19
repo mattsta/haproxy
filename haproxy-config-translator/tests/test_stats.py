@@ -1,8 +1,7 @@
 """Tests for stats directives (Phase 4D)."""
 
-import pytest
-from haproxy_translator.parsers import DSLParser
 from haproxy_translator.codegen.haproxy import HAProxyCodeGenerator
+from haproxy_translator.parsers import DSLParser
 
 
 class TestStatsBasic:

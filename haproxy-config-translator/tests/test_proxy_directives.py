@@ -1,8 +1,7 @@
 """Tests for proxy-level directives: redirect, errorfile, http-reuse, source."""
 
-import pytest
-from haproxy_translator.parsers import DSLParser
 from haproxy_translator.codegen.haproxy import HAProxyCodeGenerator
+from haproxy_translator.parsers import DSLParser
 
 
 class TestProxyDirectives:
