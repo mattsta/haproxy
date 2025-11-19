@@ -538,6 +538,17 @@ class HAProxyCodeGenerator:
         if frontend.description:
             lines.append(self._indent(f"description {frontend.description}"))
 
+        # Status (disabled/enabled)
+        if frontend.disabled:
+            lines.append(self._indent("disabled"))
+
+        if not frontend.enabled:
+            lines.append(self._indent("disabled"))
+
+        # ID
+        if frontend.id is not None:
+            lines.append(self._indent(f"id {frontend.id}"))
+
         # Max connections
         if frontend.maxconn:
             lines.append(self._indent(f"maxconn {frontend.maxconn}"))
@@ -681,6 +692,17 @@ class HAProxyCodeGenerator:
         # Description
         if backend.description:
             lines.append(self._indent(f"description {backend.description}"))
+
+        # Status (disabled/enabled)
+        if backend.disabled:
+            lines.append(self._indent("disabled"))
+
+        if not backend.enabled:
+            lines.append(self._indent("disabled"))
+
+        # ID
+        if backend.id is not None:
+            lines.append(self._indent(f"id {backend.id}"))
 
         # Balance algorithm
         lines.append(self._indent(f"balance {backend.balance.value}"))
@@ -835,6 +857,17 @@ class HAProxyCodeGenerator:
         # Description
         if listen.description:
             lines.append(self._indent(f"description {listen.description}"))
+
+        # Status (disabled/enabled)
+        if listen.disabled:
+            lines.append(self._indent("disabled"))
+
+        if not listen.enabled:
+            lines.append(self._indent("disabled"))
+
+        # ID
+        if listen.id is not None:
+            lines.append(self._indent(f"id {listen.id}"))
 
         # Balance
         lines.append(self._indent(f"balance {listen.balance.value}"))

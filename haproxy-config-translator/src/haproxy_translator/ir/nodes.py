@@ -649,6 +649,9 @@ class Frontend(IRNode):
 
     name: str = ""
     description: str | None = None  # Human-readable description
+    disabled: bool = False  # Whether this frontend is disabled
+    enabled: bool = True  # Whether this frontend is enabled (inverse of disabled)
+    id: int | None = None  # Unique identifier for this frontend
     binds: list[Bind] = field(default_factory=list)
     mode: Mode = Mode.HTTP
     acls: list[ACL] = field(default_factory=list)
@@ -688,6 +691,9 @@ class Backend(IRNode):
 
     name: str = ""
     description: str | None = None  # Human-readable description
+    disabled: bool = False  # Whether this backend is disabled
+    enabled: bool = True  # Whether this backend is enabled (inverse of disabled)
+    id: int | None = None  # Unique identifier for this backend
     mode: Mode = Mode.HTTP
     balance: BalanceAlgorithm = BalanceAlgorithm.ROUNDROBIN
     servers: list[Server] = field(default_factory=list)
@@ -732,6 +738,9 @@ class Listen(IRNode):
 
     name: str = ""
     description: str | None = None  # Human-readable description
+    disabled: bool = False  # Whether this listen is disabled
+    enabled: bool = True  # Whether this listen is enabled (inverse of disabled)
+    id: int | None = None  # Unique identifier for this listen
     binds: list[Bind] = field(default_factory=list)
     mode: Mode = Mode.HTTP
     balance: BalanceAlgorithm = BalanceAlgorithm.ROUNDROBIN

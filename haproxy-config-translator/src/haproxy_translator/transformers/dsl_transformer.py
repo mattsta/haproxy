@@ -1490,6 +1490,9 @@ class DSLTransformer(Transformer):
 
         mode = Mode.HTTP
         description = None
+        disabled = False
+        enabled = True
+        id = None
         binds = []
         acls = []
         http_request_rules = []
@@ -1575,6 +1578,12 @@ class DSLTransformer(Transformer):
                     mode = Mode(value)
                 elif key == "description":
                     description = value
+                elif key == "disabled":
+                    disabled = value
+                elif key == "enabled":
+                    enabled = value
+                elif key == "id":
+                    id = value
                 elif key == "default_backend":
                     default_backend = value
                 elif key == "option":
@@ -1616,6 +1625,9 @@ class DSLTransformer(Transformer):
         return Frontend(
             name=name,
             description=description,
+            disabled=disabled,
+            enabled=enabled,
+            id=id,
             mode=mode,
             binds=binds,
             acls=acls,
@@ -1655,6 +1667,18 @@ class DSLTransformer(Transformer):
     def frontend_description(self, items: list[Any]) -> tuple[str, str]:
         """Transform description directive."""
         return ("description", str(items[0]))
+
+    def frontend_disabled(self, items: list[Any]) -> tuple[str, bool]:
+        """Transform disabled directive."""
+        return ("disabled", items[0])
+
+    def frontend_enabled(self, items: list[Any]) -> tuple[str, bool]:
+        """Transform enabled directive."""
+        return ("enabled", items[0])
+
+    def frontend_id(self, items: list[Any]) -> tuple[str, int]:
+        """Transform id directive."""
+        return ("id", items[0])
 
     def frontend_default_backend(self, items: list[Any]) -> tuple[str, str]:
         return ("default_backend", str(items[0]))
@@ -2260,6 +2284,9 @@ class DSLTransformer(Transformer):
 
         mode = Mode.HTTP
         description = None
+        disabled = False
+        enabled = True
+        id = None
         balance = BalanceAlgorithm.ROUNDROBIN
         servers = []
         server_templates = []
@@ -2355,6 +2382,12 @@ class DSLTransformer(Transformer):
                     mode = Mode(value)
                 elif key == "description":
                     description = value
+                elif key == "disabled":
+                    disabled = value
+                elif key == "enabled":
+                    enabled = value
+                elif key == "id":
+                    id = value
                 elif key == "balance":
                     balance = BalanceAlgorithm(value)
                 elif key == "option":
@@ -2403,6 +2436,9 @@ class DSLTransformer(Transformer):
         return Backend(
             name=name,
             description=description,
+            disabled=disabled,
+            enabled=enabled,
+            id=id,
             mode=mode,
             balance=balance,
             servers=servers,
@@ -2448,6 +2484,18 @@ class DSLTransformer(Transformer):
     def backend_description(self, items: list[Any]) -> tuple[str, str]:
         """Transform description directive."""
         return ("description", str(items[0]))
+
+    def backend_disabled(self, items: list[Any]) -> tuple[str, bool]:
+        """Transform disabled directive."""
+        return ("disabled", items[0])
+
+    def backend_enabled(self, items: list[Any]) -> tuple[str, bool]:
+        """Transform enabled directive."""
+        return ("enabled", items[0])
+
+    def backend_id(self, items: list[Any]) -> tuple[str, int]:
+        """Transform id directive."""
+        return ("id", items[0])
 
     def backend_balance(self, items: list[Any]) -> tuple[str, str]:
         return ("balance", items[0])
@@ -2678,6 +2726,9 @@ class DSLTransformer(Transformer):
         binds = []
         mode = Mode.HTTP
         description = None
+        disabled = False
+        enabled = True
+        id = None
         balance = BalanceAlgorithm.ROUNDROBIN
         servers = []
         server_loops = []
@@ -2720,6 +2771,12 @@ class DSLTransformer(Transformer):
                     mode = Mode(value)
                 elif key == "description":
                     description = value
+                elif key == "disabled":
+                    disabled = value
+                elif key == "enabled":
+                    enabled = value
+                elif key == "id":
+                    id = value
                 elif key == "balance":
                     balance = BalanceAlgorithm(value)
                 elif key == "option":
@@ -2754,6 +2811,9 @@ class DSLTransformer(Transformer):
         return Listen(
             name=name,
             description=description,
+            disabled=disabled,
+            enabled=enabled,
+            id=id,
             binds=binds,
             mode=mode,
             balance=balance,
@@ -2769,6 +2829,18 @@ class DSLTransformer(Transformer):
     def listen_description(self, items: list[Any]) -> tuple[str, str]:
         """Transform description directive."""
         return ("description", str(items[0]))
+
+    def listen_disabled(self, items: list[Any]) -> tuple[str, bool]:
+        """Transform disabled directive."""
+        return ("disabled", items[0])
+
+    def listen_enabled(self, items: list[Any]) -> tuple[str, bool]:
+        """Transform enabled directive."""
+        return ("enabled", items[0])
+
+    def listen_id(self, items: list[Any]) -> tuple[str, int]:
+        """Transform id directive."""
+        return ("id", items[0])
 
     def listen_balance(self, items: list[Any]) -> tuple[str, str]:
         return ("balance", items[0])
