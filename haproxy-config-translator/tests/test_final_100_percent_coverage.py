@@ -1,7 +1,5 @@
 """Final push to 100% test coverage - targeting remaining 138 lines."""
 
-import sys
-
 import pytest
 
 from haproxy_translator.codegen.haproxy import HAProxyCodeGenerator
@@ -65,15 +63,9 @@ class TestFinal100PercentCoverage:
         assert "tcp-response content accept" in output
         assert "log-format" in output
 
-    # ========== Python 3.7 Fallback (lines 30-33) ==========
-
-    @pytest.mark.skipif(sys.version_info >= (3, 9), reason="Test Python 3.7 fallback")
-    def test_python_37_fallback_grammar_loading(self):
-        """Test Python 3.7 resource loading fallback (lines 30-33)."""
-        # This would only be hit on Python 3.7-3.8
-        # On Python 3.9+ this is skipped
-        parser = DSLParser()
-        assert parser.parser is not None
+    # Python 3.7 fallback code (lines 30-33) is not testable on Python 3.9+
+    # The fallback only executes on Python 3.7-3.8, which are EOL.
+    # Removing the skipif test since it provides no value on modern Python.
 
     # ========== Single Lua Script (line 81) ==========
 
