@@ -600,6 +600,13 @@ class HAProxyCodeGenerator:
         if frontend.log_format:
             lines.append(self._indent(f"log-format {frontend.log_format}"))
 
+        # Unique ID tracking
+        if frontend.unique_id_format:
+            lines.append(self._indent(f"unique-id-format {frontend.unique_id_format}"))
+
+        if frontend.unique_id_header:
+            lines.append(self._indent(f"unique-id-header {frontend.unique_id_header}"))
+
         # Stats configuration
         if frontend.stats_config:
             stats = frontend.stats_config

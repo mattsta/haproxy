@@ -1518,6 +1518,8 @@ class DSLTransformer(Transformer):
         log = []
         log_tag = None
         log_format = None
+        unique_id_format = None
+        unique_id_header = None
         stats_config = None
         capture_request_headers = []
         capture_response_headers = []
@@ -1617,6 +1619,10 @@ class DSLTransformer(Transformer):
                     log_tag = value
                 elif key == "log_format":
                     log_format = value
+                elif key == "unique_id_format":
+                    unique_id_format = value
+                elif key == "unique_id_header":
+                    unique_id_header = value
                 elif key == "capture_request_header":
                     capture_request_headers.append(value)
                 elif key == "capture_response_header":
@@ -1654,6 +1660,8 @@ class DSLTransformer(Transformer):
             log=log,
             log_tag=log_tag,
             log_format=log_format,
+            unique_id_format=unique_id_format,
+            unique_id_header=unique_id_header,
             stats_config=stats_config,
             capture_request_headers=capture_request_headers,
             capture_response_headers=capture_response_headers,
@@ -1679,6 +1687,14 @@ class DSLTransformer(Transformer):
     def frontend_id(self, items: list[Any]) -> tuple[str, int]:
         """Transform id directive."""
         return ("id", items[0])
+
+    def frontend_unique_id_format(self, items: list[Any]) -> tuple[str, str]:
+        """Transform unique-id-format directive."""
+        return ("unique_id_format", str(items[0]))
+
+    def frontend_unique_id_header(self, items: list[Any]) -> tuple[str, str]:
+        """Transform unique-id-header directive."""
+        return ("unique_id_header", str(items[0]))
 
     def frontend_default_backend(self, items: list[Any]) -> tuple[str, str]:
         return ("default_backend", str(items[0]))

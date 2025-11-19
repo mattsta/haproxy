@@ -678,6 +678,8 @@ class Frontend(IRNode):
     log: list[str] = field(default_factory=list)  # Log targets (global or specific)
     log_tag: str | None = None  # Tag for log messages
     log_format: str | None = None  # Custom log format string
+    unique_id_format: str | None = None  # Format string for unique request IDs
+    unique_id_header: str | None = None  # HTTP header name for unique request ID
     stats_config: StatsConfig | None = None  # Statistics reporting configuration
     capture_request_headers: list[tuple[str, int]] = field(default_factory=list)  # [(header_name, length), ...]
     capture_response_headers: list[tuple[str, int]] = field(default_factory=list)  # [(header_name, length), ...]

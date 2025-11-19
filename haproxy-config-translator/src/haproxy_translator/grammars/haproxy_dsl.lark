@@ -260,6 +260,8 @@ frontend_section: "frontend" identifier "{" frontend_property* "}"
                   | "disabled" ":" boolean                 -> frontend_disabled
                   | "enabled" ":" boolean                  -> frontend_enabled
                   | "id" ":" number                        -> frontend_id
+                  | "unique-id-format" ":" string         -> frontend_unique_id_format
+                  | "unique-id-header" ":" string         -> frontend_unique_id_header
                   | acl_block
                   | acl_definition
                   | use_acl_directive
