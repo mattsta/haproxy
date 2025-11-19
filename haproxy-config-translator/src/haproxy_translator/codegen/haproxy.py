@@ -71,6 +71,21 @@ class HAProxyCodeGenerator:
             lines.extend(self._generate_defaults(ir.defaults))
             lines.append("")
 
+        # Generate peers sections
+        for peers in ir.peers:
+            lines.extend(self._generate_peers(peers))
+            lines.append("")
+
+        # Generate resolvers sections
+        for resolvers in ir.resolvers:
+            lines.extend(self._generate_resolvers(resolvers))
+            lines.append("")
+
+        # Generate mailers sections
+        for mailers in ir.mailers:
+            lines.extend(self._generate_mailers(mailers))
+            lines.append("")
+
         # Generate frontends
         for frontend in ir.frontends:
             lines.extend(self._generate_frontend(frontend))
@@ -423,9 +438,20 @@ class HAProxyCodeGenerator:
                 lines.append(self._indent(f"lua-load {script.content}"))
                 self.lua_files.append(script.content)
 
-        # Stats
-        if global_config.stats and global_config.stats.enable:
-            lines.append(self._indent("stats socket /var/run/haproxy.sock mode 660 level admin"))
+        # Stats sockets (Runtime API)
+        for stats_socket in global_config.stats_sockets:
+            socket_line = f"stats socket {stats_socket.path}"
+            if stats_socket.level:
+                socket_line += f" level {stats_socket.level}"
+            if stats_socket.mode:
+                socket_line += f" mode {stats_socket.mode}"
+            if stats_socket.user:
+                socket_line += f" user {stats_socket.user}"
+            if stats_socket.group:
+                socket_line += f" group {stats_socket.group}"
+            if stats_socket.process:
+                socket_line += f" process {stats_socket.process}"
+            lines.append(self._indent(socket_line))
 
         # Tuning
         for key, value in global_config.tuning.items():
@@ -1059,3 +1085,60 @@ class HAProxyCodeGenerator:
             parts.append(f"if {tcp_resp.condition}")
 
         return " ".join(parts)
+
+    def _generate_peers(self, peers: "PeersSection") -> list[str]:
+        """Generate peers section for stick table replication."""
+        lines = [f"peers {peers.name}"]
+
+        if peers.disabled:
+            lines.append(self._indent("disabled"))
+
+        for peer in peers.peers:
+            lines.append(self._indent(f"peer {peer.name} {peer.address}:{peer.port}"))
+
+        return lines
+
+    def _generate_resolvers(self, resolvers: "ResolversSection") -> list[str]:
+        """Generate resolvers section for DNS resolution."""
+        lines = [f"resolvers {resolvers.name}"]
+
+        for nameserver in resolvers.nameservers:
+            lines.append(self._indent(f"nameserver {nameserver.name} {nameserver.address}:{nameserver.port}"))
+
+        if resolvers.accepted_payload_size:
+            lines.append(self._indent(f"accepted_payload_size {resolvers.accepted_payload_size}"))
+
+        if resolvers.hold_nx:
+            lines.append(self._indent(f"hold nx {resolvers.hold_nx}"))
+        if resolvers.hold_obsolete:
+            lines.append(self._indent(f"hold obsolete {resolvers.hold_obsolete}"))
+        if resolvers.hold_other:
+            lines.append(self._indent(f"hold other {resolvers.hold_other}"))
+        if resolvers.hold_refused:
+            lines.append(self._indent(f"hold refused {resolvers.hold_refused}"))
+        if resolvers.hold_timeout:
+            lines.append(self._indent(f"hold timeout {resolvers.hold_timeout}"))
+        if resolvers.hold_valid:
+            lines.append(self._indent(f"hold valid {resolvers.hold_valid}"))
+
+        if resolvers.resolve_retries:
+            lines.append(self._indent(f"resolve_retries {resolvers.resolve_retries}"))
+        if resolvers.timeout_resolve:
+            lines.append(self._indent(f"timeout resolve {resolvers.timeout_resolve}"))
+        if resolvers.timeout_retry:
+            lines.append(self._indent(f"timeout retry {resolvers.timeout_retry}"))
+
+        return lines
+
+    def _generate_mailers(self, mailers: "MailersSection") -> list[str]:
+        """Generate mailers section for email alerts."""
+        lines = [f"mailers {mailers.name}"]
+
+        if mailers.timeout_mail:
+            lines.append(self._indent(f"timeout mail {mailers.timeout_mail}"))
+
+        for mailer in mailers.mailers:
+            lines.append(self._indent(f"mailer {mailer.name} {mailer.address}:{mailer.port}"))
+
+        return lines
+

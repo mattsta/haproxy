@@ -24,10 +24,17 @@ from ..ir.nodes import (
     LogLevel,
     LogTarget,
     LuaScript,
+    Mailer,
+    MailersSection,
     Mode,
+    Nameserver,
+    Peer,
+    PeersSection,
+    ResolversSection,
     Server,
     ServerTemplate,
     StatsConfig,
+    StatsSocket,
     StickRule,
     StickTable,
     TcpRequestRule,
@@ -59,6 +66,9 @@ class DSLTransformer(Transformer):
         listens = []
         imports = []
         lua_scripts = []
+        peers = []
+        resolvers = []
+        mailers = []
 
         for stmt in statements:
             if isinstance(stmt, GlobalConfig):
@@ -71,6 +81,12 @@ class DSLTransformer(Transformer):
                 backends.append(stmt)
             elif isinstance(stmt, Listen):
                 listens.append(stmt)
+            elif isinstance(stmt, PeersSection):
+                peers.append(stmt)
+            elif isinstance(stmt, ResolversSection):
+                resolvers.append(stmt)
+            elif isinstance(stmt, MailersSection):
+                mailers.append(stmt)
             elif isinstance(stmt, list):
                 # lua_section returns a list of LuaScript objects
                 for item in stmt:
@@ -94,6 +110,9 @@ class DSLTransformer(Transformer):
             backends=backends,
             listens=listens,
             lua_scripts=lua_scripts,
+            peers=peers,
+            resolvers=resolvers,
+            mailers=mailers,
             variables=self.variables,
             templates=self.templates,
             imports=imports,
@@ -223,6 +242,7 @@ class DSLTransformer(Transformer):
 
         # Stats
         stats = None
+        stats_sockets = []
 
         # Performance tuning
         tuning = {}
@@ -476,6 +496,8 @@ class DSLTransformer(Transformer):
                 lua_scripts.extend(item)
             elif isinstance(item, StatsConfig):
                 stats = item
+            elif isinstance(item, StatsSocket):
+                stats_sockets.append(item)
 
         return GlobalConfig(
             # Process management
@@ -583,6 +605,7 @@ class DSLTransformer(Transformer):
             lua_scripts=lua_scripts,
             # Stats
             stats=stats,
+            stats_sockets=stats_sockets,
             # Performance tuning
             tuning=tuning,
         )
@@ -1103,6 +1126,207 @@ class DSLTransformer(Transformer):
 
     def stats_auth(self, items: list[Any]) -> tuple[str, str]:
         return ("auth", items[0])
+
+    # ===== Stats Socket (Runtime API) =====
+    def global_stats_socket(self, items: list[Any]) -> StatsSocket:
+        """Transform stats_socket from global section."""
+        return cast("StatsSocket", items[0])
+
+    def stats_socket_item(self, items: list[Any]) -> StatsSocket:
+        """Build StatsSocket from path and optional parameters block."""
+        path = str(items[0])
+        level = "operator"  # Default level
+        mode = None
+        user = None
+        group = None
+        process = None
+
+        # Process optional parameters (items after the path are tuples from the param block)
+        for item in items[1:]:
+            if isinstance(item, tuple):
+                key, value = item
+                if key == "level":
+                    level = value
+                elif key == "mode":
+                    mode = value
+                elif key == "user":
+                    user = value
+                elif key == "group":
+                    group = value
+                elif key == "process":
+                    process = value
+
+        return StatsSocket(
+            path=path,
+            level=level,
+            mode=mode,
+            user=user,
+            group=group,
+            process=process,
+        )
+
+    def stats_socket_level(self, items: list[Any]) -> tuple[str, str]:
+        return ("level", str(items[0]))
+
+    def stats_socket_mode(self, items: list[Any]) -> tuple[str, str]:
+        return ("mode", str(items[0]))
+
+    def stats_socket_user(self, items: list[Any]) -> tuple[str, str]:
+        return ("user", str(items[0]))
+
+    def stats_socket_group(self, items: list[Any]) -> tuple[str, str]:
+        return ("group", str(items[0]))
+
+    def stats_socket_process(self, items: list[Any]) -> tuple[str, str]:
+        return ("process", str(items[0]))
+
+    # ===== Peers Section =====
+    def peers_section(self, items: list[Any]) -> PeersSection:
+        """Transform peers section for stick table replication."""
+        name = str(items[0])
+        peers_list = []
+        disabled = False
+
+        for item in items[1:]:
+            if isinstance(item, Peer):
+                peers_list.append(item)
+            elif isinstance(item, tuple):
+                key, value = item
+                if key == "disabled":
+                    disabled = value
+
+        return PeersSection(name=name, peers=peers_list, disabled=disabled)
+
+    def peer_definition(self, items: list[Any]) -> Peer:
+        """Transform individual peer definition."""
+        name = str(items[0])
+        address = str(items[1])
+        port = int(items[2])
+        return Peer(name=name, address=address, port=port)
+
+    def peers_disabled(self, items: list[Any]) -> tuple[str, bool]:
+        return ("disabled", items[0])
+
+    # ===== Resolvers Section =====
+    def resolvers_section(self, items: list[Any]) -> ResolversSection:
+        """Transform resolvers section for DNS resolution."""
+        name = str(items[0])
+        nameservers = []
+        accepted_payload_size = None
+        hold_nx = None
+        hold_obsolete = None
+        hold_other = None
+        hold_refused = None
+        hold_timeout = None
+        hold_valid = None
+        resolve_retries = None
+        timeout_resolve = None
+        timeout_retry = None
+
+        for item in items[1:]:
+            if isinstance(item, Nameserver):
+                nameservers.append(item)
+            elif isinstance(item, tuple):
+                key, value = item
+                if key == "accepted_payload_size":
+                    accepted_payload_size = value
+                elif key == "hold_nx":
+                    hold_nx = value
+                elif key == "hold_obsolete":
+                    hold_obsolete = value
+                elif key == "hold_other":
+                    hold_other = value
+                elif key == "hold_refused":
+                    hold_refused = value
+                elif key == "hold_timeout":
+                    hold_timeout = value
+                elif key == "hold_valid":
+                    hold_valid = value
+                elif key == "resolve_retries":
+                    resolve_retries = value
+                elif key == "timeout_resolve":
+                    timeout_resolve = value
+                elif key == "timeout_retry":
+                    timeout_retry = value
+
+        return ResolversSection(
+            name=name,
+            nameservers=nameservers,
+            accepted_payload_size=accepted_payload_size,
+            hold_nx=hold_nx,
+            hold_obsolete=hold_obsolete,
+            hold_other=hold_other,
+            hold_refused=hold_refused,
+            hold_timeout=hold_timeout,
+            hold_valid=hold_valid,
+            resolve_retries=resolve_retries,
+            timeout_resolve=timeout_resolve,
+            timeout_retry=timeout_retry,
+        )
+
+    def nameserver_definition(self, items: list[Any]) -> Nameserver:
+        """Transform individual nameserver definition."""
+        name = str(items[0])
+        address = str(items[1])
+        port = int(items[2])
+        return Nameserver(name=name, address=address, port=port)
+
+    def resolvers_accepted_payload_size(self, items: list[Any]) -> tuple[str, int]:
+        return ("accepted_payload_size", items[0])
+
+    def resolvers_hold_nx(self, items: list[Any]) -> tuple[str, str]:
+        return ("hold_nx", str(items[0]))
+
+    def resolvers_hold_obsolete(self, items: list[Any]) -> tuple[str, str]:
+        return ("hold_obsolete", str(items[0]))
+
+    def resolvers_hold_other(self, items: list[Any]) -> tuple[str, str]:
+        return ("hold_other", str(items[0]))
+
+    def resolvers_hold_refused(self, items: list[Any]) -> tuple[str, str]:
+        return ("hold_refused", str(items[0]))
+
+    def resolvers_hold_timeout(self, items: list[Any]) -> tuple[str, str]:
+        return ("hold_timeout", str(items[0]))
+
+    def resolvers_hold_valid(self, items: list[Any]) -> tuple[str, str]:
+        return ("hold_valid", str(items[0]))
+
+    def resolvers_resolve_retries(self, items: list[Any]) -> tuple[str, int]:
+        return ("resolve_retries", items[0])
+
+    def resolvers_timeout_resolve(self, items: list[Any]) -> tuple[str, str]:
+        return ("timeout_resolve", str(items[0]))
+
+    def resolvers_timeout_retry(self, items: list[Any]) -> tuple[str, str]:
+        return ("timeout_retry", str(items[0]))
+
+    # ===== Mailers Section =====
+    def mailers_section(self, items: list[Any]) -> MailersSection:
+        """Transform mailers section for email alerts."""
+        name = str(items[0])
+        mailers_list = []
+        timeout_mail = None
+
+        for item in items[1:]:
+            if isinstance(item, Mailer):
+                mailers_list.append(item)
+            elif isinstance(item, tuple):
+                key, value = item
+                if key == "timeout_mail":
+                    timeout_mail = value
+
+        return MailersSection(name=name, mailers=mailers_list, timeout_mail=timeout_mail)
+
+    def mailer_definition(self, items: list[Any]) -> Mailer:
+        """Transform individual mailer definition."""
+        name = str(items[0])
+        address = str(items[1])
+        port = int(items[2])
+        return Mailer(name=name, address=address, port=port)
+
+    def mailers_timeout_mail(self, items: list[Any]) -> tuple[str, str]:
+        return ("timeout_mail", str(items[0]))
 
     def lua_section(self, items: list[Any]) -> list[LuaScript]:
         scripts = []

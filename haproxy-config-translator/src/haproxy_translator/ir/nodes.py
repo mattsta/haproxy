@@ -99,6 +99,81 @@ class StatsConfig(IRNode):
 
 
 @dataclass(frozen=True)
+class StatsSocket(IRNode):
+    """Stats socket configuration for runtime API."""
+
+    path: str = ""  # Unix socket path or address:port
+    level: str = "operator"  # admin, operator, user
+    mode: str | None = None  # Unix socket file permissions (e.g., "600")
+    user: str | None = None  # Unix socket owner
+    group: str | None = None  # Unix socket group
+    process: str | None = None  # Process binding (e.g., "all", "1-4")
+
+
+@dataclass(frozen=True)
+class Peer(IRNode):
+    """Individual peer server in peers section."""
+
+    name: str = ""
+    address: str = ""
+    port: int = 1024
+
+
+@dataclass(frozen=True)
+class PeersSection(IRNode):
+    """Peers section for stick table replication."""
+
+    name: str = ""
+    peers: list[Peer] = field(default_factory=list)
+    disabled: bool = False
+
+
+@dataclass(frozen=True)
+class Nameserver(IRNode):
+    """DNS nameserver in resolvers section."""
+
+    name: str = ""
+    address: str = ""
+    port: int = 53
+
+
+@dataclass(frozen=True)
+class ResolversSection(IRNode):
+    """Resolvers section for DNS resolution."""
+
+    name: str = ""
+    nameservers: list[Nameserver] = field(default_factory=list)
+    accepted_payload_size: int | None = None
+    hold_nx: str | None = None  # e.g., "30s"
+    hold_obsolete: str | None = None
+    hold_other: str | None = None
+    hold_refused: str | None = None
+    hold_timeout: str | None = None
+    hold_valid: str | None = None
+    resolve_retries: int | None = None
+    timeout_resolve: str | None = None  # e.g., "1s"
+    timeout_retry: str | None = None
+
+
+@dataclass(frozen=True)
+class Mailer(IRNode):
+    """Individual mailer server in mailers section."""
+
+    name: str = ""
+    address: str = ""
+    port: int = 25
+
+
+@dataclass(frozen=True)
+class MailersSection(IRNode):
+    """Mailers section for email alerts."""
+
+    name: str = ""
+    mailers: list[Mailer] = field(default_factory=list)
+    timeout_mail: str | None = None  # e.g., "10s"
+
+
+@dataclass(frozen=True)
 class StickTable(IRNode):
     """Stick table configuration for session persistence and rate limiting."""
 
@@ -265,6 +340,7 @@ class GlobalConfig(IRNode):
 
     # Stats
     stats: StatsConfig | None = None
+    stats_sockets: list[StatsSocket] = field(default_factory=list)
 
     # Performance tuning (tune.* directives stored here)
     tuning: dict[str, Any] = field(default_factory=dict)
@@ -612,6 +688,11 @@ class ConfigIR(IRNode):
     backends: list[Backend] = field(default_factory=list)
     listens: list[Listen] = field(default_factory=list)
     lua_scripts: list[LuaScript] = field(default_factory=list)
+
+    # Additional top-level sections
+    peers: list[PeersSection] = field(default_factory=list)
+    resolvers: list[ResolversSection] = field(default_factory=list)
+    mailers: list[MailersSection] = field(default_factory=list)
 
     # DSL-specific features
     variables: dict[str, Variable] = field(default_factory=dict)

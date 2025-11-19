@@ -28,6 +28,7 @@ from haproxy_translator.ir.nodes import (
     Server,
     ServerTemplate,
     StatsConfig,
+    StatsSocket,
     UseBackendRule,
 )
 
@@ -486,6 +487,13 @@ class TestHAProxyCodeGenerator:
                     )
                 ],
                 stats=StatsConfig(enable=True),
+                stats_sockets=[
+                    StatsSocket(
+                        path="/var/run/haproxy.sock",
+                        level="admin",
+                        mode="660",
+                    )
+                ],
                 tuning={"tune.ssl.default-dh-param": "2048", "maxconnrate": "100"},
             ),
         )
@@ -499,7 +507,7 @@ class TestHAProxyCodeGenerator:
         assert "ssl-default-bind-options no-sslv3" in output
         assert "ssl-default-bind-options no-tlsv10" in output
         assert "lua-load /etc/haproxy/lua/auth.lua" in output
-        assert "stats socket /var/run/haproxy.sock mode 660 level admin" in output
+        assert "stats socket /var/run/haproxy.sock level admin mode 660" in output
         assert "tune.ssl.default-dh-param 2048" in output
         assert "maxconnrate 100" in output
 

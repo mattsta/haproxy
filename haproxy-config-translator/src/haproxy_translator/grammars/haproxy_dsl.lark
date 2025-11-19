@@ -12,6 +12,9 @@ config: "config" identifier "{" statement* "}"
           | frontend_section
           | backend_section
           | listen_section
+          | peers_section
+          | resolvers_section
+          | mailers_section
           | lua_section
           | acl_definition
           | template_definition
@@ -191,6 +194,7 @@ global_section: "global" "{" global_property* "}"
                 | log_target                           -> global_log
                 | lua_section                          -> global_lua
                 | stats_section                        -> global_stats
+                | stats_socket_item                    -> global_stats_socket
 
 log_target: "log" string log_facility log_level
 
@@ -566,6 +570,43 @@ listen_section: "listen" identifier "{" listen_property* "}"
                 | "timeout_server" ":" duration            -> listen_timeout_server
                 | "timeout_connect" ":" duration           -> listen_timeout_connect
                 | "maxconn" ":" number                     -> listen_maxconn
+
+// ===== Stats Socket =====
+stats_socket_item: "stats_socket" string "{" stats_socket_param* "}"
+                 | "stats_socket" string
+
+?stats_socket_param: "level" ":" string      -> stats_socket_level
+                   | "mode" ":" string       -> stats_socket_mode
+                   | "user" ":" string       -> stats_socket_user
+                   | "group" ":" string      -> stats_socket_group
+                   | "process" ":" string    -> stats_socket_process
+
+// ===== Peers Section =====
+peers_section: "peers" identifier "{" peer_item* "}"
+
+?peer_item: "peer" identifier string number  -> peer_definition
+          | "disabled" ":" boolean           -> peers_disabled
+
+// ===== Resolvers Section =====
+resolvers_section: "resolvers" identifier "{" resolver_property* "}"
+
+?resolver_property: "nameserver" identifier string number      -> nameserver_definition
+                  | "accepted_payload_size" ":" number         -> resolvers_accepted_payload_size
+                  | "hold_nx" ":" duration                     -> resolvers_hold_nx
+                  | "hold_obsolete" ":" duration               -> resolvers_hold_obsolete
+                  | "hold_other" ":" duration                  -> resolvers_hold_other
+                  | "hold_refused" ":" duration                -> resolvers_hold_refused
+                  | "hold_timeout" ":" duration                -> resolvers_hold_timeout
+                  | "hold_valid" ":" duration                  -> resolvers_hold_valid
+                  | "resolve_retries" ":" number               -> resolvers_resolve_retries
+                  | "timeout_resolve" ":" duration             -> resolvers_timeout_resolve
+                  | "timeout_retry" ":" duration               -> resolvers_timeout_retry
+
+// ===== Mailers Section =====
+mailers_section: "mailers" identifier "{" mailer_property* "}"
+
+?mailer_property: "mailer" identifier string number   -> mailer_definition
+                | "timeout_mail" ":" duration          -> mailers_timeout_mail
 
 // ===== ACL Definition =====
 // ACL block containing multiple ACLs
