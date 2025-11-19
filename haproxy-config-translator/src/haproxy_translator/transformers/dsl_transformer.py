@@ -1504,6 +1504,7 @@ class DSLTransformer(Transformer):
         disabled = False
         enabled = True
         id = None
+        guid = None
         binds = []
         acls = []
         http_request_rules = []
@@ -1603,6 +1604,8 @@ class DSLTransformer(Transformer):
                     enabled = value
                 elif key == "id":
                     id = value
+                elif key == "guid":
+                    guid = value
                 elif key == "default_backend":
                     default_backend = value
                 elif key == "option":
@@ -1663,6 +1666,7 @@ class DSLTransformer(Transformer):
             disabled=disabled,
             enabled=enabled,
             id=id,
+            guid=guid,
             mode=mode,
             binds=binds,
             acls=acls,
@@ -1722,6 +1726,10 @@ class DSLTransformer(Transformer):
     def frontend_id(self, items: list[Any]) -> tuple[str, int]:
         """Transform id directive."""
         return ("id", items[0])
+
+    def frontend_guid(self, items: list[Any]) -> tuple[str, str]:
+        """Transform guid directive (global unique identifier)."""
+        return ("guid", str(items[0]))
 
     def frontend_unique_id_format(self, items: list[Any]) -> tuple[str, str]:
         """Transform unique-id-format directive."""
@@ -2373,6 +2381,7 @@ class DSLTransformer(Transformer):
         disabled = False
         enabled = True
         id = None
+        guid = None
         balance = BalanceAlgorithm.ROUNDROBIN
         servers = []
         server_templates = []
@@ -2488,6 +2497,8 @@ class DSLTransformer(Transformer):
                     enabled = value
                 elif key == "id":
                     id = value
+                elif key == "guid":
+                    guid = value
                 elif key == "balance":
                     balance = BalanceAlgorithm(value)
                 elif key == "option":
@@ -2567,6 +2578,7 @@ class DSLTransformer(Transformer):
             disabled=disabled,
             enabled=enabled,
             id=id,
+            guid=guid,
             mode=mode,
             balance=balance,
             servers=servers,
@@ -2638,6 +2650,10 @@ class DSLTransformer(Transformer):
     def backend_id(self, items: list[Any]) -> tuple[str, int]:
         """Transform id directive."""
         return ("id", items[0])
+
+    def backend_guid(self, items: list[Any]) -> tuple[str, str]:
+        """Transform guid directive (global unique identifier)."""
+        return ("guid", str(items[0]))
 
     def backend_balance(self, items: list[Any]) -> tuple[str, str]:
         return ("balance", items[0])
@@ -2907,6 +2923,7 @@ class DSLTransformer(Transformer):
         disabled = False
         enabled = True
         id = None
+        guid = None
         balance = BalanceAlgorithm.ROUNDROBIN
         servers = []
         server_loops = []
@@ -2955,6 +2972,8 @@ class DSLTransformer(Transformer):
                     enabled = value
                 elif key == "id":
                     id = value
+                elif key == "guid":
+                    guid = value
                 elif key == "balance":
                     balance = BalanceAlgorithm(value)
                 elif key == "option":
@@ -2992,6 +3011,7 @@ class DSLTransformer(Transformer):
             disabled=disabled,
             enabled=enabled,
             id=id,
+            guid=guid,
             binds=binds,
             mode=mode,
             balance=balance,
@@ -3019,6 +3039,10 @@ class DSLTransformer(Transformer):
     def listen_id(self, items: list[Any]) -> tuple[str, int]:
         """Transform id directive."""
         return ("id", items[0])
+
+    def listen_guid(self, items: list[Any]) -> tuple[str, str]:
+        """Transform guid directive (global unique identifier)."""
+        return ("guid", str(items[0]))
 
     def listen_balance(self, items: list[Any]) -> tuple[str, str]:
         return ("balance", items[0])

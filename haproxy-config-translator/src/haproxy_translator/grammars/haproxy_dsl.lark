@@ -260,6 +260,7 @@ frontend_section: "frontend" identifier "{" frontend_property* "}"
                   | "disabled" ":" boolean                 -> frontend_disabled
                   | "enabled" ":" boolean                  -> frontend_enabled
                   | "id" ":" number                        -> frontend_id
+                  | "guid" ":" string                      -> frontend_guid
                   | "unique-id-format" ":" string         -> frontend_unique_id_format
                   | "unique-id-header" ":" string         -> frontend_unique_id_header
                   | acl_block
@@ -463,6 +464,7 @@ backend_section: "backend" identifier "{" backend_property* "}"
                  | "disabled" ":" boolean                   -> backend_disabled
                  | "enabled" ":" boolean                    -> backend_enabled
                  | "id" ":" number                          -> backend_id
+                 | "guid" ":" string                        -> backend_guid
                  | "balance" ":" balance_algo               -> backend_balance
                  | "option" ":" string_or_array             -> backend_option
                  | "cookie" ":" string                      -> backend_cookie
@@ -711,6 +713,7 @@ listen_section: "listen" identifier "{" listen_property* "}"
                 | "disabled" ":" boolean                   -> listen_disabled
                 | "enabled" ":" boolean                    -> listen_enabled
                 | "id" ":" number                          -> listen_id
+                | "guid" ":" string                        -> listen_guid
                 | "balance" ":" balance_algo               -> listen_balance
                 | acl_definition
                 | acl_block

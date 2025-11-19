@@ -545,6 +545,10 @@ class HAProxyCodeGenerator:
         if frontend.id is not None:
             lines.append(self._indent(f"id {frontend.id}"))
 
+        # GUID (Global Unique Identifier)
+        if frontend.guid:
+            lines.append(self._indent(f"guid {frontend.guid}"))
+
         # Max connections
         if frontend.maxconn:
             lines.append(self._indent(f"maxconn {frontend.maxconn}"))
@@ -724,6 +728,10 @@ class HAProxyCodeGenerator:
         # ID
         if backend.id is not None:
             lines.append(self._indent(f"id {backend.id}"))
+
+        # GUID (Global Unique Identifier)
+        if backend.guid:
+            lines.append(self._indent(f"guid {backend.guid}"))
 
         # Balance algorithm
         lines.append(self._indent(f"balance {backend.balance.value}"))
@@ -937,6 +945,10 @@ class HAProxyCodeGenerator:
         # ID
         if listen.id is not None:
             lines.append(self._indent(f"id {listen.id}"))
+
+        # GUID (Global Unique Identifier)
+        if listen.guid:
+            lines.append(self._indent(f"guid {listen.guid}"))
 
         # Balance
         lines.append(self._indent(f"balance {listen.balance.value}"))
