@@ -648,6 +648,7 @@ class Frontend(IRNode):
     """Frontend section."""
 
     name: str = ""
+    description: str | None = None  # Human-readable description
     binds: list[Bind] = field(default_factory=list)
     mode: Mode = Mode.HTTP
     acls: list[ACL] = field(default_factory=list)
@@ -686,6 +687,7 @@ class Backend(IRNode):
     """Backend section."""
 
     name: str = ""
+    description: str | None = None  # Human-readable description
     mode: Mode = Mode.HTTP
     balance: BalanceAlgorithm = BalanceAlgorithm.ROUNDROBIN
     servers: list[Server] = field(default_factory=list)
@@ -729,6 +731,7 @@ class Listen(IRNode):
     """Listen section (combined frontend/backend)."""
 
     name: str = ""
+    description: str | None = None  # Human-readable description
     binds: list[Bind] = field(default_factory=list)
     mode: Mode = Mode.HTTP
     balance: BalanceAlgorithm = BalanceAlgorithm.ROUNDROBIN

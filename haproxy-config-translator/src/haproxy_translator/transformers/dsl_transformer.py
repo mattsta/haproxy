@@ -1489,6 +1489,7 @@ class DSLTransformer(Transformer):
         properties = items[1:]
 
         mode = Mode.HTTP
+        description = None
         binds = []
         acls = []
         http_request_rules = []
@@ -1572,6 +1573,8 @@ class DSLTransformer(Transformer):
                 key, value = prop
                 if key == "mode":
                     mode = Mode(value)
+                elif key == "description":
+                    description = value
                 elif key == "default_backend":
                     default_backend = value
                 elif key == "option":
@@ -1612,6 +1615,7 @@ class DSLTransformer(Transformer):
 
         return Frontend(
             name=name,
+            description=description,
             mode=mode,
             binds=binds,
             acls=acls,
@@ -1647,6 +1651,10 @@ class DSLTransformer(Transformer):
 
     def frontend_mode(self, items: list[Any]) -> tuple[str, str]:
         return ("mode", items[0])
+
+    def frontend_description(self, items: list[Any]) -> tuple[str, str]:
+        """Transform description directive."""
+        return ("description", str(items[0]))
 
     def frontend_default_backend(self, items: list[Any]) -> tuple[str, str]:
         return ("default_backend", str(items[0]))
@@ -2251,6 +2259,7 @@ class DSLTransformer(Transformer):
         properties = items[1:]
 
         mode = Mode.HTTP
+        description = None
         balance = BalanceAlgorithm.ROUNDROBIN
         servers = []
         server_templates = []
@@ -2344,6 +2353,8 @@ class DSLTransformer(Transformer):
                 key, value = prop
                 if key == "mode":
                     mode = Mode(value)
+                elif key == "description":
+                    description = value
                 elif key == "balance":
                     balance = BalanceAlgorithm(value)
                 elif key == "option":
@@ -2391,6 +2402,7 @@ class DSLTransformer(Transformer):
 
         return Backend(
             name=name,
+            description=description,
             mode=mode,
             balance=balance,
             servers=servers,
@@ -2432,6 +2444,10 @@ class DSLTransformer(Transformer):
 
     def backend_mode(self, items: list[Any]) -> tuple[str, str]:
         return ("mode", items[0])
+
+    def backend_description(self, items: list[Any]) -> tuple[str, str]:
+        """Transform description directive."""
+        return ("description", str(items[0]))
 
     def backend_balance(self, items: list[Any]) -> tuple[str, str]:
         return ("balance", items[0])
@@ -2661,6 +2677,7 @@ class DSLTransformer(Transformer):
 
         binds = []
         mode = Mode.HTTP
+        description = None
         balance = BalanceAlgorithm.ROUNDROBIN
         servers = []
         server_loops = []
@@ -2701,6 +2718,8 @@ class DSLTransformer(Transformer):
                 key, value = prop
                 if key == "mode":
                     mode = Mode(value)
+                elif key == "description":
+                    description = value
                 elif key == "balance":
                     balance = BalanceAlgorithm(value)
                 elif key == "option":
@@ -2734,6 +2753,7 @@ class DSLTransformer(Transformer):
 
         return Listen(
             name=name,
+            description=description,
             binds=binds,
             mode=mode,
             balance=balance,
@@ -2745,6 +2765,10 @@ class DSLTransformer(Transformer):
 
     def listen_mode(self, items: list[Any]) -> tuple[str, str]:
         return ("mode", items[0])
+
+    def listen_description(self, items: list[Any]) -> tuple[str, str]:
+        """Transform description directive."""
+        return ("description", str(items[0]))
 
     def listen_balance(self, items: list[Any]) -> tuple[str, str]:
         return ("balance", items[0])

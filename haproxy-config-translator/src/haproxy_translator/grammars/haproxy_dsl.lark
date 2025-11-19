@@ -256,6 +256,7 @@ frontend_section: "frontend" identifier "{" frontend_property* "}"
 
 ?frontend_property: bind_directive
                   | "mode" ":" mode_value                  -> frontend_mode
+                  | "description" ":" string               -> frontend_description
                   | acl_block
                   | acl_definition
                   | use_acl_directive
@@ -444,6 +445,7 @@ use_backend_item: "backend" ":" identifier if_condition?
 backend_section: "backend" identifier "{" backend_property* "}"
 
 ?backend_property: "mode" ":" mode_value                    -> backend_mode
+                 | "description" ":" string                 -> backend_description
                  | "balance" ":" balance_algo               -> backend_balance
                  | "option" ":" string_or_array             -> backend_option
                  | "cookie" ":" string                      -> backend_cookie
@@ -676,6 +678,7 @@ listen_section: "listen" identifier "{" listen_property* "}"
 
 ?listen_property: bind_directive
                 | "mode" ":" mode_value                    -> listen_mode
+                | "description" ":" string                 -> listen_description
                 | "balance" ":" balance_algo               -> listen_balance
                 | acl_definition
                 | acl_block

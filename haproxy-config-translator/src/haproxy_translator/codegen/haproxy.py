@@ -534,6 +534,10 @@ class HAProxyCodeGenerator:
         # Mode
         lines.append(self._indent(f"mode {frontend.mode.value}"))
 
+        # Description
+        if frontend.description:
+            lines.append(self._indent(f"description {frontend.description}"))
+
         # Max connections
         if frontend.maxconn:
             lines.append(self._indent(f"maxconn {frontend.maxconn}"))
@@ -673,6 +677,10 @@ class HAProxyCodeGenerator:
 
         # Mode
         lines.append(self._indent(f"mode {backend.mode.value}"))
+
+        # Description
+        if backend.description:
+            lines.append(self._indent(f"description {backend.description}"))
 
         # Balance algorithm
         lines.append(self._indent(f"balance {backend.balance.value}"))
@@ -823,6 +831,10 @@ class HAProxyCodeGenerator:
 
         # Mode
         lines.append(self._indent(f"mode {listen.mode.value}"))
+
+        # Description
+        if listen.description:
+            lines.append(self._indent(f"description {listen.description}"))
 
         # Balance
         lines.append(self._indent(f"balance {listen.balance.value}"))

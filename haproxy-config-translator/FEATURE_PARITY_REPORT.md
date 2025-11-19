@@ -1,6 +1,6 @@
 # HAProxy Config Translator - Feature Parity Report
 
-**Generated:** 2025-11-19 01:55:07
+**Generated:** 2025-11-19 02:40:00
 **HAProxy Version:** 3.3
 **Documentation Source:** `/home/user/haproxy/doc/configuration.txt`
 
@@ -11,25 +11,20 @@ configuration language and the haproxy-config-translator implementation.
 
 ## Coverage Statistics
 
-### Global Directives
+### Global Directives✅ Report generated: /home/user/haproxy/haproxy-config-translator/FEATURE_PARITY_REPORT.md
 
-- **Total HAProxy Directives:** 172
-- **Implemented:** 79
-- **Coverage:** `45.9%`
-
-```
-[======================                            ] 45.9%
+===================                            ] 45.9%
 ```
 
 ### Proxy Keywords (Frontend/Backend/Listen/Defaults)
 
 - **Total HAProxy Keywords:** 89
-- **Implemented:** 27
-- **Coverage:** `30.3%`
+- **Implemented:** 32
+- **Coverage:** `36.0%`
 
 ### Test Coverage
 
-- **Total Test Files:** 57
+- **Total Test Files:** 61
 - **Global Directive Tests:** 10
 - **Proxy Tests:** 0
 - **Bind Option Tests:** 2
@@ -239,16 +234,12 @@ configuration language and the haproxy-config-translator implementation.
 <summary>Show Important Keywords</summary>
 
 ```
-  - backlog
   - error-log-format
   - errorfiles
   - external-check
-  - log
   - log-format-sd
   - log-steps
-  - log-tag
   - monitor
-  - stats
 ```
 
 </details>
@@ -277,7 +268,6 @@ configuration language and the haproxy-config-translator implementation.
   - errorloc303
   - filter
   - force-persist
-  - fullconn
   - guid
   - hash-preserve-affinity
   - http-after-response
