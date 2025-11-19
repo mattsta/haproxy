@@ -1,6 +1,6 @@
 # HAProxy Config Translator - Feature Parity Report
 
-**Generated:** 2025-11-18 23:59:31
+**Generated:** 2025-11-19 01:38:09
 **HAProxy Version:** 3.3
 **Documentation Source:** `/home/user/haproxy/doc/configuration.txt`
 
@@ -24,12 +24,12 @@ configuration language and the haproxy-config-translator implementation.
 ### Proxy Keywords (Frontend/Backend/Listen/Defaults)
 
 - **Total HAProxy Keywords:** 89
-- **Implemented:** 18
-- **Coverage:** `20.2%`
+- **Implemented:** 25
+- **Coverage:** `28.1%`
 
 ### Test Coverage
 
-- **Total Test Files:** 53
+- **Total Test Files:** 56
 - **Global Directive Tests:** 10
 - **Proxy Tests:** 0
 - **Bind Option Tests:** 2
@@ -227,12 +227,10 @@ configuration language and the haproxy-config-translator implementation.
   - bind
   - hash-balance-factor
   - load-server-state-from-file
-  - redirect
   - server
   - server-state-file-name
   - stick
   - timeout
-  - use-server
   - use_backend
 ```
 
@@ -244,17 +242,14 @@ configuration language and the haproxy-config-translator implementation.
 ```
   - backlog
   - error-log-format
-  - errorfile
   - errorfiles
   - external-check
-  - http-check
   - log
   - log-format-sd
   - log-steps
   - log-tag
   - monitor
   - stats
-  - tcp-check
 ```
 
 </details>
@@ -289,7 +284,6 @@ configuration language and the haproxy-config-translator implementation.
   - hash-type
   - http-after-response
   - http-error
-  - http-reuse
   - http-send-name-header
   - id
   - ignore-persist
@@ -302,7 +296,6 @@ configuration language and the haproxy-config-translator implementation.
   - rate-limit
   - retry-on
   - sections
-  - source
   - specified
   - srvtcpka-cnt
   - srvtcpka-idle
