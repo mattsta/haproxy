@@ -6,7 +6,7 @@
 ## Current Status
 
 ### Tests & Code Quality ✅
-- **Tests:** 799 passing, 1 skipped, 0 failures
+- **Tests:** 863 passing, 1 skipped, 0 failures
 - **Test Coverage:** ~95%
 - **Mypy:** 0 errors (100% type safe)
 - **Ruff:** 27 minor style warnings (non-blocking, only in existing code)
@@ -47,7 +47,8 @@
 12. ✅ **external-check** - Already implemented and tested (verified)
 13. ✅ **use-fcgi-app** - Already implemented and tested (verified)
 
-**Session Results:** +143 tests (656 → 799), 0 failures, 0 type errors
+**Session Results:** +207 tests (656 → 863), 0 failures, 0 type errors
+**Phase 5A:** 100% complete (all 10 directives implemented)
 
 ### Features Implemented (Previous Sessions)
 1. ✅ **Phases 1-3:** Core directives, SSL/TLS, HTTP/2, system integration
@@ -64,8 +65,8 @@
 
 ## Next Steps for 100% Parity
 
-### Priority 1: Critical Proxy Keywords (Phase 5A)
-Status: 60% complete (6 of 10 directives implemented)
+### Priority 1: Critical Proxy Keywords (Phase 5A) ✅
+Status: 100% complete (10 of 10 directives implemented)
 
 **Completed:**
 1. ✅ **error-log-format** - Custom error logging format
@@ -74,14 +75,13 @@ Status: 60% complete (6 of 10 directives implemented)
 4. ✅ **external-check** - External health check program
 5. ✅ **use-fcgi-app** - FastCGI application support
 6. ✅ **dispatch** - Simple load balancing without backend
+7. ✅ **http-after-response** - Response manipulation rules (fixed tests, all 15 passing)
+8. ✅ **http-error** - Custom HTTP error responses (commit 0ff3a90)
+9. ✅ **email-alert** - Email alerting configuration (commit 639a06f)
+10. ✅ **declare capture** - Capture slot declarations (commit 44d053b, 14 tests)
 
-**Remaining:**
-7. ❌ **http-after-response** - Response manipulation rules (not implemented)
-8. ⚠️ **http-error** - Custom HTTP error responses (IR exists, needs grammar/transformer/codegen)
-9. ❌ **email-alert** - Email alerting configuration (not implemented)
-10. ❌ **declare** - Variable declarations (not implemented)
-
-**Current Impact:** +6 keywords implemented this session
+**Phase Impact:** +10 keywords implemented
+**Phase 5A Test Count:** +64 tests (799 → 863)
 
 ### Priority 2: Advanced Proxy Features (Phase 5B)
 Implement advanced proxy control keywords:
