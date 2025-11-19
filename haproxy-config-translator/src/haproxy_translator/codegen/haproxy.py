@@ -566,6 +566,13 @@ class HAProxyCodeGenerator:
         for fail_rule in frontend.monitor_fail_rules:
             lines.append(self._indent(f"monitor fail {fail_rule.condition}"))
 
+        # Logging
+        for log_target in frontend.log:
+            lines.append(self._indent(f"log {log_target}"))
+
+        if frontend.log_tag:
+            lines.append(self._indent(f"log-tag {frontend.log_tag}"))
+
         # Log format
         if frontend.log_format:
             lines.append(self._indent(f"log-format {frontend.log_format}"))
@@ -671,6 +678,13 @@ class HAProxyCodeGenerator:
         # Options
         for option in backend.options:
             lines.append(self._indent(f"option {option}"))
+
+        # Logging
+        for log_target in backend.log:
+            lines.append(self._indent(f"log {log_target}"))
+
+        if backend.log_tag:
+            lines.append(self._indent(f"log-tag {backend.log_tag}"))
 
         # Log format
         if backend.log_format:

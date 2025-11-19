@@ -278,6 +278,8 @@ frontend_section: "frontend" identifier "{" frontend_property* "}"
                   | "monitor-net" string                   -> frontend_monitor_net
                   | "monitor" "fail" if_condition          -> frontend_monitor_fail
                   | "maxconn" ":" number                   -> frontend_maxconn
+                  | "log" ":" string                       -> frontend_log
+                  | "log-tag" ":" string                   -> frontend_log_tag
                   | "log-format" ":" string                -> frontend_log_format
                   | "capture" "request" "header" string number  -> frontend_capture_request_header
                   | "capture" "response" "header" string number -> frontend_capture_response_header
@@ -447,6 +449,8 @@ backend_section: "backend" identifier "{" backend_property* "}"
                  | "timeout_tunnel" ":" duration            -> backend_timeout_tunnel
                  | "timeout_server_fin" ":" duration        -> backend_timeout_server_fin
                  | "retries" ":" number                     -> backend_retries
+                 | "log" ":" string                         -> backend_log
+                 | "log-tag" ":" string                     -> backend_log_tag
                  | "log-format" ":" string                  -> backend_log_format
                  | redirect_rule                            -> backend_redirect
                  | errorfile_directive                      -> backend_errorfile

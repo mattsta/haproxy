@@ -1509,6 +1509,8 @@ class DSLTransformer(Transformer):
         monitor_net = []
         monitor_fail_rules = []
         maxconn = None
+        log = []
+        log_tag = None
         log_format = None
         capture_request_headers = []
         capture_response_headers = []
@@ -1588,6 +1590,10 @@ class DSLTransformer(Transformer):
                     monitor_net.append(value)
                 elif key == "maxconn":
                     maxconn = value
+                elif key == "log":
+                    log.append(value)
+                elif key == "log_tag":
+                    log_tag = value
                 elif key == "log_format":
                     log_format = value
                 elif key == "capture_request_header":
@@ -1618,6 +1624,8 @@ class DSLTransformer(Transformer):
             monitor_net=monitor_net,
             monitor_fail_rules=monitor_fail_rules,
             maxconn=maxconn,
+            log=log,
+            log_tag=log_tag,
             log_format=log_format,
             capture_request_headers=capture_request_headers,
             capture_response_headers=capture_response_headers,
@@ -1670,6 +1678,14 @@ class DSLTransformer(Transformer):
 
     def frontend_maxconn(self, items: list[Any]) -> tuple[str, int]:
         return ("maxconn", items[0])
+
+    def frontend_log(self, items: list[Any]) -> tuple[str, str]:
+        """Transform log directive."""
+        return ("log", str(items[0]))
+
+    def frontend_log_tag(self, items: list[Any]) -> tuple[str, str]:
+        """Transform log-tag directive."""
+        return ("log_tag", str(items[0]))
 
     def frontend_log_format(self, items: list[Any]) -> tuple[str, str]:
         return ("log_format", items[0])
@@ -2144,6 +2160,8 @@ class DSLTransformer(Transformer):
         timeout_tunnel = None
         timeout_server_fin = None
         retries = None
+        log = []
+        log_tag = None
         log_format = None
         redirect_rules = []
         error_files = []
@@ -2232,6 +2250,10 @@ class DSLTransformer(Transformer):
                     timeout_server_fin = value
                 elif key == "retries":
                     retries = value
+                elif key == "log":
+                    log.append(value)
+                elif key == "log_tag":
+                    log_tag = value
                 elif key == "log_format":
                     log_format = value
                 elif key == "http_reuse":
@@ -2272,6 +2294,8 @@ class DSLTransformer(Transformer):
             timeout_tunnel=timeout_tunnel,
             timeout_server_fin=timeout_server_fin,
             retries=retries,
+            log=log,
+            log_tag=log_tag,
             log_format=log_format,
             redirect_rules=redirect_rules,
             error_files=error_files,
@@ -2332,6 +2356,14 @@ class DSLTransformer(Transformer):
 
     def backend_retries(self, items: list[Any]) -> tuple[str, int]:
         return ("retries", items[0])
+
+    def backend_log(self, items: list[Any]) -> tuple[str, str]:
+        """Transform log directive."""
+        return ("log", str(items[0]))
+
+    def backend_log_tag(self, items: list[Any]) -> tuple[str, str]:
+        """Transform log-tag directive."""
+        return ("log_tag", str(items[0]))
 
     def backend_log_format(self, items: list[Any]) -> tuple[str, str]:
         return ("log_format", items[0])

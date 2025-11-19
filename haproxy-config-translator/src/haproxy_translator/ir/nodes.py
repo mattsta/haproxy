@@ -654,6 +654,8 @@ class Frontend(IRNode):
     monitor_uri: str | None = None  # Monitor URI for health checks
     monitor_net: list[str] = field(default_factory=list)  # Network sources for monitoring requests
     monitor_fail_rules: list[MonitorFailRule] = field(default_factory=list)  # Conditional monitoring failures
+    log: list[str] = field(default_factory=list)  # Log targets (global or specific)
+    log_tag: str | None = None  # Tag for log messages
     log_format: str | None = None  # Custom log format string
     capture_request_headers: list[tuple[str, int]] = field(default_factory=list)  # [(header_name, length), ...]
     capture_response_headers: list[tuple[str, int]] = field(default_factory=list)  # [(header_name, length), ...]
@@ -677,6 +679,8 @@ class Backend(IRNode):
     http_request_rules: list[HttpRequestRule] = field(default_factory=list)
     http_response_rules: list[HttpResponseRule] = field(default_factory=list)
     tcp_request_rules: list["TcpRequestRule"] = field(default_factory=list)
+    log: list[str] = field(default_factory=list)  # Log targets (global or specific)
+    log_tag: str | None = None  # Tag for log messages
     log_format: str | None = None  # Custom log format string
     tcp_response_rules: list["TcpResponseRule"] = field(default_factory=list)
     compression: CompressionConfig | None = None
