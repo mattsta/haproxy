@@ -600,6 +600,12 @@ class HAProxyCodeGenerator:
         if frontend.log_format:
             lines.append(self._indent(f"log-format {frontend.log_format}"))
 
+        if frontend.error_log_format:
+            lines.append(self._indent(f"error-log-format {frontend.error_log_format}"))
+
+        if frontend.log_format_sd:
+            lines.append(self._indent(f"log-format-sd {frontend.log_format_sd}"))
+
         # Unique ID tracking
         if frontend.unique_id_format:
             lines.append(self._indent(f"unique-id-format {frontend.unique_id_format}"))
@@ -773,6 +779,12 @@ class HAProxyCodeGenerator:
         if backend.log_format:
             lines.append(self._indent(f"log-format {backend.log_format}"))
 
+        if backend.error_log_format:
+            lines.append(self._indent(f"error-log-format {backend.error_log_format}"))
+
+        if backend.log_format_sd:
+            lines.append(self._indent(f"log-format-sd {backend.log_format_sd}"))
+
         # ACLs
         for acl in backend.acls:
             lines.append(self._indent(self._format_acl(acl)))
@@ -816,6 +828,14 @@ class HAProxyCodeGenerator:
         # Error files
         for error_file in backend.error_files:
             lines.append(self._indent(f"errorfile {error_file.code} {error_file.file}"))
+
+        # Error files directory
+        if backend.errorfiles:
+            lines.append(self._indent(f"errorfiles {backend.errorfiles}"))
+
+        # Dispatch (simple load balancing)
+        if backend.dispatch:
+            lines.append(self._indent(f"dispatch {backend.dispatch}"))
 
         # HTTP reuse (connection pooling)
         if backend.http_reuse:

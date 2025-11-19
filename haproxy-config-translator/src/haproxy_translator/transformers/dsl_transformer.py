@@ -2363,8 +2363,12 @@ class DSLTransformer(Transformer):
         log = []
         log_tag = None
         log_format = None
+        error_log_format = None
+        log_format_sd = None
         redirect_rules = []
         error_files = []
+        errorfiles = None
+        dispatch = None
         http_reuse = None
         http_send_name_header = None
         retry_on = None
@@ -2474,6 +2478,14 @@ class DSLTransformer(Transformer):
                     log_tag = value
                 elif key == "log_format":
                     log_format = value
+                elif key == "error_log_format":
+                    error_log_format = value
+                elif key == "log_format_sd":
+                    log_format_sd = value
+                elif key == "errorfiles":
+                    errorfiles = value
+                elif key == "dispatch":
+                    dispatch = value
                 elif key == "http_reuse":
                     http_reuse = value
                 elif key == "http_send_name_header":
@@ -2527,8 +2539,12 @@ class DSLTransformer(Transformer):
             log=log,
             log_tag=log_tag,
             log_format=log_format,
+            error_log_format=error_log_format,
+            log_format_sd=log_format_sd,
             redirect_rules=redirect_rules,
             error_files=error_files,
+            errorfiles=errorfiles,
+            dispatch=dispatch,
             http_reuse=http_reuse,
             http_send_name_header=http_send_name_header,
             retry_on=retry_on,
