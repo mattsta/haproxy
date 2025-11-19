@@ -538,6 +538,14 @@ class HAProxyCodeGenerator:
         if frontend.maxconn:
             lines.append(self._indent(f"maxconn {frontend.maxconn}"))
 
+        # Backlog
+        if frontend.backlog:
+            lines.append(self._indent(f"backlog {frontend.backlog}"))
+
+        # Fullconn (dynamic weight threshold)
+        if frontend.fullconn:
+            lines.append(self._indent(f"fullconn {frontend.fullconn}"))
+
         # Timeout
         if frontend.timeout_client:
             lines.append(self._indent(f"timeout client {frontend.timeout_client}"))
@@ -680,6 +688,14 @@ class HAProxyCodeGenerator:
         # Retries
         if backend.retries is not None:
             lines.append(self._indent(f"retries {backend.retries}"))
+
+        # Max connections
+        if backend.maxconn:
+            lines.append(self._indent(f"maxconn {backend.maxconn}"))
+
+        # Backlog
+        if backend.backlog:
+            lines.append(self._indent(f"backlog {backend.backlog}"))
 
         # Timeouts
         if backend.timeout_connect:

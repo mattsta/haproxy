@@ -665,7 +665,9 @@ class Frontend(IRNode):
     timeout_http_keep_alive: str | None = None  # Keep-alive timeout
     timeout_client_fin: str | None = None  # Client FIN timeout
     timeout_tarpit: str | None = None  # Tarpit timeout
-    maxconn: int | None = None
+    maxconn: int | None = None  # Maximum concurrent connections
+    backlog: int | None = None  # Socket listen backlog size
+    fullconn: int | None = None  # Backend saturation threshold for dynamic weights
     monitor_uri: str | None = None  # Monitor URI for health checks
     monitor_net: list[str] = field(default_factory=list)  # Network sources for monitoring requests
     monitor_fail_rules: list[MonitorFailRule] = field(default_factory=list)  # Conditional monitoring failures
@@ -709,6 +711,8 @@ class Backend(IRNode):
     timeout_tunnel: str | None = None  # Tunnel timeout (WebSocket, etc.)
     timeout_server_fin: str | None = None  # Server FIN timeout
     retries: int | None = None
+    maxconn: int | None = None  # Maximum concurrent connections
+    backlog: int | None = None  # Socket listen backlog size
     redirect_rules: list[RedirectRule] = field(default_factory=list)  # HTTP redirect rules
     error_files: list[ErrorFile] = field(default_factory=list)  # Custom error page files
     http_reuse: str | None = None  # Connection reuse mode: never, safe, aggressive, always

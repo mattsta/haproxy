@@ -1509,6 +1509,8 @@ class DSLTransformer(Transformer):
         monitor_net = []
         monitor_fail_rules = []
         maxconn = None
+        backlog = None
+        fullconn = None
         log = []
         log_tag = None
         log_format = None
@@ -1593,6 +1595,10 @@ class DSLTransformer(Transformer):
                     monitor_net.append(value)
                 elif key == "maxconn":
                     maxconn = value
+                elif key == "backlog":
+                    backlog = value
+                elif key == "fullconn":
+                    fullconn = value
                 elif key == "log":
                     log.append(value)
                 elif key == "log_tag":
@@ -1627,6 +1633,8 @@ class DSLTransformer(Transformer):
             monitor_net=monitor_net,
             monitor_fail_rules=monitor_fail_rules,
             maxconn=maxconn,
+            backlog=backlog,
+            fullconn=fullconn,
             log=log,
             log_tag=log_tag,
             log_format=log_format,
@@ -1682,6 +1690,14 @@ class DSLTransformer(Transformer):
 
     def frontend_maxconn(self, items: list[Any]) -> tuple[str, int]:
         return ("maxconn", items[0])
+
+    def frontend_backlog(self, items: list[Any]) -> tuple[str, int]:
+        """Transform backlog directive."""
+        return ("backlog", items[0])
+
+    def frontend_fullconn(self, items: list[Any]) -> tuple[str, int]:
+        """Transform fullconn directive."""
+        return ("fullconn", items[0])
 
     def frontend_log(self, items: list[Any]) -> tuple[str, str]:
         """Transform log directive."""
@@ -2257,6 +2273,8 @@ class DSLTransformer(Transformer):
         timeout_tunnel = None
         timeout_server_fin = None
         retries = None
+        maxconn = None
+        backlog = None
         log = []
         log_tag = None
         log_format = None
@@ -2347,6 +2365,10 @@ class DSLTransformer(Transformer):
                     timeout_server_fin = value
                 elif key == "retries":
                     retries = value
+                elif key == "maxconn":
+                    maxconn = value
+                elif key == "backlog":
+                    backlog = value
                 elif key == "log":
                     log.append(value)
                 elif key == "log_tag":
@@ -2391,6 +2413,8 @@ class DSLTransformer(Transformer):
             timeout_tunnel=timeout_tunnel,
             timeout_server_fin=timeout_server_fin,
             retries=retries,
+            maxconn=maxconn,
+            backlog=backlog,
             log=log,
             log_tag=log_tag,
             log_format=log_format,
@@ -2453,6 +2477,14 @@ class DSLTransformer(Transformer):
 
     def backend_retries(self, items: list[Any]) -> tuple[str, int]:
         return ("retries", items[0])
+
+    def backend_maxconn(self, items: list[Any]) -> tuple[str, int]:
+        """Transform maxconn directive."""
+        return ("maxconn", items[0])
+
+    def backend_backlog(self, items: list[Any]) -> tuple[str, int]:
+        """Transform backlog directive."""
+        return ("backlog", items[0])
 
     def backend_log(self, items: list[Any]) -> tuple[str, str]:
         """Transform log directive."""
