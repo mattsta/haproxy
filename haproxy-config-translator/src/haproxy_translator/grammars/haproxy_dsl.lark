@@ -574,6 +574,7 @@ backend_section: "backend" identifier "{" backend_property* "}"
                  | tcp_check_block                          -> backend_tcp_check
                  | "hash-type" ":" hash_type_spec           -> backend_hash_type
                  | "hash-balance-factor" ":" number         -> backend_hash_balance_factor
+                 | "hash-preserve-affinity" ":" hash_preserve_affinity_mode -> backend_hash_preserve_affinity
                  | "load-server-state-from-file" ":" load_server_state_mode  -> backend_load_server_state_from
                  | "server-state-file-name" ":" server_state_file_name_value  -> backend_server_state_file_name
                  | "srvtcpka-cnt" ":" number               -> backend_srvtcpka_cnt
@@ -596,6 +597,12 @@ HTTP_REUSE_ALWAYS: "always"
 LOAD_SERVER_STATE_GLOBAL: "global"
 LOAD_SERVER_STATE_LOCAL: "local"
 LOAD_SERVER_STATE_NONE: "none"
+
+?hash_preserve_affinity_mode: HASH_PRESERVE_ALWAYS | HASH_PRESERVE_MAXCONN | HASH_PRESERVE_MAXQUEUE
+
+HASH_PRESERVE_ALWAYS: "always"
+HASH_PRESERVE_MAXCONN: "maxconn"
+HASH_PRESERVE_MAXQUEUE: "maxqueue"
 
 balance_algo: BALANCE_ROUNDROBIN | BALANCE_LEASTCONN | BALANCE_SOURCE | BALANCE_URI | BALANCE_URL_PARAM | BALANCE_RANDOM | BALANCE_STATIC_RR | BALANCE_FIRST | BALANCE_HDR | BALANCE_RDP_COOKIE
 

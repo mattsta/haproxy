@@ -2275,6 +2275,10 @@ class DSLTransformer(Transformer):
         """Transform hash-balance-factor directive."""
         return ("hash_balance_factor", int(items[0]))
 
+    def backend_hash_preserve_affinity(self, items: list[Any]) -> tuple[str, str]:
+        """Transform hash-preserve-affinity directive (Phase 5B)."""
+        return ("hash_preserve_affinity", str(items[0]))
+
     def backend_load_server_state_from(self, items: list[Any]) -> tuple[str, str]:
         """Transform load-server-state-from-file directive."""
         return ("load_server_state_from", str(items[0]))
@@ -2877,6 +2881,7 @@ class DSLTransformer(Transformer):
         source = None
         hash_type = None
         hash_balance_factor = None
+        hash_preserve_affinity = None  # Phase 5B
         load_server_state_from = None
         server_state_file_name = None
 
@@ -3029,6 +3034,8 @@ class DSLTransformer(Transformer):
                     hash_type = value
                 elif key == "hash_balance_factor":
                     hash_balance_factor = value
+                elif key == "hash_preserve_affinity":
+                    hash_preserve_affinity = value
                 elif key == "load_server_state_from":
                     from ..ir.nodes import LoadServerStateFrom
                     load_server_state_from = LoadServerStateFrom(value)
@@ -3105,6 +3112,7 @@ class DSLTransformer(Transformer):
             source=source,
             hash_type=hash_type,
             hash_balance_factor=hash_balance_factor,
+            hash_preserve_affinity=hash_preserve_affinity,
             load_server_state_from=load_server_state_from,
             server_state_file_name=server_state_file_name,
             email_alert=email_alert,

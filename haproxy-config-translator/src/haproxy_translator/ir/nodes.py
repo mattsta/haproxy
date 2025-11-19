@@ -834,6 +834,7 @@ class Backend(IRNode):
     source: str | None = None  # Source IP/port for backend connections
     hash_type: str | None = None  # Hash algorithm: map-based, consistent
     hash_balance_factor: int | None = None  # Hash balance factor (100-65535)
+    hash_preserve_affinity: str | None = None  # Stream assignment when saturated: always, maxconn, maxqueue (Phase 5B)
     load_server_state_from: LoadServerStateFrom | None = None  # Server state loading mode for seamless reload
     server_state_file_name: str | None = None  # Server state file name (use-backend-name or file path)
     email_alert: EmailAlert | None = None  # Email alert configuration
