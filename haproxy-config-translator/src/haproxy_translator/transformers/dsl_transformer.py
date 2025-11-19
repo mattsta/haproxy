@@ -13,6 +13,7 @@ from ..ir.nodes import (
     ConfigIR,
     DefaultsConfig,
     DefaultServer,
+    EmailAlert,
     ErrorFile,
     ForLoop,
     Frontend,
@@ -1394,6 +1395,7 @@ class DSLTransformer(Transformer):
         errorloc302 = {}
         errorloc303 = {}
         error_log_format = None
+        email_alert = None
 
         for item in items:
             if isinstance(item, tuple):
@@ -1442,6 +1444,8 @@ class DSLTransformer(Transformer):
                             timeout_server_fin = timeout_value
                         elif timeout_key == "tarpit":
                             timeout_tarpit = timeout_value
+            elif isinstance(item, EmailAlert):
+                email_alert = item
 
         return DefaultsConfig(
             mode=mode,
@@ -1462,6 +1466,7 @@ class DSLTransformer(Transformer):
             errorloc302=errorloc302,
             errorloc303=errorloc303,
             error_log_format=error_log_format,
+            email_alert=email_alert,
         )
 
     def defaults_mode(self, items: list[Any]) -> tuple[str, str]:
@@ -1552,6 +1557,7 @@ class DSLTransformer(Transformer):
         redirect_rules = []
         error_files = []
         http_errors = []
+        email_alert = None
         errorloc = {}
         errorloc302 = {}
         errorloc303 = {}
@@ -1567,6 +1573,8 @@ class DSLTransformer(Transformer):
                 error_files.append(prop)
             elif isinstance(prop, HttpError):
                 http_errors.append(prop)
+            elif isinstance(prop, EmailAlert):
+                email_alert = prop
             elif isinstance(prop, StatsConfig):
                 stats_config = prop
             elif isinstance(prop, MonitorFailRule):
@@ -1723,6 +1731,7 @@ class DSLTransformer(Transformer):
             redirect_rules=redirect_rules,
             error_files=error_files,
             http_errors=http_errors,
+            email_alert=email_alert,
             errorloc=errorloc,
             errorloc302=errorloc302,
             errorloc303=errorloc303,
@@ -2001,6 +2010,22 @@ class DSLTransformer(Transformer):
     def listen_http_error(self, items: list[Any]) -> HttpError:
         """Transform http-error for listen."""
         return cast("HttpError", items[0])
+
+    def frontend_email_alert(self, items: list[Any]) -> EmailAlert:
+        """Transform email-alert for frontend."""
+        return cast("EmailAlert", items[0])
+
+    def backend_email_alert(self, items: list[Any]) -> EmailAlert:
+        """Transform email-alert for backend."""
+        return cast("EmailAlert", items[0])
+
+    def listen_email_alert(self, items: list[Any]) -> EmailAlert:
+        """Transform email-alert for listen."""
+        return cast("EmailAlert", items[0])
+
+    def defaults_email_alert(self, items: list[Any]) -> EmailAlert:
+        """Transform email-alert for defaults."""
+        return cast("EmailAlert", items[0])
 
     def errorfile_directive(self, items: list[Any]) -> ErrorFile:
         """Transform errorfile directive."""
@@ -2300,6 +2325,57 @@ class DSLTransformer(Transformer):
         """Transform http-error default-errorfiles property."""
         return ("default_errorfiles", bool(items[0]))
 
+    # ===== email-alert Block =====
+    def email_alert_block(self, items: list[Any]) -> EmailAlert:
+        """Build EmailAlert from email-alert properties."""
+        level = None
+        mailers = None
+        from_email = None
+        to_email = None
+        myhostname = None
+
+        for prop in items:
+            if isinstance(prop, tuple):
+                key, value = prop
+                if key == "level":
+                    level = str(value)
+                elif key == "mailers":
+                    mailers = str(value)
+                elif key == "from":
+                    from_email = str(value)
+                elif key == "to":
+                    to_email = str(value)
+                elif key == "myhostname":
+                    myhostname = str(value)
+
+        return EmailAlert(
+            level=level,
+            mailers=mailers,
+            from_email=from_email,
+            to_email=to_email,
+            myhostname=myhostname,
+        )
+
+    def email_alert_level(self, items: list[Any]) -> tuple[str, str]:
+        """Transform email-alert level property."""
+        return ("level", str(items[0]))
+
+    def email_alert_mailers(self, items: list[Any]) -> tuple[str, str]:
+        """Transform email-alert mailers property."""
+        return ("mailers", str(items[0]))
+
+    def email_alert_from(self, items: list[Any]) -> tuple[str, str]:
+        """Transform email-alert from property."""
+        return ("from", str(items[0]))
+
+    def email_alert_to(self, items: list[Any]) -> tuple[str, str]:
+        """Transform email-alert to property."""
+        return ("to", str(items[0]))
+
+    def email_alert_myhostname(self, items: list[Any]) -> tuple[str, str]:
+        """Transform email-alert myhostname property."""
+        return ("myhostname", str(items[0]))
+
     # ===== tcp-check Block =====
     def backend_tcp_check(self, items: list[Any]) -> list[TcpCheckRule]:
         """Backend tcp-check block returns list of rules."""
@@ -2563,6 +2639,7 @@ class DSLTransformer(Transformer):
         redirect_rules = []
         error_files = []
         http_errors = []
+        email_alert = None
         errorloc: dict[int, str] = {}
         errorloc302: dict[int, str] = {}
         errorloc303: dict[int, str] = {}
@@ -2598,6 +2675,8 @@ class DSLTransformer(Transformer):
                 error_files.append(prop)
             elif isinstance(prop, HttpError):
                 http_errors.append(prop)
+            elif isinstance(prop, EmailAlert):
+                email_alert = prop
             elif isinstance(prop, HttpCheckRule):
                 http_check_rules.append(prop)
             elif isinstance(prop, TcpCheckRule):
@@ -2796,6 +2875,7 @@ class DSLTransformer(Transformer):
             hash_balance_factor=hash_balance_factor,
             load_server_state_from=load_server_state_from,
             server_state_file_name=server_state_file_name,
+            email_alert=email_alert,
             metadata=metadata,
         )
 
@@ -3111,6 +3191,7 @@ class DSLTransformer(Transformer):
         error_log_format = None
         log_format_sd = None
         http_errors = []
+        email_alert = None
 
         for prop in properties:
             if isinstance(prop, Bind):
@@ -3145,6 +3226,8 @@ class DSLTransformer(Transformer):
                 health_check = prop
             elif isinstance(prop, HttpError):
                 http_errors.append(prop)
+            elif isinstance(prop, EmailAlert):
+                email_alert = prop
             elif isinstance(prop, tuple):
                 key, value = prop
                 if key == "mode":
@@ -3226,6 +3309,7 @@ class DSLTransformer(Transformer):
             error_log_format=error_log_format,
             log_format_sd=log_format_sd,
             http_errors=http_errors,
+            email_alert=email_alert,
             metadata=metadata,
         )
 

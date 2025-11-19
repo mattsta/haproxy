@@ -10,6 +10,7 @@ from ..ir.nodes import (
     ConfigIR,
     DefaultsConfig,
     DefaultServer,
+    EmailAlert,
     Frontend,
     GlobalConfig,
     HealthCheck,
@@ -519,6 +520,11 @@ class HAProxyCodeGenerator:
         for code, url in defaults.errorloc303.items():
             lines.append(self._indent(f"errorloc303 {code} {url}"))
 
+        # Email alert configuration
+        if defaults.email_alert:
+            for line in self._format_email_alert(defaults.email_alert):
+                lines.append(self._indent(line))
+
         # HTTP check
         if defaults.http_check:
             lines.extend(self._generate_http_check(defaults.http_check, indent=True))
@@ -695,6 +701,11 @@ class HAProxyCodeGenerator:
         # HTTP error responses
         for http_error in frontend.http_errors:
             lines.append(self._indent(self._format_http_error(http_error)))
+
+        # Email alert configuration
+        if frontend.email_alert:
+            for line in self._format_email_alert(frontend.email_alert):
+                lines.append(self._indent(line))
 
         # Error location redirects
         for code, location in frontend.errorloc.items():
@@ -875,6 +886,11 @@ class HAProxyCodeGenerator:
         for http_error in backend.http_errors:
             lines.append(self._indent(self._format_http_error(http_error)))
 
+        # Email alert configuration
+        if backend.email_alert:
+            for line in self._format_email_alert(backend.email_alert):
+                lines.append(self._indent(line))
+
         # Error location redirects
         for code, location in backend.errorloc.items():
             lines.append(self._indent(f'errorloc {code} "{location}"'))
@@ -1027,6 +1043,11 @@ class HAProxyCodeGenerator:
         # HTTP error responses
         for http_error in listen.http_errors:
             lines.append(self._indent(self._format_http_error(http_error)))
+
+        # Email alert configuration
+        if listen.email_alert:
+            for line in self._format_email_alert(listen.email_alert):
+                lines.append(self._indent(line))
 
         # Servers
         for server in listen.servers:
@@ -1217,6 +1238,23 @@ class HAProxyCodeGenerator:
             parts.append(f'lf-string "{escaped_string}"')
 
         return " ".join(parts)
+
+    def _format_email_alert(self, email_alert: "EmailAlert") -> list[str]:
+        """Format email-alert directives."""
+        lines = []
+
+        if email_alert.level:
+            lines.append(f"email-alert level {email_alert.level}")
+        if email_alert.mailers:
+            lines.append(f"email-alert mailers {email_alert.mailers}")
+        if email_alert.from_email:
+            lines.append(f"email-alert from {email_alert.from_email}")
+        if email_alert.to_email:
+            lines.append(f"email-alert to {email_alert.to_email}")
+        if email_alert.myhostname:
+            lines.append(f"email-alert myhostname {email_alert.myhostname}")
+
+        return lines
 
     def _format_use_server_rule(self, use_server: "UseServerRule") -> str:
         """Format use-server rule."""

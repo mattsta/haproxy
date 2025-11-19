@@ -240,6 +240,7 @@ defaults_section: "defaults" "{" defaults_property* "}"
                   | "errorloc" number string           -> defaults_errorloc
                   | "errorloc302" number string        -> defaults_errorloc302
                   | "errorloc303" number string        -> defaults_errorloc303
+                  | email_alert_block                  -> defaults_email_alert
 
 timeout_block: "timeout" ":" "{" timeout_item+ "}"
 
@@ -302,6 +303,7 @@ frontend_section: "frontend" identifier "{" frontend_property* "}"
                   | errorfile_directive                    -> frontend_errorfile
                   | errorloc_directive                     -> frontend_errorloc
                   | http_error_block                       -> frontend_http_error
+                  | email_alert_block                      -> frontend_email_alert
 
 // Redirect rules
 redirect_rule: "redirect" redirect_type string redirect_options?
@@ -340,6 +342,15 @@ http_error_block: "http-error" "{" http_error_property+ "}"
                     | "errorfile" ":" string                 -> http_error_errorfile
                     | "errorfiles-name" ":" string           -> http_error_errorfiles_name
                     | "default-errorfiles" ":" boolean       -> http_error_default_errorfiles
+
+// Email alert configuration
+email_alert_block: "email-alert" "{" email_alert_property+ "}"
+
+?email_alert_property: "level" ":" identifier                -> email_alert_level
+                     | "mailers" ":" identifier               -> email_alert_mailers
+                     | "from" ":" string                      -> email_alert_from
+                     | "to" ":" string                        -> email_alert_to
+                     | "myhostname" ":" string                -> email_alert_myhostname
 
 // Stats block (proxy-level)
 stats_block: "stats" "{" proxy_stats_property* "}"
@@ -518,6 +529,7 @@ backend_section: "backend" identifier "{" backend_property* "}"
                  | errorfile_directive                      -> backend_errorfile
                  | errorloc_directive                       -> backend_errorloc
                  | http_error_block                         -> backend_http_error
+                 | email_alert_block                        -> backend_email_alert
                  | "errorfiles" ":" string                  -> backend_errorfiles
                  | "dispatch" ":" string                    -> backend_dispatch
                  | "use-fcgi-app" ":" string                -> backend_use_fcgi_app
@@ -766,6 +778,7 @@ listen_section: "listen" identifier "{" listen_property* "}"
                 | http_response_block                    -> listen_http_response
                 | http_after_response_block              -> listen_http_after_response
                 | http_error_block                         -> listen_http_error
+                | email_alert_block                        -> listen_email_alert
 
 // ===== Stats Socket =====
 stats_socket_item: "stats_socket" string "{" stats_socket_param* "}"

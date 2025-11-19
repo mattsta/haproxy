@@ -250,6 +250,17 @@ class HttpError(IRNode):
 
 
 @dataclass(frozen=True)
+class EmailAlert(IRNode):
+    """Email alert configuration (email-alert directive)."""
+
+    level: str | None = None  # Alert level: admin, notice, warning, etc.
+    mailers: str | None = None  # Reference to mailers section
+    from_email: str | None = None  # From email address
+    to_email: str | None = None  # To email address
+    myhostname: str | None = None  # Hostname for emails
+
+
+@dataclass(frozen=True)
 class HttpCheckRule(IRNode):
     """Advanced HTTP health check rule (http-check directive)."""
 
@@ -478,6 +489,7 @@ class DefaultsConfig(IRNode):
     errorloc302: dict[int, str] = field(default_factory=dict)  # explicit 302
     errorloc303: dict[int, str] = field(default_factory=dict)  # 303 redirect
     http_check: Optional["HealthCheck"] = None
+    email_alert: EmailAlert | None = None  # Email alert configuration
 
 
 @dataclass(frozen=True)
@@ -719,6 +731,7 @@ class Frontend(IRNode):
     errorloc302: dict[int, str] = field(default_factory=dict)  # Explicit 302 redirect
     errorloc303: dict[int, str] = field(default_factory=dict)  # 303 See Other redirect
     http_errors: list[HttpError] = field(default_factory=list)  # Custom HTTP error responses
+    email_alert: EmailAlert | None = None  # Email alert configuration
 
 
 @dataclass(frozen=True)
@@ -785,6 +798,7 @@ class Backend(IRNode):
     hash_balance_factor: int | None = None  # Hash balance factor (100-65535)
     load_server_state_from: LoadServerStateFrom | None = None  # Server state loading mode for seamless reload
     server_state_file_name: str | None = None  # Server state file name (use-backend-name or file path)
+    email_alert: EmailAlert | None = None  # Email alert configuration
 
 
 @dataclass(frozen=True)
@@ -824,6 +838,7 @@ class Listen(IRNode):
     log_format: str | None = None  # Custom log format string
     error_log_format: str | None = None  # Custom error log format string
     log_format_sd: str | None = None  # Structured data log format (RFC 5424)
+    email_alert: EmailAlert | None = None  # Email alert configuration
 
 
 # DSL-specific IR nodes (for advanced features)
