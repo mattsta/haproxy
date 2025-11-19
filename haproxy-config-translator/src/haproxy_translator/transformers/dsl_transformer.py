@@ -1539,6 +1539,9 @@ class DSLTransformer(Transformer):
         capture_response_headers = []
         redirect_rules = []
         error_files = []
+        errorloc = {}
+        errorloc302 = {}
+        errorloc303 = {}
 
         for prop in properties:
             if isinstance(prop, Bind):
@@ -1647,6 +1650,12 @@ class DSLTransformer(Transformer):
                     capture_request_headers.append(value)
                 elif key == "capture_response_header":
                     capture_response_headers.append(value)
+                elif key == "errorloc":
+                    errorloc.update(value)
+                elif key == "errorloc302":
+                    errorloc302.update(value)
+                elif key == "errorloc303":
+                    errorloc303.update(value)
 
         return Frontend(
             name=name,
@@ -1690,6 +1699,9 @@ class DSLTransformer(Transformer):
             capture_response_headers=capture_response_headers,
             redirect_rules=redirect_rules,
             error_files=error_files,
+            errorloc=errorloc,
+            errorloc302=errorloc302,
+            errorloc303=errorloc303,
         )
 
     def frontend_mode(self, items: list[Any]) -> tuple[str, str]:
@@ -1955,6 +1967,33 @@ class DSLTransformer(Transformer):
         code = int(items[0])
         file = str(items[1])
         return ErrorFile(code=code, file=file)
+
+    # ===== Error Location Redirects =====
+    def frontend_errorloc(self, items: list[Any]) -> tuple[str, Any]:
+        """Transform errorloc directive for frontend."""
+        return cast("tuple[str, Any]", items[0])
+
+    def backend_errorloc(self, items: list[Any]) -> tuple[str, Any]:
+        """Transform errorloc directive for backend."""
+        return cast("tuple[str, Any]", items[0])
+
+    def errorloc(self, items: list[Any]) -> tuple[str, dict[int, str]]:
+        """Transform errorloc (302 redirect by default)."""
+        code = int(items[0])
+        location = str(items[1])
+        return ("errorloc", {code: location})
+
+    def errorloc302(self, items: list[Any]) -> tuple[str, dict[int, str]]:
+        """Transform errorloc302 (explicit 302 redirect)."""
+        code = int(items[0])
+        location = str(items[1])
+        return ("errorloc302", {code: location})
+
+    def errorloc303(self, items: list[Any]) -> tuple[str, dict[int, str]]:
+        """Transform errorloc303 (303 See Other redirect)."""
+        code = int(items[0])
+        location = str(items[1])
+        return ("errorloc303", {code: location})
 
     # ===== HTTP Reuse =====
     def http_reuse_mode(self, items: list[Token]) -> str:
@@ -2367,6 +2406,9 @@ class DSLTransformer(Transformer):
         log_format_sd = None
         redirect_rules = []
         error_files = []
+        errorloc: dict[int, str] = {}
+        errorloc302: dict[int, str] = {}
+        errorloc303: dict[int, str] = {}
         errorfiles = None
         dispatch = None
         http_reuse = None
@@ -2486,6 +2528,12 @@ class DSLTransformer(Transformer):
                     errorfiles = value
                 elif key == "dispatch":
                     dispatch = value
+                elif key == "errorloc":
+                    errorloc.update(value)
+                elif key == "errorloc302":
+                    errorloc302.update(value)
+                elif key == "errorloc303":
+                    errorloc303.update(value)
                 elif key == "http_reuse":
                     http_reuse = value
                 elif key == "http_send_name_header":
@@ -2543,6 +2591,9 @@ class DSLTransformer(Transformer):
             log_format_sd=log_format_sd,
             redirect_rules=redirect_rules,
             error_files=error_files,
+            errorloc=errorloc,
+            errorloc302=errorloc302,
+            errorloc303=errorloc303,
             errorfiles=errorfiles,
             dispatch=dispatch,
             http_reuse=http_reuse,

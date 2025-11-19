@@ -297,6 +297,7 @@ frontend_section: "frontend" identifier "{" frontend_property* "}"
                   | "capture" "response" "header" string number -> frontend_capture_response_header
                   | redirect_rule                          -> frontend_redirect
                   | errorfile_directive                    -> frontend_errorfile
+                  | errorloc_directive                     -> frontend_errorloc
 
 // Redirect rules
 redirect_rule: "redirect" redirect_type string redirect_options?
@@ -317,6 +318,11 @@ redirect_rule: "redirect" redirect_type string redirect_options?
 
 // Error file directive
 errorfile_directive: "errorfile" number string
+
+// Error location redirect directives
+errorloc_directive: "errorloc" number string      -> errorloc
+                  | "errorloc302" number string    -> errorloc302
+                  | "errorloc303" number string    -> errorloc303
 
 // Stats block (proxy-level)
 stats_block: "stats" "{" proxy_stats_property* "}"
@@ -489,6 +495,7 @@ backend_section: "backend" identifier "{" backend_property* "}"
                  | "log-format-sd" ":" string               -> backend_log_format_sd
                  | redirect_rule                            -> backend_redirect
                  | errorfile_directive                      -> backend_errorfile
+                 | errorloc_directive                       -> backend_errorloc
                  | "errorfiles" ":" string                  -> backend_errorfiles
                  | "dispatch" ":" string                    -> backend_dispatch
                  | "http-reuse" ":" http_reuse_mode         -> backend_http_reuse

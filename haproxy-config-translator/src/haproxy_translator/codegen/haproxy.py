@@ -678,6 +678,14 @@ class HAProxyCodeGenerator:
         for error_file in frontend.error_files:
             lines.append(self._indent(f"errorfile {error_file.code} {error_file.file}"))
 
+        # Error location redirects
+        for code, location in frontend.errorloc.items():
+            lines.append(self._indent(f"errorloc {code} {location}"))
+        for code, location in frontend.errorloc302.items():
+            lines.append(self._indent(f"errorloc302 {code} {location}"))
+        for code, location in frontend.errorloc303.items():
+            lines.append(self._indent(f"errorloc303 {code} {location}"))
+
         # Use backend rules
         for backend_rule in frontend.use_backend_rules:
             use_line = f"use_backend {backend_rule.backend}"
@@ -828,6 +836,14 @@ class HAProxyCodeGenerator:
         # Error files
         for error_file in backend.error_files:
             lines.append(self._indent(f"errorfile {error_file.code} {error_file.file}"))
+
+        # Error location redirects
+        for code, location in backend.errorloc.items():
+            lines.append(self._indent(f"errorloc {code} {location}"))
+        for code, location in backend.errorloc302.items():
+            lines.append(self._indent(f"errorloc302 {code} {location}"))
+        for code, location in backend.errorloc303.items():
+            lines.append(self._indent(f"errorloc303 {code} {location}"))
 
         # Error files directory
         if backend.errorfiles:

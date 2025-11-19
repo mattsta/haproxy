@@ -678,6 +678,9 @@ class Frontend(IRNode):
     capture_response_headers: list[tuple[str, int]] = field(default_factory=list)  # [(header_name, length), ...]
     redirect_rules: list[RedirectRule] = field(default_factory=list)  # HTTP redirect rules
     error_files: list[ErrorFile] = field(default_factory=list)  # Custom error page files
+    errorloc: dict[int, str] = field(default_factory=dict)  # 302 redirect for error codes
+    errorloc302: dict[int, str] = field(default_factory=dict)  # Explicit 302 redirect
+    errorloc303: dict[int, str] = field(default_factory=dict)  # 303 See Other redirect
 
 
 @dataclass(frozen=True)
@@ -722,6 +725,9 @@ class Backend(IRNode):
     max_session_srv_conns: int | None = None  # Maximum connections per session to server
     redirect_rules: list[RedirectRule] = field(default_factory=list)  # HTTP redirect rules
     error_files: list[ErrorFile] = field(default_factory=list)  # Custom error page files
+    errorloc: dict[int, str] = field(default_factory=dict)  # 302 redirect for error codes
+    errorloc302: dict[int, str] = field(default_factory=dict)  # Explicit 302 redirect
+    errorloc303: dict[int, str] = field(default_factory=dict)  # 303 See Other redirect
     errorfiles: str | None = None  # Directory containing custom error files
     dispatch: str | None = None  # Simple dispatch target (IP:port) for load balancing without backend
     http_reuse: str | None = None  # Connection reuse mode: never, safe, aggressive, always

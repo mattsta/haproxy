@@ -43,6 +43,7 @@ tests/test_http_resilience.py
 tests/test_load_balancing.py
 tests/test_logging.py
 tests/test_monitoring.py
+tests/test_phase5a_logging.py
 tests/test_proxy_directives.py
 tests/test_stats.py
 tests/test_unique_id.py
