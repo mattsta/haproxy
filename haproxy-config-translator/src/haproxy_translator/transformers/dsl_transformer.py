@@ -1512,6 +1512,7 @@ class DSLTransformer(Transformer):
         log = []
         log_tag = None
         log_format = None
+        stats_config = None
         capture_request_headers = []
         capture_response_headers = []
         redirect_rules = []
@@ -1526,6 +1527,8 @@ class DSLTransformer(Transformer):
                 redirect_rules.append(prop)
             elif isinstance(prop, ErrorFile):
                 error_files.append(prop)
+            elif isinstance(prop, StatsConfig):
+                stats_config = prop
             elif isinstance(prop, MonitorFailRule):
                 monitor_fail_rules.append(prop)
             elif isinstance(prop, list) and all(isinstance(x, ACL) for x in prop):
@@ -1627,6 +1630,7 @@ class DSLTransformer(Transformer):
             log=log,
             log_tag=log_tag,
             log_format=log_format,
+            stats_config=stats_config,
             capture_request_headers=capture_request_headers,
             capture_response_headers=capture_response_headers,
             redirect_rules=redirect_rules,
@@ -1689,6 +1693,99 @@ class DSLTransformer(Transformer):
 
     def frontend_log_format(self, items: list[Any]) -> tuple[str, str]:
         return ("log_format", items[0])
+
+    def frontend_stats(self, items: list[Any]) -> StatsConfig:
+        """Transform stats block."""
+        return cast(StatsConfig, items[0])
+
+    def stats_block(self, items: list[Any]) -> StatsConfig:
+        """Build StatsConfig from stats properties."""
+        enable = False
+        uri = None
+        realm = None
+        auth = []
+        hide_version = False
+        refresh = None
+        show_legends = False
+        show_desc = None
+        admin_rules = []
+
+        for prop in items:
+            if isinstance(prop, tuple):
+                key, value = prop
+                if key == "enable":
+                    enable = value
+                elif key == "uri":
+                    uri = value
+                elif key == "realm":
+                    realm = value
+                elif key == "auth":
+                    auth.append(value)
+                elif key == "hide_version":
+                    hide_version = value
+                elif key == "refresh":
+                    refresh = value
+                elif key == "show_legends":
+                    show_legends = value
+                elif key == "show_desc":
+                    show_desc = value
+                elif key == "admin":
+                    admin_rules.append(value)
+
+        return StatsConfig(
+            enable=enable,
+            uri=uri,
+            realm=realm,
+            auth=auth,
+            hide_version=hide_version,
+            refresh=refresh,
+            show_legends=show_legends,
+            show_desc=show_desc,
+            admin_rules=admin_rules,
+        )
+
+    def stats_enable(self, items: list[Any]) -> tuple[str, bool]:
+        """Transform stats enable."""
+        return ("enable", True)
+
+    def stats_uri(self, items: list[Any]) -> tuple[str, str]:
+        """Transform stats uri."""
+        return ("uri", str(items[0]))
+
+    def stats_realm(self, items: list[Any]) -> tuple[str, str]:
+        """Transform stats realm."""
+        return ("realm", str(items[0]))
+
+    def stats_auth(self, items: list[Any]) -> tuple[str, str]:
+        """Transform stats auth."""
+        return ("auth", str(items[0]))
+
+    def stats_hide_version(self, items: list[Any]) -> tuple[str, bool]:
+        """Transform stats hide-version."""
+        return ("hide_version", True)
+
+    def stats_refresh(self, items: list[Any]) -> tuple[str, str]:
+        """Transform stats refresh."""
+        return ("refresh", str(items[0]))
+
+    def stats_show_legends(self, items: list[Any]) -> tuple[str, bool]:
+        """Transform stats show-legends."""
+        return ("show_legends", True)
+
+    def stats_show_desc(self, items: list[Any]) -> tuple[str, str]:
+        """Transform stats show-desc."""
+        return ("show_desc", str(items[0]))
+
+    def stats_admin(self, items: list[Any]) -> tuple[str, str]:
+        """Transform stats admin with ACL condition."""
+        condition = None
+        if items[0] is not None:
+            if isinstance(items[0], tuple):
+                _, acl_name = items[0]
+                condition = f"if {acl_name}"
+            else:
+                condition = str(items[0])
+        return ("admin", condition or "")
 
     def frontend_capture_request_header(self, items: list[Any]) -> tuple[str, tuple[str, int]]:
         return ("capture_request_header", (items[0], items[1]))

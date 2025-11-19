@@ -577,6 +577,28 @@ class HAProxyCodeGenerator:
         if frontend.log_format:
             lines.append(self._indent(f"log-format {frontend.log_format}"))
 
+        # Stats configuration
+        if frontend.stats_config:
+            stats = frontend.stats_config
+            if stats.enable:
+                lines.append(self._indent("stats enable"))
+            if stats.uri:
+                lines.append(self._indent(f"stats uri {stats.uri}"))
+            if stats.realm:
+                lines.append(self._indent(f"stats realm {stats.realm}"))
+            for auth in stats.auth:
+                lines.append(self._indent(f"stats auth {auth}"))
+            if stats.hide_version:
+                lines.append(self._indent("stats hide-version"))
+            if stats.refresh:
+                lines.append(self._indent(f"stats refresh {stats.refresh}"))
+            if stats.show_legends:
+                lines.append(self._indent("stats show-legends"))
+            if stats.show_desc:
+                lines.append(self._indent(f"stats show-desc {stats.show_desc}"))
+            for admin_rule in stats.admin_rules:
+                lines.append(self._indent(f"stats admin {admin_rule}"))
+
         # Capture headers
         for header_name, length in frontend.capture_request_headers:
             lines.append(self._indent(f"capture request header {header_name} len {length}"))

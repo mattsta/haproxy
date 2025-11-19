@@ -293,6 +293,21 @@ class MonitorFailRule(IRNode):
 
 
 @dataclass(frozen=True)
+class StatsConfig(IRNode):
+    """Statistics reporting configuration."""
+
+    enable: bool = False  # Enable stats
+    uri: str | None = None  # Stats URI path
+    realm: str | None = None  # Authentication realm
+    auth: list[str] = field(default_factory=list)  # user:password pairs
+    hide_version: bool = False  # Hide HAProxy version
+    refresh: str | None = None  # Refresh interval
+    show_legends: bool = False  # Show legends
+    show_desc: str | None = None  # Description to show
+    admin_rules: list[str] = field(default_factory=list)  # Admin ACL conditions
+
+
+@dataclass(frozen=True)
 class GlobalConfig(IRNode):
     """Global configuration section."""
 
@@ -657,6 +672,7 @@ class Frontend(IRNode):
     log: list[str] = field(default_factory=list)  # Log targets (global or specific)
     log_tag: str | None = None  # Tag for log messages
     log_format: str | None = None  # Custom log format string
+    stats_config: StatsConfig | None = None  # Statistics reporting configuration
     capture_request_headers: list[tuple[str, int]] = field(default_factory=list)  # [(header_name, length), ...]
     capture_response_headers: list[tuple[str, int]] = field(default_factory=list)  # [(header_name, length), ...]
     redirect_rules: list[RedirectRule] = field(default_factory=list)  # HTTP redirect rules

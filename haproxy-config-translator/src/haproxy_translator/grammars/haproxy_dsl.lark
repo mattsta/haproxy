@@ -281,6 +281,7 @@ frontend_section: "frontend" identifier "{" frontend_property* "}"
                   | "log" ":" string                       -> frontend_log
                   | "log-tag" ":" string                   -> frontend_log_tag
                   | "log-format" ":" string                -> frontend_log_format
+                  | stats_block                            -> frontend_stats
                   | "capture" "request" "header" string number  -> frontend_capture_request_header
                   | "capture" "response" "header" string number -> frontend_capture_response_header
                   | redirect_rule                          -> frontend_redirect
@@ -305,6 +306,19 @@ redirect_rule: "redirect" redirect_type string redirect_options?
 
 // Error file directive
 errorfile_directive: "errorfile" number string
+
+// Stats block (proxy-level)
+stats_block: "stats" "{" proxy_stats_property* "}"
+
+?proxy_stats_property: "enable" ":" boolean                  -> stats_enable
+                     | "uri" ":" string                      -> stats_uri
+                     | "realm" ":" string                    -> stats_realm
+                     | "auth" ":" string                     -> stats_auth
+                     | "hide-version" ":" boolean            -> stats_hide_version
+                     | "refresh" ":" (number | duration)     -> stats_refresh
+                     | "show-legends" ":" boolean            -> stats_show_legends
+                     | "show-desc" ":" string                -> stats_show_desc
+                     | "admin" if_condition                  -> stats_admin
 
 bind_directive: "bind" bind_address bind_option*
 
