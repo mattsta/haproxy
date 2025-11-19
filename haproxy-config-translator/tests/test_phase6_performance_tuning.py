@@ -285,3 +285,122 @@ class TestPhase6PerformanceTuning:
         codegen = HAProxyCodeGenerator()
         output = codegen.generate(ir)
         assert "tune.max-rules-at-once 100" in output
+
+    def test_tune_disable_fast_forward(self):
+        """Test tune.disable-fast-forward directive."""
+        config = """
+        config test {
+            global {
+                tune.disable-fast-forward: true
+            }
+        }
+        """
+        parser = DSLParser()
+        ir = parser.parse(config)
+        assert ir.global_config.tuning.get("tune.disable-fast-forward") is True
+
+        codegen = HAProxyCodeGenerator()
+        output = codegen.generate(ir)
+        assert "tune.disable-fast-forward on" in output
+
+    def test_tune_disable_zero_copy_forwarding(self):
+        """Test tune.disable-zero-copy-forwarding directive."""
+        config = """
+        config test {
+            global {
+                tune.disable-zero-copy-forwarding: false
+            }
+        }
+        """
+        parser = DSLParser()
+        ir = parser.parse(config)
+        assert ir.global_config.tuning.get("tune.disable-zero-copy-forwarding") is False
+
+        codegen = HAProxyCodeGenerator()
+        output = codegen.generate(ir)
+        assert "tune.disable-zero-copy-forwarding off" in output
+
+    def test_tune_events_max_events_at_once(self):
+        """Test tune.events.max-events-at-once directive."""
+        config = """
+        config test {
+            global {
+                tune.events.max-events-at-once: 100
+            }
+        }
+        """
+        parser = DSLParser()
+        ir = parser.parse(config)
+        assert ir.global_config.tuning.get("tune.events.max-events-at-once") == 100
+
+        codegen = HAProxyCodeGenerator()
+        output = codegen.generate(ir)
+        assert "tune.events.max-events-at-once 100" in output
+
+    def test_tune_memory_hot_size(self):
+        """Test tune.memory.hot-size directive."""
+        config = """
+        config test {
+            global {
+                tune.memory.hot-size: 524288
+            }
+        }
+        """
+        parser = DSLParser()
+        ir = parser.parse(config)
+        assert ir.global_config.tuning.get("tune.memory.hot-size") == 524288
+
+        codegen = HAProxyCodeGenerator()
+        output = codegen.generate(ir)
+        assert "tune.memory.hot-size 524288" in output
+
+    def test_tune_peers_max_updates_at_once(self):
+        """Test tune.peers.max-updates-at-once directive."""
+        config = """
+        config test {
+            global {
+                tune.peers.max-updates-at-once: 200
+            }
+        }
+        """
+        parser = DSLParser()
+        ir = parser.parse(config)
+        assert ir.global_config.tuning.get("tune.peers.max-updates-at-once") == 200
+
+        codegen = HAProxyCodeGenerator()
+        output = codegen.generate(ir)
+        assert "tune.peers.max-updates-at-once 200" in output
+
+    def test_tune_ring_queues(self):
+        """Test tune.ring.queues directive."""
+        config = """
+        config test {
+            global {
+                tune.ring.queues: 16
+            }
+        }
+        """
+        parser = DSLParser()
+        ir = parser.parse(config)
+        assert ir.global_config.tuning.get("tune.ring.queues") == 16
+
+        codegen = HAProxyCodeGenerator()
+        output = codegen.generate(ir)
+        assert "tune.ring.queues 16" in output
+
+    def test_tune_applet_zero_copy_forwarding(self):
+        """Test tune.applet.zero-copy-forwarding directive."""
+        config = """
+        config test {
+            global {
+                tune.applet.zero-copy-forwarding: true
+            }
+        }
+        """
+        parser = DSLParser()
+        ir = parser.parse(config)
+        assert ir.global_config.tuning.get("tune.applet.zero-copy-forwarding") is True
+
+        codegen = HAProxyCodeGenerator()
+        output = codegen.generate(ir)
+        assert "tune.applet.zero-copy-forwarding on" in output

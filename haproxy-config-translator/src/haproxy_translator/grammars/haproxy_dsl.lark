@@ -129,7 +129,7 @@ global_section: "global" "{" global_property* "}"
                 | "tune.rcvbuf.server" ":" number         -> global_tune_rcvbuf_server
                 | "tune.sndbuf.client" ":" number         -> global_tune_sndbuf_client
                 | "tune.sndbuf.server" ":" number         -> global_tune_sndbuf_server
-                // Phase 6 - Performance Tuning (14 directives)
+                // Phase 6 - Performance Tuning (21 directives)
                 | "tune.rcvbuf.frontend" ":" number       -> global_tune_rcvbuf_frontend
                 | "tune.rcvbuf.backend" ":" number        -> global_tune_rcvbuf_backend
                 | "tune.sndbuf.frontend" ":" number       -> global_tune_sndbuf_frontend
@@ -144,6 +144,13 @@ global_section: "global" "{" global_property* "}"
                 | "tune.sched.low-latency" ":" boolean    -> global_tune_sched_low_latency
                 | "tune.max-checks-per-thread" ":" number -> global_tune_max_checks_per_thread
                 | "tune.max-rules-at-once" ":" number     -> global_tune_max_rules_at_once
+                | "tune.disable-fast-forward" ":" boolean -> global_tune_disable_fast_forward
+                | "tune.disable-zero-copy-forwarding" ":" boolean -> global_tune_disable_zero_copy_forwarding
+                | "tune.events.max-events-at-once" ":" number -> global_tune_events_max_events_at_once
+                | "tune.memory.hot-size" ":" number       -> global_tune_memory_hot_size
+                | "tune.peers.max-updates-at-once" ":" number -> global_tune_peers_max_updates_at_once
+                | "tune.ring.queues" ":" number           -> global_tune_ring_queues
+                | "tune.applet.zero-copy-forwarding" ":" boolean -> global_tune_applet_zero_copy_forwarding
                 // Phase 4B Part 1 - HTTP Client Configuration (6 directives)
                 | "httpclient.resolvers.disabled" ":" boolean     -> global_httpclient_resolvers_disabled
                 | "httpclient.resolvers.id" ":" string            -> global_httpclient_resolvers_id

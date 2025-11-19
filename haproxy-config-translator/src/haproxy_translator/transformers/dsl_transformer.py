@@ -499,6 +499,9 @@ class DSLTransformer(Transformer):
                         elif len(parts) >= 3 and parts[1] == "max":
                             # tune_max_checks_per_thread, tune_max_rules_at_once
                             tune_key = f"tune.{'-'.join(parts[1:])}"
+                        elif len(parts) >= 3 and parts[1] == "disable":
+                            # tune_disable_fast_forward, tune_disable_zero_copy_forwarding
+                            tune_key = f"tune.{'-'.join(parts[1:])}"
                         else:
                             category = parts[1]
                             directive_parts = parts[2:]
@@ -1000,6 +1003,27 @@ class DSLTransformer(Transformer):
 
     def global_tune_max_rules_at_once(self, items: list[Any]) -> tuple[str, int]:
         return ("tune_max_rules_at_once", items[0])
+
+    def global_tune_disable_fast_forward(self, items: list[Any]) -> tuple[str, bool]:
+        return ("tune_disable_fast_forward", items[0])
+
+    def global_tune_disable_zero_copy_forwarding(self, items: list[Any]) -> tuple[str, bool]:
+        return ("tune_disable_zero_copy_forwarding", items[0])
+
+    def global_tune_events_max_events_at_once(self, items: list[Any]) -> tuple[str, int]:
+        return ("tune_events_max_events_at_once", items[0])
+
+    def global_tune_memory_hot_size(self, items: list[Any]) -> tuple[str, int]:
+        return ("tune_memory_hot_size", items[0])
+
+    def global_tune_peers_max_updates_at_once(self, items: list[Any]) -> tuple[str, int]:
+        return ("tune_peers_max_updates_at_once", items[0])
+
+    def global_tune_ring_queues(self, items: list[Any]) -> tuple[str, int]:
+        return ("tune_ring_queues", items[0])
+
+    def global_tune_applet_zero_copy_forwarding(self, items: list[Any]) -> tuple[str, bool]:
+        return ("tune_applet_zero_copy_forwarding", items[0])
 
     # Phase 4B Part 1 - HTTP Client Configuration directives
     def global_httpclient_resolvers_disabled(self, items: list[Any]) -> tuple[str, bool]:

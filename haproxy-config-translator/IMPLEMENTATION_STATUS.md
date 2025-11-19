@@ -6,7 +6,7 @@
 ## Current Status
 
 ### Tests & Code Quality ✅
-- **Tests:** 904 passing, 0 skipped, 0 failures
+- **Tests:** 911 passing, 0 skipped, 0 failures
 - **Test Coverage:** ~95%
 - **Mypy:** 0 errors (100% type safe)
 - **Ruff:** 27 minor style warnings (non-blocking, only in existing code)
@@ -16,9 +16,9 @@
 
 #### Global Directives
 - **Total HAProxy Directives:** 172
-- **Implemented:** 93
-- **Coverage:** 54.1%
-- **Missing:** 79 directives
+- **Implemented:** 100
+- **Coverage:** 58.1%
+- **Missing:** 72 directives
 
 #### Proxy Keywords (Frontend/Backend/Listen/Defaults)
 - **Total HAProxy Keywords:** 89
@@ -65,8 +65,15 @@
 12. ✅ **tune.sched.low-latency** - Low latency scheduling
 13. ✅ **tune.max-checks-per-thread** - Max health checks per thread
 14. ✅ **tune.max-rules-at-once** - Max rules to process at once
+15. ✅ **tune.disable-fast-forward** - Disable fast-forward optimization
+16. ✅ **tune.disable-zero-copy-forwarding** - Disable zero-copy forwarding
+17. ✅ **tune.events.max-events-at-once** - Max events to process at once
+18. ✅ **tune.memory.hot-size** - Hot memory size
+19. ✅ **tune.peers.max-updates-at-once** - Max peer updates at once
+20. ✅ **tune.ring.queues** - Number of ring queues
+21. ✅ **tune.applet.zero-copy-forwarding** - Applet zero-copy forwarding
 
-**Phase 6 Results:** +15 tests (889 → 904), 14 new global directives, 0 failures
+**Phase 6 Results:** +22 tests (889 → 911), 21 new global directives, 0 failures
 
 ### Features Implemented (Previous Sessions)
 1. ✅ **Phases 1-3:** Core directives, SSL/TLS, HTTP/2, system integration
@@ -135,10 +142,17 @@ Implement missing tune.* directives:
 10. ✅ **tune.sched.low-latency** - Low latency scheduling (IMPLEMENTED)
 11. ✅ **tune.max-checks-per-thread** - Max health checks per thread (IMPLEMENTED)
 12. ✅ **tune.max-rules-at-once** - Max rules to process at once (IMPLEMENTED)
-13. +23 more tune.* directives ❌ PENDING
+13. ✅ **tune.disable-fast-forward** - Disable fast-forward optimization (IMPLEMENTED)
+14. ✅ **tune.disable-zero-copy-forwarding** - Disable zero-copy forwarding (IMPLEMENTED)
+15. ✅ **tune.events.max-events-at-once** - Max events to process at once (IMPLEMENTED)
+16. ✅ **tune.memory.hot-size** - Hot memory size (IMPLEMENTED)
+17. ✅ **tune.peers.max-updates-at-once** - Max peer updates at once (IMPLEMENTED)
+18. ✅ **tune.ring.queues** - Number of ring queues (IMPLEMENTED)
+19. ✅ **tune.applet.zero-copy-forwarding** - Applet zero-copy forwarding (IMPLEMENTED)
+20. +16 more tune.* directives ❌ PENDING
 
-**Phase 6 Progress:** 14/37 directives implemented (38%)
-**Estimated Impact:** +23 global directives remaining
+**Phase 6 Progress:** 21/37 directives implemented (57%)
+**Estimated Impact:** +16 global directives remaining
 
 ### Priority 4: Debugging & Development (Phase 7)
 Implement debugging directives:
