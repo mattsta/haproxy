@@ -22,6 +22,7 @@ from ..ir.nodes import (
     HttpError,
     HttpRequestRule,
     HttpResponseRule,
+    HttpAfterResponseRule,
     Listen,
     LogFacility,
     LogLevel,
@@ -1518,6 +1519,7 @@ class DSLTransformer(Transformer):
         acls = []
         http_request_rules = []
         http_response_rules = []
+        http_after_response_rules = []
         tcp_request_rules = []
         tcp_response_rules = []
         use_backend_rules = []
@@ -1579,6 +1581,10 @@ class DSLTransformer(Transformer):
                 http_response_rules.append(prop)
             elif isinstance(prop, list) and all(isinstance(x, HttpResponseRule) for x in prop):
                 http_response_rules.extend(prop)
+            elif isinstance(prop, HttpAfterResponseRule):
+                http_after_response_rules.append(prop)
+            elif isinstance(prop, list) and all(isinstance(x, HttpAfterResponseRule) for x in prop):
+                http_after_response_rules.extend(prop)
             elif isinstance(prop, TcpRequestRule):
                 tcp_request_rules.append(prop)
             elif isinstance(prop, list) and all(isinstance(x, TcpRequestRule) for x in prop):
@@ -1684,6 +1690,7 @@ class DSLTransformer(Transformer):
             acls=acls,
             http_request_rules=http_request_rules,
             http_response_rules=http_response_rules,
+            http_after_response_rules=http_after_response_rules,
             tcp_request_rules=tcp_request_rules,
             tcp_response_rules=tcp_response_rules,
             use_backend_rules=use_backend_rules,
@@ -2429,6 +2436,27 @@ class DSLTransformer(Transformer):
 
         return HttpResponseRule(action=action, parameters=parameters, condition=condition)
 
+    def http_after_response_block(self, items: list[Any]) -> list[HttpAfterResponseRule]:
+        return items
+
+    def http_after_response_rule(self, items: list[Any]) -> HttpAfterResponseRule:
+        # items[0] is the tuple from action_expr: (action_name, parameters)
+        # items[1] (if present) is the condition
+        action_data = items[0]
+
+        if isinstance(action_data, tuple):
+            action, parameters = action_data
+        else:
+            # Fallback for old format
+            action = str(action_data)
+            parameters = {}
+
+        condition = None
+        if len(items) > 1 and isinstance(items[1], tuple) and items[1][0] == "condition":
+            condition = items[1][1]
+
+        return HttpAfterResponseRule(action=action, parameters=parameters, condition=condition)
+
     def action_expr(self, items: list[Any]) -> tuple[str, dict[str, Any]]:
         """Transform action expression with action name and parameters."""
         action_name = str(items[0])
@@ -2510,6 +2538,7 @@ class DSLTransformer(Transformer):
         options = []
         http_request_rules = []
         http_response_rules = []
+        http_after_response_rules = []
         tcp_request_rules = []
         tcp_response_rules = []
         compression = None
@@ -2590,6 +2619,8 @@ class DSLTransformer(Transformer):
                         http_request_rules.append(item)
                     elif isinstance(item, HttpResponseRule):
                         http_response_rules.append(item)
+                    elif isinstance(item, HttpAfterResponseRule):
+                        http_after_response_rules.append(item)
                     elif isinstance(item, TcpRequestRule):
                         tcp_request_rules.append(item)
                     elif isinstance(item, TcpResponseRule):
@@ -2608,6 +2639,10 @@ class DSLTransformer(Transformer):
                 compression = prop
             elif isinstance(prop, list) and all(isinstance(x, HttpRequestRule) for x in prop):
                 http_request_rules.extend(prop)
+            elif isinstance(prop, list) and all(isinstance(x, HttpResponseRule) for x in prop):
+                http_response_rules.extend(prop)
+            elif isinstance(prop, list) and all(isinstance(x, HttpAfterResponseRule) for x in prop):
+                http_after_response_rules.extend(prop)
             elif isinstance(prop, tuple):
                 key, value = prop
                 if key == "mode":
@@ -2717,6 +2752,7 @@ class DSLTransformer(Transformer):
             options=options,
             http_request_rules=http_request_rules,
             http_response_rules=http_response_rules,
+            http_after_response_rules=http_after_response_rules,
             tcp_request_rules=tcp_request_rules,
             tcp_response_rules=tcp_response_rules,
             compression=compression,
@@ -3059,6 +3095,9 @@ class DSLTransformer(Transformer):
         servers = []
         server_loops = []
         acls = []
+        http_request_rules = []
+        http_response_rules = []
+        http_after_response_rules = []
         options = []
         timeout_client = None
         timeout_server = None
@@ -3092,6 +3131,12 @@ class DSLTransformer(Transformer):
                             server_loops.append(item)
                         elif isinstance(item, ACL):
                             acls.append(item)
+                        elif isinstance(item, HttpRequestRule):
+                            http_request_rules.append(item)
+                        elif isinstance(item, HttpResponseRule):
+                            http_response_rules.append(item)
+                        elif isinstance(item, HttpAfterResponseRule):
+                            http_after_response_rules.append(item)
             elif isinstance(prop, Server):
                 servers.append(prop)
             elif isinstance(prop, ForLoop):
@@ -3170,6 +3215,9 @@ class DSLTransformer(Transformer):
             balance=balance,
             servers=servers,
             acls=acls,
+            http_request_rules=http_request_rules,
+            http_response_rules=http_response_rules,
+            http_after_response_rules=http_after_response_rules,
             options=options,
             load_server_state_from=load_server_state_from,
             server_state_file_name=server_state_file_name,

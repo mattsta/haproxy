@@ -269,6 +269,7 @@ frontend_section: "frontend" identifier "{" frontend_property* "}"
                   | use_acl_directive
                   | http_request_block
                   | http_response_block
+                  | http_after_response_block
                   | tcp_request_block
                   | tcp_response_block
                   | stick_table_block
@@ -380,9 +381,11 @@ use_acl_directive: "use" "acl" ":" identifier_array
 
 http_request_block: "http-request" "{" http_request_rule* "}"
 http_response_block: "http-response" "{" http_response_rule* "}"
+http_after_response_block: "http-after-response" "{" http_after_response_rule* "}"
 
 http_request_rule: action_expr if_condition?
 http_response_rule: action_expr if_condition?
+http_after_response_rule: action_expr if_condition?
 
 action_expr: action_name http_rule_params*
 
@@ -491,6 +494,7 @@ backend_section: "backend" identifier "{" backend_property* "}"
                  | compression_block                        -> backend_compression
                  | http_request_block                       -> backend_http_request
                  | http_response_block                      -> backend_http_response
+                 | http_after_response_block                -> backend_http_after_response
                  | tcp_request_block                        -> backend_tcp_request
                  | tcp_response_block                       -> backend_tcp_response
                  | stick_table_block                        -> backend_stick_table
@@ -758,6 +762,9 @@ listen_section: "listen" identifier "{" listen_property* "}"
                 | "log-format" ":" string                -> listen_log_format
                 | "error-log-format" ":" string          -> listen_error_log_format
                 | "log-format-sd" ":" string             -> listen_log_format_sd
+                | http_request_block                     -> listen_http_request
+                | http_response_block                    -> listen_http_response
+                | http_after_response_block              -> listen_http_after_response
                 | http_error_block                         -> listen_http_error
 
 // ===== Stats Socket =====

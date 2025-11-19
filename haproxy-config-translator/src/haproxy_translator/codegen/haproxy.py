@@ -17,6 +17,7 @@ from ..ir.nodes import (
     HttpError,
     HttpRequestRule,
     HttpResponseRule,
+    HttpAfterResponseRule,
     Listen,
     MailersSection,
     PeersSection,
@@ -679,6 +680,10 @@ class HAProxyCodeGenerator:
         for resp_rule in frontend.http_response_rules:
             lines.append(self._indent(self._format_http_response_rule(resp_rule)))
 
+        # HTTP after-response rules
+        for after_resp_rule in frontend.http_after_response_rules:
+            lines.append(self._indent(self._format_http_after_response_rule(after_resp_rule)))
+
         # Redirect rules
         for redirect in frontend.redirect_rules:
             lines.append(self._indent(self._format_redirect_rule(redirect)))
@@ -854,6 +859,10 @@ class HAProxyCodeGenerator:
         for resp_rule in backend.http_response_rules:
             lines.append(self._indent(self._format_http_response_rule(resp_rule)))
 
+        # HTTP after-response rules
+        for after_resp_rule in backend.http_after_response_rules:
+            lines.append(self._indent(self._format_http_after_response_rule(after_resp_rule)))
+
         # Redirect rules
         for redirect in backend.redirect_rules:
             lines.append(self._indent(self._format_redirect_rule(redirect)))
@@ -1003,6 +1012,18 @@ class HAProxyCodeGenerator:
         for option in listen.options:
             lines.append(self._indent(f"option {option}"))
 
+        # HTTP request rules
+        for req_rule in listen.http_request_rules:
+            lines.append(self._indent(self._format_http_request_rule(req_rule)))
+
+        # HTTP response rules
+        for resp_rule in listen.http_response_rules:
+            lines.append(self._indent(self._format_http_response_rule(resp_rule)))
+
+        # HTTP after-response rules
+        for after_resp_rule in listen.http_after_response_rules:
+            lines.append(self._indent(self._format_http_after_response_rule(after_resp_rule)))
+
         # HTTP error responses
         for http_error in listen.http_errors:
             lines.append(self._indent(self._format_http_error(http_error)))
@@ -1102,6 +1123,26 @@ class HAProxyCodeGenerator:
         # Convert underscores to hyphens in action name for HAProxy syntax
         haproxy_action = rule.action.replace("_", "-")
         parts = [f"http-response {haproxy_action}"]
+
+        for key, value in rule.parameters.items():
+            # Convert underscores to hyphens for HAProxy syntax
+            haproxy_key = key.replace("_", "-")
+
+            if isinstance(value, str) and " " in value:
+                parts.append(f'{haproxy_key} "{value}"')
+            else:
+                parts.append(f"{haproxy_key} {value}")
+
+        if rule.condition:
+            parts.append(f"if {rule.condition}")
+
+        return " ".join(parts)
+
+    def _format_http_after_response_rule(self, rule: HttpAfterResponseRule) -> str:
+        """Format HTTP after-response rule."""
+        # Convert underscores to hyphens in action name for HAProxy syntax
+        haproxy_action = rule.action.replace("_", "-")
+        parts = [f"http-after-response {haproxy_action}"]
 
         for key, value in rule.parameters.items():
             # Convert underscores to hyphens for HAProxy syntax

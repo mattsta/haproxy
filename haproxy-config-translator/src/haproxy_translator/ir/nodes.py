@@ -528,6 +528,15 @@ class HttpResponseRule(IRNode):
 
 
 @dataclass(frozen=True)
+class HttpAfterResponseRule(IRNode):
+    """HTTP after-response rule (response manipulation after headers received)."""
+
+    action: str = ""
+    condition: str | None = None
+    parameters: dict[str, Any] = field(default_factory=dict)
+
+
+@dataclass(frozen=True)
 class Bind(IRNode):
     """Bind directive."""
 
@@ -674,6 +683,7 @@ class Frontend(IRNode):
     acls: list[ACL] = field(default_factory=list)
     http_request_rules: list[HttpRequestRule] = field(default_factory=list)
     http_response_rules: list[HttpResponseRule] = field(default_factory=list)
+    http_after_response_rules: list[HttpAfterResponseRule] = field(default_factory=list)
     tcp_request_rules: list["TcpRequestRule"] = field(default_factory=list)
     tcp_response_rules: list["TcpResponseRule"] = field(default_factory=list)
     use_backend_rules: list[UseBackendRule] = field(default_factory=list)
@@ -731,6 +741,7 @@ class Backend(IRNode):
     options: list[str] = field(default_factory=list)
     http_request_rules: list[HttpRequestRule] = field(default_factory=list)
     http_response_rules: list[HttpResponseRule] = field(default_factory=list)
+    http_after_response_rules: list[HttpAfterResponseRule] = field(default_factory=list)
     tcp_request_rules: list["TcpRequestRule"] = field(default_factory=list)
     log: list[str] = field(default_factory=list)  # Log targets (global or specific)
     log_tag: str | None = None  # Tag for log messages
@@ -793,6 +804,7 @@ class Listen(IRNode):
     acls: list[ACL] = field(default_factory=list)
     http_request_rules: list[HttpRequestRule] = field(default_factory=list)
     http_response_rules: list[HttpResponseRule] = field(default_factory=list)
+    http_after_response_rules: list[HttpAfterResponseRule] = field(default_factory=list)
     tcp_request_rules: list["TcpRequestRule"] = field(default_factory=list)
     tcp_response_rules: list["TcpResponseRule"] = field(default_factory=list)
     options: list[str] = field(default_factory=list)
