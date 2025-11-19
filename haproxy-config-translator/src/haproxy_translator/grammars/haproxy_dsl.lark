@@ -287,7 +287,7 @@ redirect_rule: "redirect" redirect_type string redirect_options?
 
 ?redirect_type: "location"     -> redirect_location
               | "prefix"       -> redirect_prefix
-              | "scheme" string -> redirect_scheme
+              | "scheme"       -> redirect_scheme
 
 ?redirect_options: redirect_option+
 
@@ -451,7 +451,12 @@ backend_section: "backend" identifier "{" backend_property* "}"
                  | "http-reuse" ":" http_reuse_mode         -> backend_http_reuse
                  | "source" ":" string                      -> backend_source
 
-?http_reuse_mode: "never" | "safe" | "aggressive" | "always"
+?http_reuse_mode: HTTP_REUSE_NEVER | HTTP_REUSE_SAFE | HTTP_REUSE_AGGRESSIVE | HTTP_REUSE_ALWAYS
+
+HTTP_REUSE_NEVER: "never"
+HTTP_REUSE_SAFE: "safe"
+HTTP_REUSE_AGGRESSIVE: "aggressive"
+HTTP_REUSE_ALWAYS: "always"
 
 balance_algo: BALANCE_ROUNDROBIN | BALANCE_LEASTCONN | BALANCE_SOURCE | BALANCE_URI | BALANCE_URL_PARAM | BALANCE_RANDOM | BALANCE_STATIC_RR | BALANCE_FIRST | BALANCE_HDR | BALANCE_RDP_COOKIE
 

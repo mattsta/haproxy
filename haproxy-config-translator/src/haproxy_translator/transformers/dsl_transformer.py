@@ -1507,12 +1507,18 @@ class DSLTransformer(Transformer):
         log_format = None
         capture_request_headers = []
         capture_response_headers = []
+        redirect_rules = []
+        error_files = []
 
         for prop in properties:
             if isinstance(prop, Bind):
                 binds.append(prop)
             elif isinstance(prop, ACL):
                 acls.append(prop)
+            elif isinstance(prop, RedirectRule):
+                redirect_rules.append(prop)
+            elif isinstance(prop, ErrorFile):
+                error_files.append(prop)
             elif isinstance(prop, list) and all(isinstance(x, ACL) for x in prop):
                 acls.extend(prop)
             elif isinstance(prop, HttpRequestRule):
@@ -1604,6 +1610,8 @@ class DSLTransformer(Transformer):
             log_format=log_format,
             capture_request_headers=capture_request_headers,
             capture_response_headers=capture_response_headers,
+            redirect_rules=redirect_rules,
+            error_files=error_files,
         )
 
     def frontend_mode(self, items: list[Any]) -> tuple[str, str]:
@@ -1722,8 +1730,12 @@ class DSLTransformer(Transformer):
         return ErrorFile(code=code, file=file)
 
     # ===== HTTP Reuse =====
+    def http_reuse_mode(self, items: list[Token]) -> str:
+        """Extract http-reuse mode string from grammar alternatives."""
+        return str(items[0]) if items else "safe"
+
     def backend_http_reuse(self, items: list[Any]) -> tuple[str, str]:
-        return ("http_reuse", str(items[0]))
+        return ("http_reuse", items[0])
 
     def backend_source(self, items: list[Any]) -> tuple[str, str]:
         return ("source", str(items[0]))
@@ -1902,6 +1914,11 @@ class DSLTransformer(Transformer):
         timeout_server_fin = None
         retries = None
         log_format = None
+        redirect_rules = []
+        error_files = []
+        http_reuse = None
+        http_check_rules = []
+        source = None
 
         for prop in properties:
             if isinstance(prop, Server):
@@ -1912,6 +1929,12 @@ class DSLTransformer(Transformer):
                 default_server = prop
             elif isinstance(prop, ACL):
                 acls.append(prop)
+            elif isinstance(prop, RedirectRule):
+                redirect_rules.append(prop)
+            elif isinstance(prop, ErrorFile):
+                error_files.append(prop)
+            elif isinstance(prop, HttpCheckRule):
+                http_check_rules.append(prop)
             elif isinstance(prop, StickTable):
                 stick_table = prop
             elif isinstance(prop, StickRule):
@@ -1966,6 +1989,10 @@ class DSLTransformer(Transformer):
                     retries = value
                 elif key == "log_format":
                     log_format = value
+                elif key == "http_reuse":
+                    http_reuse = value
+                elif key == "source":
+                    source = value
 
         # Build metadata with server loops if any
         metadata = {}
@@ -1997,6 +2024,11 @@ class DSLTransformer(Transformer):
             timeout_server_fin=timeout_server_fin,
             retries=retries,
             log_format=log_format,
+            redirect_rules=redirect_rules,
+            error_files=error_files,
+            http_reuse=http_reuse,
+            http_check_rules=http_check_rules,
+            source=source,
             metadata=metadata,
         )
 

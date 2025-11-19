@@ -597,6 +597,14 @@ class HAProxyCodeGenerator:
         for resp_rule in frontend.http_response_rules:
             lines.append(self._indent(self._format_http_response_rule(resp_rule)))
 
+        # Redirect rules
+        for redirect in frontend.redirect_rules:
+            lines.append(self._indent(self._format_redirect_rule(redirect)))
+
+        # Error files
+        for error_file in frontend.error_files:
+            lines.append(self._indent(f"errorfile {error_file.code} {error_file.file}"))
+
         # Use backend rules
         for backend_rule in frontend.use_backend_rules:
             use_line = f"use_backend {backend_rule.backend}"
@@ -687,6 +695,22 @@ class HAProxyCodeGenerator:
         # HTTP response rules
         for resp_rule in backend.http_response_rules:
             lines.append(self._indent(self._format_http_response_rule(resp_rule)))
+
+        # Redirect rules
+        for redirect in backend.redirect_rules:
+            lines.append(self._indent(self._format_redirect_rule(redirect)))
+
+        # Error files
+        for error_file in backend.error_files:
+            lines.append(self._indent(f"errorfile {error_file.code} {error_file.file}"))
+
+        # HTTP reuse (connection pooling)
+        if backend.http_reuse:
+            lines.append(self._indent(f"http-reuse {backend.http_reuse}"))
+
+        # Source IP binding
+        if backend.source:
+            lines.append(self._indent(f"source {backend.source}"))
 
         # Compression
         if backend.compression:
@@ -838,6 +862,36 @@ class HAProxyCodeGenerator:
 
         if rule.condition:
             parts.append(f"if {rule.condition}")
+
+        return " ".join(parts)
+
+    def _format_redirect_rule(self, redirect: "RedirectRule") -> str:
+        """Format redirect rule."""
+        parts = [f"redirect {redirect.type}"]
+
+        # Add target
+        # Handle scheme redirect which has type as part of directive
+        if redirect.type == "scheme":
+            parts.append(redirect.target)
+        else:
+            # For location and prefix, add the target URL/path
+            parts.append(redirect.target)
+
+        # Add optional code
+        if redirect.code:
+            parts.append(f"code {redirect.code}")
+
+        # Add options
+        for key, value in redirect.options.items():
+            if key in ("drop-query", "append-slash"):
+                if value:  # Only add if True
+                    parts.append(key)
+            elif key in ("set-cookie", "clear-cookie"):
+                parts.append(f"{key} {value}")
+
+        # Add condition
+        if redirect.condition:
+            parts.append(redirect.condition)
 
         return " ".join(parts)
 

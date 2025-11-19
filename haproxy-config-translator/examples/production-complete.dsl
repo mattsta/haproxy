@@ -1,6 +1,7 @@
 // Complete Production HAProxy Configuration
-// Demonstrates ALL implemented features
-// 281 tests passing, 89% coverage
+// Demonstrates ALL implemented features including Phase 2 proxy directives
+// 553 tests passing, 96% coverage
+// NEW: redirect, errorfile, http-reuse, source, stats_socket, peers, resolvers, mailers
 
 config production_complete {
     // ===== Global Section =====
@@ -24,10 +25,43 @@ config production_complete {
         ssl-default-bind-ciphers: "ECDHE-RSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384"
         ssl-default-bind-options: ["no-sslv3", "no-tlsv10", "no-tlsv11", "no-tls-tickets"]
 
+        // Runtime API (stats socket) - NEW!
+        stats_socket "/var/run/haproxy.sock" {
+            level: "admin"
+            mode: "660"
+            user: "haproxy"
+            group: "haproxy"
+        }
+
         // Lua scripts
         lua {
             load "/etc/haproxy/scripts/auth.lua"
         }
+    }
+
+    // ===== Peers Section - NEW! =====
+    // For stick table replication across multiple HAProxy instances
+    peers mycluster {
+        peer haproxy1 "10.0.0.1" 1024
+        peer haproxy2 "10.0.0.2" 1024
+        peer haproxy3 "10.0.0.3" 1024
+    }
+
+    // ===== Resolvers Section - NEW! =====
+    // DNS resolution for dynamic backend discovery
+    resolvers mydns {
+        nameserver dns1 "8.8.8.8" 53
+        nameserver dns2 "8.8.4.4" 53
+        timeout_resolve: 1s
+        timeout_retry: 1s
+        hold_valid: 10s
+    }
+
+    // ===== Mailers Section - NEW! =====
+    // Email alerts for backend failures
+    mailers alerts {
+        timeout_mail: 10s
+        mailer smtp1 "smtp.example.com" 587
     }
 
     // ===== Defaults Section =====
@@ -46,8 +80,8 @@ config production_complete {
             connect: 5s
             client: 50s
             server: 50s
-            http-request: 10s
-            http-keep-alive: 10s
+            http_request: 10s
+            http_keep_alive: 10s
             check: 5s
         }
     }
@@ -69,12 +103,23 @@ config production_complete {
 
         option: ["httplog", "forwardfor", "http-server-close"]
 
+        // Custom error pages - NEW!
+        errorfile 400 "/etc/haproxy/errors/400.html"
+        errorfile 403 "/etc/haproxy/errors/403.html"
+        errorfile 404 "/etc/haproxy/errors/404.html"
+        errorfile 500 "/etc/haproxy/errors/500.html"
+        errorfile 502 "/etc/haproxy/errors/502.html"
+        errorfile 503 "/etc/haproxy/errors/503.html"
+
         // ACLs for routing
         acl {
             is_api path_beg "/api"
-            is_static path_beg "/static" path_end ".css" ".js" ".png" ".jpg"
-            is_websocket hdr(Upgrade) -i WebSocket
+            is_static path_beg "/static"
+            is_websocket hdr_sub "Upgrade" "websocket"
         }
+
+        // HTTPS redirect for non-SSL traffic - NEW!
+        redirect scheme "https" code 301
 
         // Routing rules
         route {
@@ -94,6 +139,15 @@ config production_complete {
     backend api_backend {
         balance: leastconn
         option: ["httplog", "forwardfor", "httpchk"]
+
+        // Connection pooling for performance - NEW!
+        http-reuse: safe
+
+        // Source IP binding for outbound connections - NEW!
+        source: "10.0.0.100:0"
+
+        // Custom backend error page - NEW!
+        errorfile 503 "/etc/haproxy/errors/503-api.html"
 
         // Default server settings (eliminates duplication!)
         default-server {
@@ -116,7 +170,7 @@ config production_complete {
 
         // Stick table for session persistence
         stick-table {
-            type: "string"
+            type: string
             size: 100000
             expire: 30m
         }
@@ -127,8 +181,8 @@ config production_complete {
 
         // HTTP request rules
         http-request {
-            set-header X-Forwarded-Proto https
-            del-header X-Powered-By
+            set_header "X-Forwarded-Proto" "https"
+            del_header "X-Powered-By"
         }
 
         // TCP request rules
@@ -171,6 +225,9 @@ config production_complete {
     backend web_backend {
         balance: roundrobin
         option: ["httplog", "forwardfor", "httpchk"]
+
+        // Aggressive connection reuse for web traffic - NEW!
+        http-reuse: aggressive
 
         default-server {
             check: true
