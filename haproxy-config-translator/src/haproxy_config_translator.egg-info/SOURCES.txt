@@ -48,6 +48,7 @@ tests/test_errorfiles.py
 tests/test_external_check.py
 tests/test_final_100_percent_coverage.py
 tests/test_guid.py
+tests/test_hash_preserve_affinity.py
 tests/test_http_after_response.py
 tests/test_http_error.py
 tests/test_http_resilience.py
@@ -59,7 +60,9 @@ tests/test_monitoring.py
 tests/test_persist_directives.py
 tests/test_phase5a_errorloc.py
 tests/test_phase5a_logging.py
+tests/test_phase6_performance_tuning.py
 tests/test_proxy_directives.py
+tests/test_rate_limit_sessions.py
 tests/test_server_state_file_name.py
 tests/test_stats.py
 tests/test_tcp_keepalive.py
