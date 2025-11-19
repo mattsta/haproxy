@@ -14,6 +14,7 @@ from ..ir.nodes import (
     GlobalConfig,
     HealthCheck,
     HttpCheckRule,
+    HttpError,
     HttpRequestRule,
     HttpResponseRule,
     Listen,
@@ -686,6 +687,10 @@ class HAProxyCodeGenerator:
         for error_file in frontend.error_files:
             lines.append(self._indent(f"errorfile {error_file.code} {error_file.file}"))
 
+        # HTTP error responses
+        for http_error in frontend.http_errors:
+            lines.append(self._indent(self._format_http_error(http_error)))
+
         # Error location redirects
         for code, location in frontend.errorloc.items():
             lines.append(self._indent(f'errorloc {code} "{location}"'))
@@ -857,6 +862,10 @@ class HAProxyCodeGenerator:
         for error_file in backend.error_files:
             lines.append(self._indent(f"errorfile {error_file.code} {error_file.file}"))
 
+        # HTTP error responses
+        for http_error in backend.http_errors:
+            lines.append(self._indent(self._format_http_error(http_error)))
+
         # Error location redirects
         for code, location in backend.errorloc.items():
             lines.append(self._indent(f'errorloc {code} "{location}"'))
@@ -993,6 +1002,10 @@ class HAProxyCodeGenerator:
         # Options
         for option in listen.options:
             lines.append(self._indent(f"option {option}"))
+
+        # HTTP error responses
+        for http_error in listen.http_errors:
+            lines.append(self._indent(self._format_http_error(http_error)))
 
         # Servers
         for server in listen.servers:
@@ -1131,6 +1144,36 @@ class HAProxyCodeGenerator:
         # Add condition
         if redirect.condition:
             parts.append(redirect.condition)
+
+        return " ".join(parts)
+
+    def _format_http_error(self, http_error: "HttpError") -> str:
+        """Format http-error directive."""
+        parts = [f"http-error status {http_error.status}"]
+
+        # Add optional content-type
+        if http_error.content_type:
+            parts.append(f"content-type {http_error.content_type}")
+
+        # Add body source (exactly one should be set)
+        if http_error.default_errorfiles:
+            parts.append("default-errorfiles")
+        elif http_error.errorfile:
+            parts.append(f"errorfile {http_error.errorfile}")
+        elif http_error.errorfiles_name:
+            parts.append(f"errorfiles {http_error.errorfiles_name}")
+        elif http_error.file:
+            parts.append(f"file {http_error.file}")
+        elif http_error.lf_file:
+            parts.append(f"lf-file {http_error.lf_file}")
+        elif http_error.string:
+            # Escape quotes in the string
+            escaped_string = http_error.string.replace('"', '\\"')
+            parts.append(f'string "{escaped_string}"')
+        elif http_error.lf_string:
+            # Escape quotes in the string
+            escaped_string = http_error.lf_string.replace('"', '\\"')
+            parts.append(f'lf-string "{escaped_string}"')
 
         return " ".join(parts)
 

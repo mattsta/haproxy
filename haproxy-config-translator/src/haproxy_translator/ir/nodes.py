@@ -800,6 +800,7 @@ class Listen(IRNode):
     stick_rules: list["StickRule"] = field(default_factory=list)
     redirect_rules: list[RedirectRule] = field(default_factory=list)  # HTTP redirect rules
     error_files: list[ErrorFile] = field(default_factory=list)  # Custom error page files
+    http_errors: list[HttpError] = field(default_factory=list)  # Custom HTTP error responses
     health_check: HealthCheck | None = None
     timeout_client: str | None = None
     timeout_server: str | None = None

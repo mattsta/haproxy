@@ -19,6 +19,7 @@ from ..ir.nodes import (
     GlobalConfig,
     HealthCheck,
     HttpCheckRule,
+    HttpError,
     HttpRequestRule,
     HttpResponseRule,
     Listen,
@@ -2219,7 +2220,7 @@ class DSLTransformer(Transformer):
         lf_file = None
         string = None
         lf_string = None
-        headers = {}
+        headers: dict[str, str] = {}
 
         for prop in items:
             if isinstance(prop, tuple):
@@ -3070,6 +3071,7 @@ class DSLTransformer(Transformer):
         log_format = None
         error_log_format = None
         log_format_sd = None
+        http_errors = []
 
         for prop in properties:
             if isinstance(prop, Bind):
@@ -3096,6 +3098,8 @@ class DSLTransformer(Transformer):
                 server_loops.append(prop)
             elif isinstance(prop, HealthCheck):
                 health_check = prop
+            elif isinstance(prop, HttpError):
+                http_errors.append(prop)
             elif isinstance(prop, tuple):
                 key, value = prop
                 if key == "mode":
@@ -3173,6 +3177,7 @@ class DSLTransformer(Transformer):
             log_format=log_format,
             error_log_format=error_log_format,
             log_format_sd=log_format_sd,
+            http_errors=http_errors,
             metadata=metadata,
         )
 
