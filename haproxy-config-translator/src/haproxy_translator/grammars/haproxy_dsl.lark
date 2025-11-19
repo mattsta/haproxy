@@ -503,6 +503,8 @@ backend_section: "backend" identifier "{" backend_property* "}"
                  | "http-send-name-header" ":" string      -> backend_http_send_name_header
                  | "retry-on" ":" string                   -> backend_retry_on
                  | "source" ":" string                      -> backend_source
+                 | "external-check" "command" ":" string   -> backend_external_check_command
+                 | "external-check" "path" ":" string      -> backend_external_check_path
                  | use_server_rule                          -> backend_use_server
                  | http_check_block                         -> backend_http_check
                  | tcp_check_block                          -> backend_tcp_check

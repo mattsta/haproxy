@@ -869,6 +869,12 @@ class HAProxyCodeGenerator:
         if backend.retry_on:
             lines.append(self._indent(f"retry-on {backend.retry_on}"))
 
+        # External health check
+        if backend.external_check_command:
+            lines.append(self._indent(f"external-check command {backend.external_check_command}"))
+        if backend.external_check_path:
+            lines.append(self._indent(f"external-check path {backend.external_check_path}"))
+
         # Source IP binding
         if backend.source:
             lines.append(self._indent(f"source {backend.source}"))

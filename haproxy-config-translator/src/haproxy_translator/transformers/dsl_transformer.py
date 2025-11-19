@@ -2418,6 +2418,8 @@ class DSLTransformer(Transformer):
         http_check_rules = []
         tcp_check_rules = []
         use_server_rules = []
+        external_check_command = None
+        external_check_path = None
         source = None
         hash_type = None
         hash_balance_factor = None
@@ -2531,6 +2533,10 @@ class DSLTransformer(Transformer):
                     dispatch = value
                 elif key == "use_fcgi_app":
                     use_fcgi_app = value
+                elif key == "external_check_command":
+                    external_check_command = value
+                elif key == "external_check_path":
+                    external_check_path = value
                 elif key == "errorloc":
                     errorloc.update(value)
                 elif key == "errorloc302":
@@ -2606,6 +2612,8 @@ class DSLTransformer(Transformer):
             http_check_rules=http_check_rules,
             tcp_check_rules=tcp_check_rules,
             use_server_rules=use_server_rules,
+            external_check_command=external_check_command,
+            external_check_path=external_check_path,
             source=source,
             hash_type=hash_type,
             hash_balance_factor=hash_balance_factor,
@@ -2722,6 +2730,14 @@ class DSLTransformer(Transformer):
     def backend_use_fcgi_app(self, items: list[Any]) -> tuple[str, str]:
         """Transform use-fcgi-app directive (FastCGI application reference)."""
         return ("use_fcgi_app", str(items[0]))
+
+    def backend_external_check_command(self, items: list[Any]) -> tuple[str, str]:
+        """Transform external-check command directive."""
+        return ("external_check_command", str(items[0]))
+
+    def backend_external_check_path(self, items: list[Any]) -> tuple[str, str]:
+        """Transform external-check path directive."""
+        return ("external_check_path", str(items[0]))
 
     def backend_default_server(self, items: list[Any]) -> DefaultServer:
         """Handle default-server in backend."""

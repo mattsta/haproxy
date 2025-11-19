@@ -756,6 +756,8 @@ class Backend(IRNode):
     http_check_rules: list[HttpCheckRule] = field(default_factory=list)  # Advanced HTTP health checks
     tcp_check_rules: list[TcpCheckRule] = field(default_factory=list)  # Advanced TCP health checks
     use_server_rules: list[UseServerRule] = field(default_factory=list)  # Conditional server selection
+    external_check_command: str | None = None  # External health check command to execute
+    external_check_path: str | None = None  # PATH environment variable for external check command
     source: str | None = None  # Source IP/port for backend connections
     hash_type: str | None = None  # Hash algorithm: map-based, consistent
     hash_balance_factor: int | None = None  # Hash balance factor (100-65535)
