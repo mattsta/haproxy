@@ -1391,6 +1391,7 @@ class DSLTransformer(Transformer):
         errorloc = {}
         errorloc302 = {}
         errorloc303 = {}
+        error_log_format = None
 
         for item in items:
             if isinstance(item, tuple):
@@ -1415,6 +1416,8 @@ class DSLTransformer(Transformer):
                 elif key == "errorloc303":
                     code, url = value
                     errorloc303[code] = url
+                elif key == "error_log_format":
+                    error_log_format = value
                 elif key == "timeout":
                     for timeout_key, timeout_value in value.items():
                         if timeout_key == "connect":
@@ -1456,6 +1459,7 @@ class DSLTransformer(Transformer):
             errorloc=errorloc,
             errorloc302=errorloc302,
             errorloc303=errorloc303,
+            error_log_format=error_log_format,
         )
 
     def defaults_mode(self, items: list[Any]) -> tuple[str, str]:
@@ -1466,6 +1470,10 @@ class DSLTransformer(Transformer):
 
     def defaults_log(self, items: list[Any]) -> tuple[str, str]:
         return ("log", items[0])
+
+    def defaults_error_log_format(self, items: list[Any]) -> tuple[str, str]:
+        """Transform error-log-format directive (custom error logging format)."""
+        return ("error_log_format", str(items[0]))
 
     def defaults_option(self, items: list[Any]) -> tuple[str, Any]:
         return ("option", items[0])
@@ -2953,6 +2961,10 @@ class DSLTransformer(Transformer):
         health_check = None
         load_server_state_from = None
         server_state_file_name = None
+        log_tag = None
+        log_format = None
+        error_log_format = None
+        log_format_sd = None
 
         for prop in properties:
             if isinstance(prop, Bind):
@@ -3013,6 +3025,14 @@ class DSLTransformer(Transformer):
                     load_server_state_from = LoadServerStateFrom(value)
                 elif key == "server_state_file_name":
                     server_state_file_name = value
+                elif key == "log_tag":
+                    log_tag = value
+                elif key == "log_format":
+                    log_format = value
+                elif key == "error_log_format":
+                    error_log_format = value
+                elif key == "log_format_sd":
+                    log_format_sd = value
 
         # Build metadata
         metadata: dict[str, Any] = {}
@@ -3044,6 +3064,10 @@ class DSLTransformer(Transformer):
             options=options,
             load_server_state_from=load_server_state_from,
             server_state_file_name=server_state_file_name,
+            log_tag=log_tag,
+            log_format=log_format,
+            error_log_format=error_log_format,
+            log_format_sd=log_format_sd,
             metadata=metadata,
         )
 
@@ -3101,6 +3125,22 @@ class DSLTransformer(Transformer):
     def listen_server_state_file_name(self, items: list[Any]) -> tuple[str, str]:
         """Transform server-state-file-name directive (use-backend-name or file path)."""
         return ("server_state_file_name", str(items[0]))
+
+    def listen_log_tag(self, items: list[Any]) -> tuple[str, str]:
+        """Transform log-tag directive (tag for log messages)."""
+        return ("log_tag", str(items[0]))
+
+    def listen_log_format(self, items: list[Any]) -> tuple[str, str]:
+        """Transform log-format directive (custom log format string)."""
+        return ("log_format", str(items[0]))
+
+    def listen_error_log_format(self, items: list[Any]) -> tuple[str, str]:
+        """Transform error-log-format directive (custom error log format string)."""
+        return ("error_log_format", str(items[0]))
+
+    def listen_log_format_sd(self, items: list[Any]) -> tuple[str, str]:
+        """Transform log-format-sd directive (structured data log format - RFC 5424)."""
+        return ("log_format_sd", str(items[0]))
 
     def health_check_block(self, items: list[Any]) -> HealthCheck:
         method = "GET"

@@ -464,6 +464,10 @@ class HAProxyCodeGenerator:
         if defaults.log:
             lines.append(self._indent(f"log {defaults.log}"))
 
+        # Error log format
+        if defaults.error_log_format:
+            lines.append(self._indent(f"error-log-format {defaults.error_log_format}"))
+
         lines.append(self._indent(f"retries {defaults.retries}"))
 
         # Timeouts
@@ -968,6 +972,19 @@ class HAProxyCodeGenerator:
         # Server state file name
         if listen.server_state_file_name:
             lines.append(self._indent(f"server-state-file-name {listen.server_state_file_name}"))
+
+        # Log formats
+        if listen.log_tag:
+            lines.append(self._indent(f"log-tag {listen.log_tag}"))
+
+        if listen.log_format:
+            lines.append(self._indent(f"log-format {listen.log_format}"))
+
+        if listen.error_log_format:
+            lines.append(self._indent(f"error-log-format {listen.error_log_format}"))
+
+        if listen.log_format_sd:
+            lines.append(self._indent(f"log-format-sd {listen.log_format_sd}"))
 
         # ACLs
         for acl in listen.acls:
