@@ -729,6 +729,8 @@ class Backend(IRNode):
     redirect_rules: list[RedirectRule] = field(default_factory=list)  # HTTP redirect rules
     error_files: list[ErrorFile] = field(default_factory=list)  # Custom error page files
     http_reuse: str | None = None  # Connection reuse mode: never, safe, aggressive, always
+    http_send_name_header: str | None = None  # HTTP header name to send backend/server name
+    retry_on: str | None = None  # Retry conditions (comma-separated keywords)
     http_check_rules: list[HttpCheckRule] = field(default_factory=list)  # Advanced HTTP health checks
     tcp_check_rules: list[TcpCheckRule] = field(default_factory=list)  # Advanced TCP health checks
     use_server_rules: list[UseServerRule] = field(default_factory=list)  # Conditional server selection

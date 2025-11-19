@@ -825,6 +825,14 @@ class HAProxyCodeGenerator:
         if backend.http_reuse:
             lines.append(self._indent(f"http-reuse {backend.http_reuse}"))
 
+        # HTTP send name header
+        if backend.http_send_name_header:
+            lines.append(self._indent(f"http-send-name-header {backend.http_send_name_header}"))
+
+        # Retry conditions
+        if backend.retry_on:
+            lines.append(self._indent(f"retry-on {backend.retry_on}"))
+
         # Source IP binding
         if backend.source:
             lines.append(self._indent(f"source {backend.source}"))

@@ -486,6 +486,8 @@ backend_section: "backend" identifier "{" backend_property* "}"
                  | redirect_rule                            -> backend_redirect
                  | errorfile_directive                      -> backend_errorfile
                  | "http-reuse" ":" http_reuse_mode         -> backend_http_reuse
+                 | "http-send-name-header" ":" string      -> backend_http_send_name_header
+                 | "retry-on" ":" string                   -> backend_retry_on
                  | "source" ":" string                      -> backend_source
                  | use_server_rule                          -> backend_use_server
                  | http_check_block                         -> backend_http_check

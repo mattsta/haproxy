@@ -1949,6 +1949,14 @@ class DSLTransformer(Transformer):
     def backend_http_reuse(self, items: list[Any]) -> tuple[str, str]:
         return ("http_reuse", items[0])
 
+    def backend_http_send_name_header(self, items: list[Any]) -> tuple[str, str]:
+        """Transform http-send-name-header directive."""
+        return ("http_send_name_header", str(items[0]))
+
+    def backend_retry_on(self, items: list[Any]) -> tuple[str, str]:
+        """Transform retry-on directive."""
+        return ("retry_on", str(items[0]))
+
     def backend_source(self, items: list[Any]) -> tuple[str, str]:
         return ("source", str(items[0]))
 
@@ -2343,6 +2351,8 @@ class DSLTransformer(Transformer):
         redirect_rules = []
         error_files = []
         http_reuse = None
+        http_send_name_header = None
+        retry_on = None
         http_check_rules = []
         tcp_check_rules = []
         use_server_rules = []
@@ -2451,6 +2461,10 @@ class DSLTransformer(Transformer):
                     log_format = value
                 elif key == "http_reuse":
                     http_reuse = value
+                elif key == "http_send_name_header":
+                    http_send_name_header = value
+                elif key == "retry_on":
+                    retry_on = value
                 elif key == "source":
                     source = value
                 elif key == "hash_type":
@@ -2501,6 +2515,8 @@ class DSLTransformer(Transformer):
             redirect_rules=redirect_rules,
             error_files=error_files,
             http_reuse=http_reuse,
+            http_send_name_header=http_send_name_header,
+            retry_on=retry_on,
             http_check_rules=http_check_rules,
             tcp_check_rules=tcp_check_rules,
             use_server_rules=use_server_rules,
