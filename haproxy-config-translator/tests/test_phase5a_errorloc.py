@@ -3,8 +3,8 @@
 Tests for errorloc, errorloc302, and errorloc303 directives.
 """
 
-from haproxy_translator.parsers import DSLParser
 from haproxy_translator.codegen.haproxy import HAProxyCodeGenerator
+from haproxy_translator.parsers import DSLParser
 
 
 class TestErrorloc:
@@ -57,7 +57,7 @@ class TestErrorloc302:
             frontend web {
                 bind *:80
                 mode: http
-                errorloc302 503 http://status.example.com/503
+                errorloc302 503 "http://status.example.com/503"
             }
         }
         """
@@ -72,7 +72,7 @@ class TestErrorloc302:
         config test {
             backend api {
                 mode: http
-                errorloc302 500 http://status.example.com/api/500
+                errorloc302 500 "http://status.example.com/api/500"
                 servers {
                     server api1 { address: "10.0.1.1" port: 8080 }
                 }
@@ -95,7 +95,7 @@ class TestErrorloc303:
             frontend web {
                 bind *:80
                 mode: http
-                errorloc303 503 http://maintenance.example.com
+                errorloc303 503 "http://maintenance.example.com"
             }
         }
         """
@@ -110,7 +110,7 @@ class TestErrorloc303:
         config test {
             backend web {
                 mode: http
-                errorloc303 503 http://maintenance.example.com/backend
+                errorloc303 503 "http://maintenance.example.com/backend"
                 servers {
                     server web1 { address: "192.168.1.10" port: 80 }
                 }
@@ -134,8 +134,8 @@ class TestErrorlocIntegration:
                 bind *:80
                 mode: http
                 errorloc 503 "/errors/503.html"
-                errorloc302 502 http://status.example.com/502
-                errorloc303 500 http://maintenance.example.com/500
+                errorloc302 502 "http://status.example.com/502"
+                errorloc303 500 "http://maintenance.example.com/500"
             }
         }
         """
@@ -162,8 +162,8 @@ class TestErrorlocIntegration:
             backend api {
                 mode: http
                 errorloc 503 "/errors/api-503.html"
-                errorloc302 502 http://status.example.com/api-502
-                errorloc303 500 http://maintenance.example.com/api-500
+                errorloc302 502 "http://status.example.com/api-502"
+                errorloc303 500 "http://maintenance.example.com/api-500"
                 servers {
                     server api1 { address: "10.0.1.1" port: 8080 }
                 }
@@ -189,8 +189,8 @@ class TestErrorlocIntegration:
                 bind *:80
                 mode: http
                 errorloc 503 "/errors/503.html"
-                errorloc302 502 http://status.example.com/502
-                errorloc303 500 http://maintenance.example.com/500
+                errorloc302 502 "http://status.example.com/502"
+                errorloc303 500 "http://maintenance.example.com/500"
             }
         }
         """
@@ -199,9 +199,9 @@ class TestErrorlocIntegration:
         codegen = HAProxyCodeGenerator()
         output = codegen.generate(ir)
 
-        assert "errorloc 503 "/errors/503.html" in output
-        assert "errorloc302 502 http://status.example.com/502" in output
-        assert "errorloc303 500 http://maintenance.example.com/500" in output
+        assert 'errorloc 503 "/errors/503.html"' in output
+        assert 'errorloc302 502 "http://status.example.com/502"' in output
+        assert 'errorloc303 500 "http://maintenance.example.com/500"' in output
 
     def test_errorloc_codegen_backend(self):
         """Test backend errorloc code generation."""
@@ -210,8 +210,8 @@ class TestErrorlocIntegration:
             backend api {
                 mode: http
                 errorloc 503 "/errors/api-503.html"
-                errorloc302 502 http://status.example.com/api-502
-                errorloc303 500 http://maintenance.example.com/api-500
+                errorloc302 502 "http://status.example.com/api-502"
+                errorloc303 500 "http://maintenance.example.com/api-500"
                 servers {
                     server api1 { address: "10.0.1.1" port: 8080 }
                 }
@@ -223,9 +223,9 @@ class TestErrorlocIntegration:
         codegen = HAProxyCodeGenerator()
         output = codegen.generate(ir)
 
-        assert "errorloc 503 "/errors/api-503.html" in output
-        assert "errorloc302 502 http://status.example.com/api-502" in output
-        assert "errorloc303 500 http://maintenance.example.com/api-500" in output
+        assert 'errorloc 503 "/errors/api-503.html"' in output
+        assert 'errorloc302 502 "http://status.example.com/api-502"' in output
+        assert 'errorloc303 500 "http://maintenance.example.com/api-500"' in output
 
     def test_multiple_error_codes_same_directive(self):
         """Test multiple error codes with same directive type."""
