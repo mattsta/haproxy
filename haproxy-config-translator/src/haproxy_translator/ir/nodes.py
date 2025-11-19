@@ -471,6 +471,7 @@ class DefaultsConfig(IRNode):
     timeout_server_fin: str | None = None  # Server FIN timeout
     timeout_tarpit: str | None = None  # Tarpit timeout (security)
     log: str | None = "global"
+    error_log_format: str | None = None  # Custom error log format string
     options: list[str] = field(default_factory=list)
     errorfiles: dict[int, str] = field(default_factory=dict)
     errorloc: dict[int, str] = field(default_factory=dict)  # 302 redirect
@@ -806,6 +807,10 @@ class Listen(IRNode):
     maxconn: int | None = None
     load_server_state_from: LoadServerStateFrom | None = None  # Server state loading mode for seamless reload
     server_state_file_name: str | None = None  # Server state file name (use-backend-name or file path)
+    log_tag: str | None = None  # Tag for log messages
+    log_format: str | None = None  # Custom log format string
+    error_log_format: str | None = None  # Custom error log format string
+    log_format_sd: str | None = None  # Structured data log format (RFC 5424)
 
 
 # DSL-specific IR nodes (for advanced features)
