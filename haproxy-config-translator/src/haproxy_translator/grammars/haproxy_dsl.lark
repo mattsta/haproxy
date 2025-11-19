@@ -300,6 +300,7 @@ frontend_section: "frontend" identifier "{" frontend_property* "}"
                   | redirect_rule                          -> frontend_redirect
                   | errorfile_directive                    -> frontend_errorfile
                   | errorloc_directive                     -> frontend_errorloc
+                  | http_error_block                       -> frontend_http_error
 
 // Redirect rules
 redirect_rule: "redirect" redirect_type string redirect_options?
@@ -325,6 +326,19 @@ errorfile_directive: "errorfile" number string
 errorloc_directive: "errorloc" number string      -> errorloc
                   | "errorloc302" number string    -> errorloc302
                   | "errorloc303" number string    -> errorloc303
+
+// HTTP error response directive
+http_error_block: "http-error" "{" http_error_property+ "}"
+
+?http_error_property: "status" ":" number                    -> http_error_status
+                    | "content-type" ":" string              -> http_error_content_type
+                    | "file" ":" string                      -> http_error_file
+                    | "lf-file" ":" string                   -> http_error_lf_file
+                    | "string" ":" string                    -> http_error_string
+                    | "lf-string" ":" string                 -> http_error_lf_string
+                    | "errorfile" ":" string                 -> http_error_errorfile
+                    | "errorfiles-name" ":" string           -> http_error_errorfiles_name
+                    | "default-errorfiles" ":" boolean       -> http_error_default_errorfiles
 
 // Stats block (proxy-level)
 stats_block: "stats" "{" proxy_stats_property* "}"
@@ -499,6 +513,7 @@ backend_section: "backend" identifier "{" backend_property* "}"
                  | redirect_rule                            -> backend_redirect
                  | errorfile_directive                      -> backend_errorfile
                  | errorloc_directive                       -> backend_errorloc
+                 | http_error_block                         -> backend_http_error
                  | "errorfiles" ":" string                  -> backend_errorfiles
                  | "dispatch" ":" string                    -> backend_dispatch
                  | "use-fcgi-app" ":" string                -> backend_use_fcgi_app
@@ -743,6 +758,7 @@ listen_section: "listen" identifier "{" listen_property* "}"
                 | "log-format" ":" string                -> listen_log_format
                 | "error-log-format" ":" string          -> listen_error_log_format
                 | "log-format-sd" ":" string             -> listen_log_format_sd
+                | http_error_block                         -> listen_http_error
 
 // ===== Stats Socket =====
 stats_socket_item: "stats_socket" string "{" stats_socket_param* "}"

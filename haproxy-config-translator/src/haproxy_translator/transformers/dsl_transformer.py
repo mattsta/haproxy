@@ -1548,6 +1548,7 @@ class DSLTransformer(Transformer):
         capture_response_headers = []
         redirect_rules = []
         error_files = []
+        http_errors = []
         errorloc = {}
         errorloc302 = {}
         errorloc303 = {}
@@ -1561,6 +1562,8 @@ class DSLTransformer(Transformer):
                 redirect_rules.append(prop)
             elif isinstance(prop, ErrorFile):
                 error_files.append(prop)
+            elif isinstance(prop, HttpError):
+                http_errors.append(prop)
             elif isinstance(prop, StatsConfig):
                 stats_config = prop
             elif isinstance(prop, MonitorFailRule):
@@ -1711,6 +1714,7 @@ class DSLTransformer(Transformer):
             capture_response_headers=capture_response_headers,
             redirect_rules=redirect_rules,
             error_files=error_files,
+            http_errors=http_errors,
             errorloc=errorloc,
             errorloc302=errorloc302,
             errorloc303=errorloc303,
@@ -1978,6 +1982,18 @@ class DSLTransformer(Transformer):
     def backend_errorfile(self, items: list[Any]) -> ErrorFile:
         return cast("ErrorFile", items[0])
 
+    def frontend_http_error(self, items: list[Any]) -> HttpError:
+        """Transform http-error for frontend."""
+        return cast("HttpError", items[0])
+
+    def backend_http_error(self, items: list[Any]) -> HttpError:
+        """Transform http-error for backend."""
+        return cast("HttpError", items[0])
+
+    def listen_http_error(self, items: list[Any]) -> HttpError:
+        """Transform http-error for listen."""
+        return cast("HttpError", items[0])
+
     def errorfile_directive(self, items: list[Any]) -> ErrorFile:
         """Transform errorfile directive."""
         code = int(items[0])
@@ -2190,6 +2206,91 @@ class DSLTransformer(Transformer):
     def http_check_disable_on_404(self, items: list[Any]) -> HttpCheckRule:
         """Transform http-check disable-on-404 rule."""
         return HttpCheckRule(type="disable-on-404")
+
+    # ===== http-error Block =====
+    def http_error_block(self, items: list[Any]) -> HttpError:
+        """Build HttpError from http-error properties."""
+        status = 0
+        content_type = None
+        default_errorfiles = False
+        errorfile = None
+        errorfiles_name = None
+        file = None
+        lf_file = None
+        string = None
+        lf_string = None
+        headers = {}
+
+        for prop in items:
+            if isinstance(prop, tuple):
+                key, value = prop
+                if key == "status":
+                    status = int(value)
+                elif key == "content_type":
+                    content_type = str(value)
+                elif key == "file":
+                    file = str(value)
+                elif key == "lf_file":
+                    lf_file = str(value)
+                elif key == "string":
+                    string = str(value)
+                elif key == "lf_string":
+                    lf_string = str(value)
+                elif key == "errorfile":
+                    errorfile = str(value)
+                elif key == "errorfiles_name":
+                    errorfiles_name = str(value)
+                elif key == "default_errorfiles":
+                    default_errorfiles = bool(value)
+
+        return HttpError(
+            status=status,
+            content_type=content_type,
+            default_errorfiles=default_errorfiles,
+            errorfile=errorfile,
+            errorfiles_name=errorfiles_name,
+            file=file,
+            lf_file=lf_file,
+            string=string,
+            lf_string=lf_string,
+            headers=headers,
+        )
+
+    def http_error_status(self, items: list[Any]) -> tuple[str, int]:
+        """Transform http-error status property."""
+        return ("status", int(items[0]))
+
+    def http_error_content_type(self, items: list[Any]) -> tuple[str, str]:
+        """Transform http-error content-type property."""
+        return ("content_type", str(items[0]))
+
+    def http_error_file(self, items: list[Any]) -> tuple[str, str]:
+        """Transform http-error file property."""
+        return ("file", str(items[0]))
+
+    def http_error_lf_file(self, items: list[Any]) -> tuple[str, str]:
+        """Transform http-error lf-file property."""
+        return ("lf_file", str(items[0]))
+
+    def http_error_string(self, items: list[Any]) -> tuple[str, str]:
+        """Transform http-error string property."""
+        return ("string", str(items[0]))
+
+    def http_error_lf_string(self, items: list[Any]) -> tuple[str, str]:
+        """Transform http-error lf-string property."""
+        return ("lf_string", str(items[0]))
+
+    def http_error_errorfile(self, items: list[Any]) -> tuple[str, str]:
+        """Transform http-error errorfile property."""
+        return ("errorfile", str(items[0]))
+
+    def http_error_errorfiles_name(self, items: list[Any]) -> tuple[str, str]:
+        """Transform http-error errorfiles-name property."""
+        return ("errorfiles_name", str(items[0]))
+
+    def http_error_default_errorfiles(self, items: list[Any]) -> tuple[str, bool]:
+        """Transform http-error default-errorfiles property."""
+        return ("default_errorfiles", bool(items[0]))
 
     # ===== tcp-check Block =====
     def backend_tcp_check(self, items: list[Any]) -> list[TcpCheckRule]:
@@ -2431,6 +2532,7 @@ class DSLTransformer(Transformer):
         log_format_sd = None
         redirect_rules = []
         error_files = []
+        http_errors = []
         errorloc: dict[int, str] = {}
         errorloc302: dict[int, str] = {}
         errorloc303: dict[int, str] = {}
@@ -2464,6 +2566,8 @@ class DSLTransformer(Transformer):
                 redirect_rules.append(prop)
             elif isinstance(prop, ErrorFile):
                 error_files.append(prop)
+            elif isinstance(prop, HttpError):
+                http_errors.append(prop)
             elif isinstance(prop, HttpCheckRule):
                 http_check_rules.append(prop)
             elif isinstance(prop, TcpCheckRule):
@@ -2635,6 +2739,7 @@ class DSLTransformer(Transformer):
             log_format_sd=log_format_sd,
             redirect_rules=redirect_rules,
             error_files=error_files,
+            http_errors=http_errors,
             errorloc=errorloc,
             errorloc302=errorloc302,
             errorloc303=errorloc303,
