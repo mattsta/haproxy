@@ -40,10 +40,12 @@ from ..ir.nodes import (
     StatsSocket,
     StickRule,
     StickTable,
+    TcpCheckRule,
     TcpRequestRule,
     TcpResponseRule,
     Template,
     UseBackendRule,
+    UseServerRule,
     Variable,
 )
 
@@ -1740,6 +1742,180 @@ class DSLTransformer(Transformer):
     def backend_source(self, items: list[Any]) -> tuple[str, str]:
         return ("source", str(items[0]))
 
+    # ===== use-server Directive =====
+    def backend_use_server(self, items: list[Any]) -> UseServerRule:
+        return cast("UseServerRule", items[0])
+
+    def use_server_rule(self, items: list[Any]) -> UseServerRule:
+        """Transform use-server rule."""
+        server = str(items[0])
+        condition = None
+
+        if len(items) > 1 and items[1] is not None:
+            # if_condition returns a tuple ("condition", acl_name)
+            if isinstance(items[1], tuple):
+                _, acl_name = items[1]
+                condition = f"if {acl_name}"
+            else:
+                condition = str(items[1])
+
+        return UseServerRule(server=server, condition=condition)
+
+    # ===== http-check Block =====
+    def backend_http_check(self, items: list[Any]) -> list[HttpCheckRule]:
+        """Backend http-check block returns list of rules."""
+        return items[0]  # http_check_block already returns a list
+
+    def http_check_block(self, items: list[Any]) -> list[HttpCheckRule]:
+        """Transform http-check block."""
+        return items  # List of HttpCheckRule objects
+
+    def http_check_send_with_uri(self, items: list[Any]) -> tuple[str, str | None, dict[str, str]]:
+        """Transform http-check send with method and uri."""
+        method = str(items[0])
+        uri = str(items[1]) if len(items) > 1 else None
+
+        # Headers come as a list of tuples from header_definition
+        headers = {}
+        if len(items) > 2 and isinstance(items[2], list):
+            headers = dict(items[2])
+
+        return (method, uri, headers)
+
+    def http_check_send_method_only(self, items: list[Any]) -> tuple[str, str | None, dict[str, str]]:
+        """Transform http-check send with method only."""
+        method = str(items[0])
+
+        # Headers come as a list of tuples from header_definition
+        headers = {}
+        if len(items) > 1 and isinstance(items[1], list):
+            headers = dict(items[1])
+
+        return (method, None, headers)
+
+    def http_check_send(self, items: list[Any]) -> HttpCheckRule:
+        """Transform http-check send rule."""
+        # items[0] contains the send options (method, uri, headers) from http_check_send_options
+        send_opts = items[0]
+
+        method = None
+        uri = None
+        headers = {}
+
+        if isinstance(send_opts, tuple) and len(send_opts) >= 2:
+            method = send_opts[0]
+            uri = send_opts[1]
+            headers = send_opts[2] if len(send_opts) > 2 else {}
+
+        return HttpCheckRule(type="send", method=method, uri=uri, headers=headers)
+
+    def http_check_expect(self, items: list[Any]) -> HttpCheckRule:
+        """Transform http-check expect rule."""
+        expect = items[0]  # expect_value result (tuple of type and value)
+
+        if isinstance(expect, tuple):
+            expect_type, expect_value, expect_negate = expect
+            return HttpCheckRule(type="expect", expect_type=expect_type, expect_value=expect_value, expect_negate=expect_negate)
+
+        return HttpCheckRule(type="expect")
+
+    def http_check_connect_with_port(self, items: list[Any]) -> dict[str, Any]:
+        """Transform http-check connect with port."""
+        port = int(items[0])
+        ssl_opts = self._parse_ssl_options(items[1:]) if len(items) > 1 else {}
+        return {"port": port, **ssl_opts}
+
+    def http_check_connect_ssl_only(self, items: list[Any]) -> dict[str, Any]:
+        """Transform http-check connect with SSL only."""
+        return self._parse_ssl_options(items)
+
+    def _parse_ssl_options(self, items: list[Any]) -> dict[str, Any]:
+        """Parse SSL options from inlined ssl_options rule."""
+        opts = {"ssl": False, "sni": None, "alpn": None}
+        if not items:
+            return opts
+
+        # Items will be tokens from the inlined rule: may contain sni and alpn strings
+        for i, item in enumerate(items):
+            if isinstance(item, str):
+                # First string after ssl is sni, second is alpn
+                if opts["sni"] is None:
+                    opts["sni"] = item
+                else:
+                    opts["alpn"] = item
+
+        # If we have any items, ssl must be True
+        if items:
+            opts["ssl"] = True
+
+        return opts
+
+    def http_check_connect(self, items: list[Any]) -> HttpCheckRule:
+        """Transform http-check connect rule."""
+        conn_opts = items[0] if items else {}
+
+        port = conn_opts.get("port") if isinstance(conn_opts, dict) else None
+        ssl = conn_opts.get("ssl", False) if isinstance(conn_opts, dict) else False
+        sni = conn_opts.get("sni") if isinstance(conn_opts, dict) else None
+        alpn = conn_opts.get("alpn") if isinstance(conn_opts, dict) else None
+
+        return HttpCheckRule(type="connect", port=port, ssl=ssl, sni=sni, alpn=alpn)
+
+    def http_check_disable_on_404(self, items: list[Any]) -> HttpCheckRule:
+        """Transform http-check disable-on-404 rule."""
+        return HttpCheckRule(type="disable-on-404")
+
+    # ===== tcp-check Block =====
+    def backend_tcp_check(self, items: list[Any]) -> list[TcpCheckRule]:
+        """Backend tcp-check block returns list of rules."""
+        return items[0]  # tcp_check_block already returns a list
+
+    def tcp_check_block(self, items: list[Any]) -> list[TcpCheckRule]:
+        """Transform tcp-check block."""
+        return items  # List of TcpCheckRule objects
+
+    def tcp_check_connect_with_port(self, items: list[Any]) -> dict[str, Any]:
+        """Transform tcp-check connect with port."""
+        port = int(items[0])
+        ssl_opts = self._parse_ssl_options(items[1:]) if len(items) > 1 else {}
+        return {"port": port, **ssl_opts}
+
+    def tcp_check_connect_ssl_only(self, items: list[Any]) -> dict[str, Any]:
+        """Transform tcp-check connect with SSL only."""
+        return self._parse_ssl_options(items)
+
+    def tcp_check_connect(self, items: list[Any]) -> TcpCheckRule:
+        """Transform tcp-check connect rule."""
+        conn_opts = items[0] if items else {}
+
+        port = conn_opts.get("port") if isinstance(conn_opts, dict) else None
+        ssl = conn_opts.get("ssl", False) if isinstance(conn_opts, dict) else False
+        sni = conn_opts.get("sni") if isinstance(conn_opts, dict) else None
+        alpn = conn_opts.get("alpn") if isinstance(conn_opts, dict) else None
+
+        return TcpCheckRule(type="connect", port=port, ssl=ssl, sni=sni, alpn=alpn)
+
+    def tcp_check_send(self, items: list[Any]) -> TcpCheckRule:
+        """Transform tcp-check send rule."""
+        data = str(items[0]) if items else ""
+        return TcpCheckRule(type="send", data=data)
+
+    def tcp_check_send_binary(self, items: list[Any]) -> TcpCheckRule:
+        """Transform tcp-check send-binary rule."""
+        data = str(items[0]) if items else ""
+        return TcpCheckRule(type="send-binary", data=data)
+
+    def tcp_check_expect(self, items: list[Any]) -> TcpCheckRule:
+        """Transform tcp-check expect rule."""
+        expect_opts = items[0] if items else None
+        pattern = str(expect_opts) if expect_opts else None
+        return TcpCheckRule(type="expect", pattern=pattern)
+
+    def tcp_check_comment(self, items: list[Any]) -> TcpCheckRule:
+        """Transform tcp-check comment rule."""
+        comment = str(items[0]) if items else ""
+        return TcpCheckRule(type="comment", comment=comment)
+
     def bind_directive(self, items: list[Any]) -> Bind:
         address = str(items[0])
         ssl = False
@@ -1918,6 +2094,8 @@ class DSLTransformer(Transformer):
         error_files = []
         http_reuse = None
         http_check_rules = []
+        tcp_check_rules = []
+        use_server_rules = []
         source = None
 
         for prop in properties:
@@ -1935,6 +2113,10 @@ class DSLTransformer(Transformer):
                 error_files.append(prop)
             elif isinstance(prop, HttpCheckRule):
                 http_check_rules.append(prop)
+            elif isinstance(prop, TcpCheckRule):
+                tcp_check_rules.append(prop)
+            elif isinstance(prop, UseServerRule):
+                use_server_rules.append(prop)
             elif isinstance(prop, StickTable):
                 stick_table = prop
             elif isinstance(prop, StickRule):
@@ -1954,6 +2136,12 @@ class DSLTransformer(Transformer):
                         tcp_request_rules.append(item)
                     elif isinstance(item, TcpResponseRule):
                         tcp_response_rules.append(item)
+                    elif isinstance(item, HttpCheckRule):
+                        http_check_rules.append(item)
+                    elif isinstance(item, TcpCheckRule):
+                        tcp_check_rules.append(item)
+                    elif isinstance(item, UseServerRule):
+                        use_server_rules.append(item)
             elif isinstance(prop, ServerTemplate):
                 server_templates.append(prop)
             elif isinstance(prop, HealthCheck):
@@ -2028,6 +2216,8 @@ class DSLTransformer(Transformer):
             error_files=error_files,
             http_reuse=http_reuse,
             http_check_rules=http_check_rules,
+            tcp_check_rules=tcp_check_rules,
+            use_server_rules=use_server_rules,
             source=source,
             metadata=metadata,
         )
@@ -2368,40 +2558,36 @@ class DSLTransformer(Transformer):
 
         for item in items:
             if isinstance(item, tuple):
-                key, value = item
-                if key == "method":
-                    method = value
-                elif key == "uri":
-                    uri = value
-                elif key == "expect_status":
-                    # Check if negated: value is tuple (True, status_code)
-                    if isinstance(value, tuple):
-                        expect_negate = value[0]
-                        expect_status = value[1]
+                # Handle 2-tuples (method, uri, headers) and 3-tuples (expect types)
+                if len(item) == 2:
+                    key, value = item
+                    if key == "method":
+                        method = value
+                    elif key == "uri":
+                        uri = value
+                elif len(item) == 3:
+                    # New format: (type, value, negate) from expect_* transformers
+                    expect_type, expect_value, negate = item
+                    if expect_type == "status":
+                        expect_status = expect_value
+                        expect_negate = negate
+                    elif expect_type == "string":
+                        expect_string = expect_value
+                        expect_negate = negate
+                    elif expect_type == "rstatus":
+                        expect_rstatus = expect_value
+                        expect_negate = negate
+                    elif expect_type == "rstring":
+                        expect_rstring = expect_value
+                        expect_negate = negate
+                    elif expect_type == "header":
+                        # Header tuple: ("header", name, value)
+                        headers[expect_value] = negate  # Using negate as third value
                     else:
-                        expect_status = value
-                elif key == "expect_string":
-                    if isinstance(value, tuple):
-                        expect_negate = value[0]
-                        expect_string = value[1]
-                    else:
-                        expect_string = value
-                elif key == "expect_rstatus":
-                    if isinstance(value, tuple):
-                        expect_negate = value[0]
-                        expect_rstatus = value[1]
-                    else:
-                        expect_rstatus = value
-                elif key == "expect_rstring":
-                    if isinstance(value, tuple):
-                        expect_negate = value[0]
-                        expect_rstring = value[1]
-                    else:
-                        expect_rstring = value
-                elif key.startswith("header_"):
-                    header_name = item[1]
-                    header_value = item[2]
-                    headers[header_name] = header_value
+                        # Unknown 3-tuple, try old logic
+                        header_name = item[1]
+                        header_value = item[2]
+                        headers[header_name] = header_value
 
         return HealthCheck(
             method=method,
@@ -2427,29 +2613,29 @@ class DSLTransformer(Transformer):
     def hc_header(self, items: list[Any]) -> tuple[str, str, str]:
         return ("header", items[0][0], items[0][1])
 
-    def expect_status(self, items: list[Any]) -> tuple[str, int]:
-        return ("expect_status", items[0])
+    def expect_status(self, items: list[Any]) -> tuple[str, int, bool]:
+        return ("status", items[0], False)
 
-    def expect_string(self, items: list[Any]) -> tuple[str, str]:
-        return ("expect_string", items[0])
+    def expect_string(self, items: list[Any]) -> tuple[str, str, bool]:
+        return ("string", items[0], False)
 
-    def expect_rstatus(self, items: list[Any]) -> tuple[str, str]:
-        return ("expect_rstatus", items[0])
+    def expect_rstatus(self, items: list[Any]) -> tuple[str, str, bool]:
+        return ("rstatus", items[0], False)
 
-    def expect_rstring(self, items: list[Any]) -> tuple[str, str]:
-        return ("expect_rstring", items[0])
+    def expect_rstring(self, items: list[Any]) -> tuple[str, str, bool]:
+        return ("rstring", items[0], False)
 
-    def expect_not_status(self, items: list[Any]) -> tuple[str, tuple[bool, int]]:
-        return ("expect_status", (True, items[0]))
+    def expect_not_status(self, items: list[Any]) -> tuple[str, int, bool]:
+        return ("status", items[0], True)
 
-    def expect_not_string(self, items: list[Any]) -> tuple[str, tuple[bool, str]]:
-        return ("expect_string", (True, items[0]))
+    def expect_not_string(self, items: list[Any]) -> tuple[str, str, bool]:
+        return ("string", items[0], True)
 
-    def expect_not_rstatus(self, items: list[Any]) -> tuple[str, tuple[bool, str]]:
-        return ("expect_rstatus", (True, items[0]))
+    def expect_not_rstatus(self, items: list[Any]) -> tuple[str, str, bool]:
+        return ("rstatus", items[0], True)
 
-    def expect_not_rstring(self, items: list[Any]) -> tuple[str, tuple[bool, str]]:
-        return ("expect_rstring", (True, items[0]))
+    def expect_not_rstring(self, items: list[Any]) -> tuple[str, str, bool]:
+        return ("rstring", items[0], True)
 
     def header_definition(self, items: list[Any]) -> tuple[str, str]:
         return (items[0], items[1])

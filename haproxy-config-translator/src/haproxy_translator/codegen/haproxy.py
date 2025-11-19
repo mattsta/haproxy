@@ -712,6 +712,18 @@ class HAProxyCodeGenerator:
         if backend.source:
             lines.append(self._indent(f"source {backend.source}"))
 
+        # HTTP check rules (advanced health checks)
+        for http_check in backend.http_check_rules:
+            lines.append(self._indent(self._format_http_check_rule(http_check)))
+
+        # TCP check rules (advanced health checks)
+        for tcp_check in backend.tcp_check_rules:
+            lines.append(self._indent(self._format_tcp_check_rule(tcp_check)))
+
+        # Use-server rules (conditional server selection)
+        for use_server in backend.use_server_rules:
+            lines.append(self._indent(self._format_use_server_rule(use_server)))
+
         # Compression
         if backend.compression:
             lines.append(self._indent(f"compression algo {backend.compression.algo}"))
@@ -894,6 +906,91 @@ class HAProxyCodeGenerator:
             parts.append(redirect.condition)
 
         return " ".join(parts)
+
+    def _format_use_server_rule(self, use_server: "UseServerRule") -> str:
+        """Format use-server rule."""
+        parts = [f"use-server {use_server.server}"]
+
+        # Add condition
+        if use_server.condition:
+            parts.append(use_server.condition)
+
+        return " ".join(parts)
+
+    def _format_http_check_rule(self, http_check: "HttpCheckRule") -> str:
+        """Format http-check rule."""
+        if http_check.type == "send":
+            parts = ["http-check send"]
+            if http_check.method:
+                parts.append(f"meth {http_check.method}")
+            if http_check.uri:
+                parts.append(f"uri {http_check.uri}")
+            if http_check.headers:
+                for header_name, header_value in http_check.headers.items():
+                    parts.append(f"hdr {header_name} {header_value}")
+            return " ".join(parts)
+
+        elif http_check.type == "expect":
+            parts = ["http-check expect"]
+            if http_check.expect_negate:
+                parts.append("!")
+            if http_check.expect_type == "status":
+                parts.append(f"status {http_check.expect_value}")
+            elif http_check.expect_type == "string":
+                parts.append(f"string {http_check.expect_value}")
+            elif http_check.expect_type == "rstatus":
+                parts.append(f"rstatus {http_check.expect_value}")
+            elif http_check.expect_type == "rstring":
+                parts.append(f"rstring {http_check.expect_value}")
+            return " ".join(parts)
+
+        elif http_check.type == "connect":
+            parts = ["http-check connect"]
+            if http_check.port:
+                parts.append(f"port {http_check.port}")
+            if http_check.ssl:
+                parts.append("ssl")
+            if http_check.sni:
+                parts.append(f"sni {http_check.sni}")
+            if http_check.alpn:
+                parts.append(f"alpn {http_check.alpn}")
+            return " ".join(parts)
+
+        elif http_check.type == "disable-on-404":
+            return "http-check disable-on-404"
+
+        return ""
+
+    def _format_tcp_check_rule(self, tcp_check: "TcpCheckRule") -> str:
+        """Format tcp-check rule."""
+        if tcp_check.type == "connect":
+            parts = ["tcp-check connect"]
+            if tcp_check.port:
+                parts.append(f"port {tcp_check.port}")
+            if tcp_check.ssl:
+                parts.append("ssl")
+            if tcp_check.sni:
+                parts.append(f"sni {tcp_check.sni}")
+            if tcp_check.alpn:
+                parts.append(f"alpn {tcp_check.alpn}")
+            return " ".join(parts)
+
+        elif tcp_check.type == "send":
+            return f"tcp-check send {tcp_check.data}"
+
+        elif tcp_check.type == "send-binary":
+            return f"tcp-check send-binary {tcp_check.data}"
+
+        elif tcp_check.type == "expect":
+            parts = ["tcp-check expect"]
+            if tcp_check.pattern:
+                parts.append(tcp_check.pattern)
+            return " ".join(parts)
+
+        elif tcp_check.type == "comment":
+            return f"tcp-check comment {tcp_check.comment}"
+
+        return ""
 
     def _format_default_server(self, default_server: "DefaultServer") -> str:
         """Format default-server directive."""

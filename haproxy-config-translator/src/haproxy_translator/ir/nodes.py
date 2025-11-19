@@ -236,13 +236,53 @@ class ErrorFile(IRNode):
 
 @dataclass(frozen=True)
 class HttpCheckRule(IRNode):
-    """Advanced HTTP health check rule."""
+    """Advanced HTTP health check rule (http-check directive)."""
 
-    type: str = "send"  # send, expect, connect
-    parameters: dict[str, Any] = field(default_factory=dict)
-    # For send: method, uri, headers
-    # For expect: status, string, rstatus, rstring
-    # For connect: port, ssl, sni
+    type: str = "send"  # send, expect, connect, disable-on-404
+    # Send options
+    method: str | None = None  # HTTP method (GET, POST, OPTIONS, etc.)
+    uri: str | None = None  # URI path
+    headers: dict[str, str] = field(default_factory=dict)  # HTTP headers
+    body: str | None = None  # Request body
+    # Expect options
+    expect_type: str | None = None  # status, string, rstatus, rstring
+    expect_value: Any = None  # Expected value (int for status, str for string/regex)
+    expect_negate: bool = False  # Negation flag (! prefix)
+    # Connect options
+    port: int | None = None  # Port for connect
+    ssl: bool = False  # Use SSL
+    sni: str | None = None  # SNI hostname
+    alpn: str | None = None  # ALPN protocol
+    # Condition
+    condition: str | None = None  # if/unless ACL condition
+
+
+@dataclass(frozen=True)
+class TcpCheckRule(IRNode):
+    """Advanced TCP health check rule (tcp-check directive)."""
+
+    type: str = "connect"  # connect, send, send-binary, send-lf, expect, comment
+    # Connect options
+    port: int | None = None  # Port for connect
+    ssl: bool = False  # Use SSL
+    sni: str | None = None  # SNI hostname
+    alpn: str | None = None  # ALPN protocol
+    # Send options
+    data: str | None = None  # Data to send (string or hex for send-binary)
+    # Expect options
+    pattern: str | None = None  # Pattern to expect (string or regex)
+    min_recv: int | None = None  # Minimum bytes to receive
+    # Common options
+    condition: str | None = None  # if/unless ACL condition
+    comment: str | None = None  # Comment text
+
+
+@dataclass(frozen=True)
+class UseServerRule(IRNode):
+    """use-server directive for conditional server selection in backends."""
+
+    server: str = ""  # Server name to use
+    condition: str | None = None  # ACL condition (if/unless)
 
 
 @dataclass(frozen=True)
@@ -644,6 +684,8 @@ class Backend(IRNode):
     error_files: list[ErrorFile] = field(default_factory=list)  # Custom error page files
     http_reuse: str | None = None  # Connection reuse mode: never, safe, aggressive, always
     http_check_rules: list[HttpCheckRule] = field(default_factory=list)  # Advanced HTTP health checks
+    tcp_check_rules: list[TcpCheckRule] = field(default_factory=list)  # Advanced TCP health checks
+    use_server_rules: list[UseServerRule] = field(default_factory=list)  # Conditional server selection
     source: str | None = None  # Source IP/port for backend connections
 
 

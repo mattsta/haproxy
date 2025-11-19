@@ -450,6 +450,9 @@ backend_section: "backend" identifier "{" backend_property* "}"
                  | errorfile_directive                      -> backend_errorfile
                  | "http-reuse" ":" http_reuse_mode         -> backend_http_reuse
                  | "source" ":" string                      -> backend_source
+                 | use_server_rule                          -> backend_use_server
+                 | http_check_block                         -> backend_http_check
+                 | tcp_check_block                          -> backend_tcp_check
 
 ?http_reuse_mode: HTTP_REUSE_NEVER | HTTP_REUSE_SAFE | HTTP_REUSE_AGGRESSIVE | HTTP_REUSE_ALWAYS
 
@@ -488,6 +491,45 @@ expect_value: "status" number                       -> expect_status
             | "!" "rstring" string                  -> expect_not_rstring
 
 header_definition: "header" string string
+
+// ===== use-server Directive =====
+use_server_rule: "use-server" identifier if_condition?
+
+// ===== http-check Block =====
+http_check_block: "http-check" "{" http_check_rule+ "}"
+
+?http_check_rule: "send" http_check_send_options     -> http_check_send
+                | "expect" http_check_expect          -> http_check_expect
+                | "connect" http_check_connect_options -> http_check_connect
+                | "disable-on-404"                    -> http_check_disable_on_404
+
+http_check_send_options: "method" string "uri" string http_check_headers?  -> http_check_send_with_uri
+                       | "method" string http_check_headers?              -> http_check_send_method_only
+
+?http_check_headers: "headers" "{" header_definition* "}"
+
+?http_check_expect: expect_value
+
+http_check_connect_options: "port" number http_check_ssl_options?  -> http_check_connect_with_port
+                          | http_check_ssl_options                -> http_check_connect_ssl_only
+
+?http_check_ssl_options: "ssl" ("sni" string)? ("alpn" string)?
+
+// ===== tcp-check Block =====
+tcp_check_block: "tcp-check" "{" tcp_check_rule+ "}"
+
+?tcp_check_rule: "connect" tcp_check_connect_options  -> tcp_check_connect
+               | "send" string                        -> tcp_check_send
+               | "send-binary" string                 -> tcp_check_send_binary
+               | "expect" tcp_check_expect_options    -> tcp_check_expect
+               | "comment" string                     -> tcp_check_comment
+
+tcp_check_connect_options: "port" number tcp_check_ssl_options?  -> tcp_check_connect_with_port
+                         | tcp_check_ssl_options                -> tcp_check_connect_ssl_only
+
+?tcp_check_ssl_options: "ssl" ("sni" string)? ("alpn" string)?
+
+?tcp_check_expect_options: "string" string | "binary" string | "rstring" string
 
 default_server_directive: "default-server" "{" default_server_property* "}"
 
