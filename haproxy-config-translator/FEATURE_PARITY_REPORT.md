@@ -1,6 +1,6 @@
 # HAProxy Config Translator - Feature Parity Report
 
-**Generated:** 2025-11-19 02:40:00
+**Generated:** 2025-11-19 13:14:26
 **HAProxy Version:** 3.3
 **Documentation Source:** `/home/user/haproxy/doc/configuration.txt`
 
@@ -11,20 +11,25 @@ configuration language and the haproxy-config-translator implementation.
 
 ## Coverage Statistics
 
-### Global Directives✅ Report generated: /home/user/haproxy/haproxy-config-translator/FEATURE_PARITY_REPORT.md
+### Global Directives
 
-===================                            ] 45.9%
+- **Total HAProxy Directives:** 172
+- **Implemented:** 79
+- **Coverage:** `45.9%`
+
+```
+[======================                            ] 45.9%
 ```
 
 ### Proxy Keywords (Frontend/Backend/Listen/Defaults)
 
 - **Total HAProxy Keywords:** 89
-- **Implemented:** 32
-- **Coverage:** `36.0%`
+- **Implemented:** 42
+- **Coverage:** `47.2%`
 
 ### Test Coverage
 
-- **Total Test Files:** 61
+- **Total Test Files:** 66
 - **Global Directive Tests:** 10
 - **Proxy Tests:** 0
 - **Bind Option Tests:** 2
@@ -258,11 +263,8 @@ configuration language and the haproxy-config-translator implementation.
   - clitcpka-intvl
   - crt
   - declare
-  - description
-  - disabled
   - dispatch
   - email-alert
-  - enabled
   - errorloc
   - errorloc302
   - errorloc303
@@ -272,17 +274,12 @@ configuration language and the haproxy-config-translator implementation.
   - hash-preserve-affinity
   - http-after-response
   - http-error
-  - http-send-name-header
-  - id
   - ignore-persist
   - limited
   - marked
-  - max-keep-alive-queue
-  - max-session-srv-conns
   - persist
   - quic-initial
   - rate-limit
-  - retry-on
   - sections
   - specified
   - srvtcpka-cnt
@@ -290,8 +287,6 @@ configuration language and the haproxy-config-translator implementation.
   - srvtcpka-intvl
   - they
   - transparent
-  - unique-id-format
-  - unique-id-header
   - use-fcgi-app
   - with
 ```
