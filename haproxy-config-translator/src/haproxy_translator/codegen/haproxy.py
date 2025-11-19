@@ -561,6 +561,10 @@ class HAProxyCodeGenerator:
         if frontend.fullconn:
             lines.append(self._indent(f"fullconn {frontend.fullconn}"))
 
+        # Keep-alive queue
+        if frontend.max_keep_alive_queue:
+            lines.append(self._indent(f"max-keep-alive-queue {frontend.max_keep_alive_queue}"))
+
         # Timeout
         if frontend.timeout_client:
             lines.append(self._indent(f"timeout client {frontend.timeout_client}"))
@@ -733,6 +737,14 @@ class HAProxyCodeGenerator:
         # Backlog
         if backend.backlog:
             lines.append(self._indent(f"backlog {backend.backlog}"))
+
+        # Keep-alive queue
+        if backend.max_keep_alive_queue:
+            lines.append(self._indent(f"max-keep-alive-queue {backend.max_keep_alive_queue}"))
+
+        # Session-server connections
+        if backend.max_session_srv_conns:
+            lines.append(self._indent(f"max-session-srv-conns {backend.max_session_srv_conns}"))
 
         # Timeouts
         if backend.timeout_connect:

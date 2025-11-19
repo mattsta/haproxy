@@ -1515,6 +1515,7 @@ class DSLTransformer(Transformer):
         maxconn = None
         backlog = None
         fullconn = None
+        max_keep_alive_queue = None
         log = []
         log_tag = None
         log_format = None
@@ -1613,6 +1614,8 @@ class DSLTransformer(Transformer):
                     backlog = value
                 elif key == "fullconn":
                     fullconn = value
+                elif key == "max_keep_alive_queue":
+                    max_keep_alive_queue = value
                 elif key == "log":
                     log.append(value)
                 elif key == "log_tag":
@@ -1657,6 +1660,7 @@ class DSLTransformer(Transformer):
             maxconn=maxconn,
             backlog=backlog,
             fullconn=fullconn,
+            max_keep_alive_queue=max_keep_alive_queue,
             log=log,
             log_tag=log_tag,
             log_format=log_format,
@@ -1746,6 +1750,10 @@ class DSLTransformer(Transformer):
     def frontend_fullconn(self, items: list[Any]) -> tuple[str, int]:
         """Transform fullconn directive."""
         return ("fullconn", items[0])
+
+    def frontend_max_keep_alive_queue(self, items: list[Any]) -> tuple[str, int]:
+        """Transform max-keep-alive-queue directive."""
+        return ("max_keep_alive_queue", items[0])
 
     def frontend_log(self, items: list[Any]) -> tuple[str, str]:
         """Transform log directive."""
@@ -2327,6 +2335,8 @@ class DSLTransformer(Transformer):
         retries = None
         maxconn = None
         backlog = None
+        max_keep_alive_queue = None
+        max_session_srv_conns = None
         log = []
         log_tag = None
         log_format = None
@@ -2429,6 +2439,10 @@ class DSLTransformer(Transformer):
                     maxconn = value
                 elif key == "backlog":
                     backlog = value
+                elif key == "max_keep_alive_queue":
+                    max_keep_alive_queue = value
+                elif key == "max_session_srv_conns":
+                    max_session_srv_conns = value
                 elif key == "log":
                     log.append(value)
                 elif key == "log_tag":
@@ -2479,6 +2493,8 @@ class DSLTransformer(Transformer):
             retries=retries,
             maxconn=maxconn,
             backlog=backlog,
+            max_keep_alive_queue=max_keep_alive_queue,
+            max_session_srv_conns=max_session_srv_conns,
             log=log,
             log_tag=log_tag,
             log_format=log_format,
@@ -2565,6 +2581,14 @@ class DSLTransformer(Transformer):
     def backend_backlog(self, items: list[Any]) -> tuple[str, int]:
         """Transform backlog directive."""
         return ("backlog", items[0])
+
+    def backend_max_keep_alive_queue(self, items: list[Any]) -> tuple[str, int]:
+        """Transform max-keep-alive-queue directive."""
+        return ("max_keep_alive_queue", items[0])
+
+    def backend_max_session_srv_conns(self, items: list[Any]) -> tuple[str, int]:
+        """Transform max-session-srv-conns directive."""
+        return ("max_session_srv_conns", items[0])
 
     def backend_log(self, items: list[Any]) -> tuple[str, str]:
         """Transform log directive."""

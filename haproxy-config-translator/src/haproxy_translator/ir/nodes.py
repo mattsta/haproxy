@@ -672,6 +672,7 @@ class Frontend(IRNode):
     maxconn: int | None = None  # Maximum concurrent connections
     backlog: int | None = None  # Socket listen backlog size
     fullconn: int | None = None  # Backend saturation threshold for dynamic weights
+    max_keep_alive_queue: int | None = None  # Maximum idle connections in keep-alive queue
     monitor_uri: str | None = None  # Monitor URI for health checks
     monitor_net: list[str] = field(default_factory=list)  # Network sources for monitoring requests
     monitor_fail_rules: list[MonitorFailRule] = field(default_factory=list)  # Conditional monitoring failures
@@ -723,6 +724,8 @@ class Backend(IRNode):
     retries: int | None = None
     maxconn: int | None = None  # Maximum concurrent connections
     backlog: int | None = None  # Socket listen backlog size
+    max_keep_alive_queue: int | None = None  # Maximum idle connections in keep-alive queue
+    max_session_srv_conns: int | None = None  # Maximum connections per session to server
     redirect_rules: list[RedirectRule] = field(default_factory=list)  # HTTP redirect rules
     error_files: list[ErrorFile] = field(default_factory=list)  # Custom error page files
     http_reuse: str | None = None  # Connection reuse mode: never, safe, aggressive, always

@@ -286,6 +286,7 @@ frontend_section: "frontend" identifier "{" frontend_property* "}"
                   | "maxconn" ":" number                   -> frontend_maxconn
                   | "backlog" ":" number                   -> frontend_backlog
                   | "fullconn" ":" number                  -> frontend_fullconn
+                  | "max-keep-alive-queue" ":" number     -> frontend_max_keep_alive_queue
                   | "log" ":" string                       -> frontend_log
                   | "log-tag" ":" string                   -> frontend_log_tag
                   | "log-format" ":" string                -> frontend_log_format
@@ -477,6 +478,8 @@ backend_section: "backend" identifier "{" backend_property* "}"
                  | "retries" ":" number                     -> backend_retries
                  | "maxconn" ":" number                     -> backend_maxconn
                  | "backlog" ":" number                     -> backend_backlog
+                 | "max-keep-alive-queue" ":" number       -> backend_max_keep_alive_queue
+                 | "max-session-srv-conns" ":" number      -> backend_max_session_srv_conns
                  | "log" ":" string                         -> backend_log
                  | "log-tag" ":" string                     -> backend_log_tag
                  | "log-format" ":" string                  -> backend_log_format
