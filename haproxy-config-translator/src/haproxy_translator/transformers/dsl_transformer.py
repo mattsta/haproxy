@@ -1025,6 +1025,27 @@ class DSLTransformer(Transformer):
     def global_tune_applet_zero_copy_forwarding(self, items: list[Any]) -> tuple[str, bool]:
         return ("tune_applet_zero_copy_forwarding", items[0])
 
+    def global_tune_buffers_limit(self, items: list[Any]) -> tuple[str, int]:
+        return ("tune_buffers_limit", items[0])
+
+    def global_tune_buffers_reserve(self, items: list[Any]) -> tuple[str, int]:
+        return ("tune_buffers_reserve", items[0])
+
+    def global_tune_comp_maxlevel(self, items: list[Any]) -> tuple[str, int]:
+        return ("tune_comp_maxlevel", items[0])
+
+    def global_tune_http_cookielen(self, items: list[Any]) -> tuple[str, int]:
+        return ("tune_http_cookielen", items[0])
+
+    def global_tune_http_logurilen(self, items: list[Any]) -> tuple[str, int]:
+        return ("tune_http_logurilen", items[0])
+
+    def global_tune_http_maxhdr(self, items: list[Any]) -> tuple[str, int]:
+        return ("tune_http_maxhdr", items[0])
+
+    def global_tune_ssl_cachesize(self, items: list[Any]) -> tuple[str, int]:
+        return ("tune_ssl_cachesize", items[0])
+
     # Phase 4B Part 1 - HTTP Client Configuration directives
     def global_httpclient_resolvers_disabled(self, items: list[Any]) -> tuple[str, bool]:
         return ("httpclient_resolvers_disabled", items[0])

@@ -404,3 +404,122 @@ class TestPhase6PerformanceTuning:
         codegen = HAProxyCodeGenerator()
         output = codegen.generate(ir)
         assert "tune.applet.zero-copy-forwarding on" in output
+
+    def test_tune_buffers_limit(self):
+        """Test tune.buffers.limit directive."""
+        config = """
+        config test {
+            global {
+                tune.buffers.limit: 1000000
+            }
+        }
+        """
+        parser = DSLParser()
+        ir = parser.parse(config)
+        assert ir.global_config.tuning.get("tune.buffers.limit") == 1000000
+
+        codegen = HAProxyCodeGenerator()
+        output = codegen.generate(ir)
+        assert "tune.buffers.limit 1000000" in output
+
+    def test_tune_buffers_reserve(self):
+        """Test tune.buffers.reserve directive."""
+        config = """
+        config test {
+            global {
+                tune.buffers.reserve: 64
+            }
+        }
+        """
+        parser = DSLParser()
+        ir = parser.parse(config)
+        assert ir.global_config.tuning.get("tune.buffers.reserve") == 64
+
+        codegen = HAProxyCodeGenerator()
+        output = codegen.generate(ir)
+        assert "tune.buffers.reserve 64" in output
+
+    def test_tune_comp_maxlevel(self):
+        """Test tune.comp.maxlevel directive."""
+        config = """
+        config test {
+            global {
+                tune.comp.maxlevel: 9
+            }
+        }
+        """
+        parser = DSLParser()
+        ir = parser.parse(config)
+        assert ir.global_config.tuning.get("tune.comp.maxlevel") == 9
+
+        codegen = HAProxyCodeGenerator()
+        output = codegen.generate(ir)
+        assert "tune.comp.maxlevel 9" in output
+
+    def test_tune_http_cookielen(self):
+        """Test tune.http.cookielen directive."""
+        config = """
+        config test {
+            global {
+                tune.http.cookielen: 4096
+            }
+        }
+        """
+        parser = DSLParser()
+        ir = parser.parse(config)
+        assert ir.global_config.tuning.get("tune.http.cookielen") == 4096
+
+        codegen = HAProxyCodeGenerator()
+        output = codegen.generate(ir)
+        assert "tune.http.cookielen 4096" in output
+
+    def test_tune_http_logurilen(self):
+        """Test tune.http.logurilen directive."""
+        config = """
+        config test {
+            global {
+                tune.http.logurilen: 2048
+            }
+        }
+        """
+        parser = DSLParser()
+        ir = parser.parse(config)
+        assert ir.global_config.tuning.get("tune.http.logurilen") == 2048
+
+        codegen = HAProxyCodeGenerator()
+        output = codegen.generate(ir)
+        assert "tune.http.logurilen 2048" in output
+
+    def test_tune_http_maxhdr(self):
+        """Test tune.http.maxhdr directive."""
+        config = """
+        config test {
+            global {
+                tune.http.maxhdr: 200
+            }
+        }
+        """
+        parser = DSLParser()
+        ir = parser.parse(config)
+        assert ir.global_config.tuning.get("tune.http.maxhdr") == 200
+
+        codegen = HAProxyCodeGenerator()
+        output = codegen.generate(ir)
+        assert "tune.http.maxhdr 200" in output
+
+    def test_tune_ssl_cachesize(self):
+        """Test tune.ssl.cachesize directive."""
+        config = """
+        config test {
+            global {
+                tune.ssl.cachesize: 20000
+            }
+        }
+        """
+        parser = DSLParser()
+        ir = parser.parse(config)
+        assert ir.global_config.tuning.get("tune.ssl.cachesize") == 20000
+
+        codegen = HAProxyCodeGenerator()
+        output = codegen.generate(ir)
+        assert "tune.ssl.cachesize 20000" in output

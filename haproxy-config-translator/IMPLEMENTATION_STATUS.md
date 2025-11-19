@@ -6,7 +6,7 @@
 ## Current Status
 
 ### Tests & Code Quality ✅
-- **Tests:** 911 passing, 0 skipped, 0 failures
+- **Tests:** 918 passing, 0 skipped, 0 failures
 - **Test Coverage:** ~95%
 - **Mypy:** 0 errors (100% type safe)
 - **Ruff:** 27 minor style warnings (non-blocking, only in existing code)
@@ -16,9 +16,9 @@
 
 #### Global Directives
 - **Total HAProxy Directives:** 172
-- **Implemented:** 100
-- **Coverage:** 58.1%
-- **Missing:** 72 directives
+- **Implemented:** 107
+- **Coverage:** 62.2%
+- **Missing:** 65 directives
 
 #### Proxy Keywords (Frontend/Backend/Listen/Defaults)
 - **Total HAProxy Keywords:** 89
@@ -72,8 +72,15 @@
 19. ✅ **tune.peers.max-updates-at-once** - Max peer updates at once
 20. ✅ **tune.ring.queues** - Number of ring queues
 21. ✅ **tune.applet.zero-copy-forwarding** - Applet zero-copy forwarding
+22. ✅ **tune.buffers.limit** - Buffer limit
+23. ✅ **tune.buffers.reserve** - Reserved buffers
+24. ✅ **tune.comp.maxlevel** - Compression max level
+25. ✅ **tune.http.cookielen** - HTTP cookie length
+26. ✅ **tune.http.logurilen** - HTTP log URI length
+27. ✅ **tune.http.maxhdr** - HTTP max headers
+28. ✅ **tune.ssl.cachesize** - SSL session cache size
 
-**Phase 6 Results:** +22 tests (889 → 911), 21 new global directives, 0 failures
+**Phase 6 Results:** +29 tests (889 → 918), 28 new global directives, 0 failures
 
 ### Features Implemented (Previous Sessions)
 1. ✅ **Phases 1-3:** Core directives, SSL/TLS, HTTP/2, system integration
@@ -149,10 +156,17 @@ Implement missing tune.* directives:
 17. ✅ **tune.peers.max-updates-at-once** - Max peer updates at once (IMPLEMENTED)
 18. ✅ **tune.ring.queues** - Number of ring queues (IMPLEMENTED)
 19. ✅ **tune.applet.zero-copy-forwarding** - Applet zero-copy forwarding (IMPLEMENTED)
-20. +16 more tune.* directives ❌ PENDING
+20. ✅ **tune.buffers.limit** - Buffer limit (IMPLEMENTED)
+21. ✅ **tune.buffers.reserve** - Reserved buffers (IMPLEMENTED)
+22. ✅ **tune.comp.maxlevel** - Compression max level (IMPLEMENTED)
+23. ✅ **tune.http.cookielen** - HTTP cookie length (IMPLEMENTED)
+24. ✅ **tune.http.logurilen** - HTTP log URI length (IMPLEMENTED)
+25. ✅ **tune.http.maxhdr** - HTTP max headers (IMPLEMENTED)
+26. ✅ **tune.ssl.cachesize** - SSL session cache size (IMPLEMENTED)
+27. +9 more tune.* directives ❌ PENDING
 
-**Phase 6 Progress:** 21/37 directives implemented (57%)
-**Estimated Impact:** +16 global directives remaining
+**Phase 6 Progress:** 28/37 directives implemented (76%)
+**Estimated Impact:** +9 global directives remaining
 
 ### Priority 4: Debugging & Development (Phase 7)
 Implement debugging directives:
