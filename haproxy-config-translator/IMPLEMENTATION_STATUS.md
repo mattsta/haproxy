@@ -6,7 +6,7 @@
 ## Current Status
 
 ### Tests & Code Quality ✅
-- **Tests:** 1012 passing, 0 skipped, 0 failures
+- **Tests:** 1028 passing, 0 skipped, 0 failures
 - **Test Coverage:** ~95%
 - **Mypy:** 0 errors (100% type safe)
 - **Ruff:** 27 minor style warnings (non-blocking, only in existing code)
@@ -16,9 +16,9 @@
 
 #### Global Directives
 - **Total HAProxy Directives:** 172
-- **Implemented:** 135
-- **Coverage:** 78.5%
-- **Missing:** 37 directives
+- **Implemented:** 141
+- **Coverage:** 82.0%
+- **Missing:** 31 directives
 
 #### Proxy Keywords (Frontend/Backend/Listen/Defaults)
 - **Total HAProxy Keywords:** 89
@@ -184,6 +184,28 @@ Status: 100% complete (3 of 3 directives implemented)
 - Works with server-state-base to organize state files by directory
 - load-server-state-from-file controls whether state is restored from global or per-backend files
 - Critical for production environments requiring continuous availability
+
+### Priority 10: SSL & Paths (Phase 11 Batch 1) ✅ COMPLETE
+Status: 100% complete (6 of 6 directives - test coverage added)
+
+**Completed:**
+1. ✅ **ca-base** - Base directory for CA certificates (already implemented, tests added)
+2. ✅ **crt-base** - Base directory for certificate files (already implemented, tests added)
+3. ✅ **key-base** - Base directory for key files (already implemented, tests added)
+4. ✅ **ssl-dh-param-file** - Diffie-Hellman parameter file (already implemented, tests added)
+5. ✅ **ssl-engine** - OpenSSL engine selection (already implemented, tests added)
+6. ✅ **ssl-server-verify** - Default server certificate verification (already implemented, tests added)
+
+**Phase 11 Batch 1 Results:** +16 tests (1012 → 1028), 6 directives with test coverage, 0 failures
+**Phase 11 Batch 1 Status:** 100% COMPLETE (6/6 directives) ✅
+
+**Implementation Notes:**
+- All 6 directives were already fully implemented in grammar, transformer, and codegen
+- Phase 11 focused on adding comprehensive test coverage for production SSL configurations
+- Tests cover standard paths, custom locations, relative directories, and complete SSL configs
+- Critical for secure production deployments with proper SSL/TLS certificate management
+- ssl-dh-param-file enables Perfect Forward Secrecy (PFS) for enhanced security
+- ssl-engine enables hardware acceleration for SSL/TLS operations
 
 ### Features Implemented (Previous Sessions)
 1. ✅ **Phases 1-3:** Core directives, SSL/TLS, HTTP/2, system integration
