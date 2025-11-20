@@ -113,6 +113,10 @@ global_section: "global" "{" global_property* "}"
                 | "tune.pattern.cache-size" ":" number    -> global_tune_pattern_cache_size
                 | "tune.stick-counters" ":" number        -> global_tune_stick_counters
                 | "default-path" ":" string               -> global_default_path
+                // Phase 10 Batch 3 - Server State Management (3 directives)
+                | "server-state-base" ":" string         -> global_server_state_base
+                | "server-state-file" ":" string         -> global_server_state_file
+                | "load-server-state-from-file" ":" string -> global_load_server_state_from_file
                 // Phase 4A - Lua Configuration (6 directives)
                 | "tune.lua.forced-yield" ":" number      -> global_tune_lua_forced_yield
                 | "tune.lua.maxmem" ":" number            -> global_tune_lua_maxmem

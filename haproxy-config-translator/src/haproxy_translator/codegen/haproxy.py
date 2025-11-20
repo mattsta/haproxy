@@ -220,6 +220,16 @@ class HAProxyCodeGenerator:
         if global_config.key_base:
             lines.append(self._indent(f"key-base {global_config.key_base}"))
 
+        # Server State Management (Phase 10 Batch 3)
+        if global_config.server_state_base:
+            lines.append(self._indent(f"server-state-base {global_config.server_state_base}"))
+
+        if global_config.server_state_file:
+            lines.append(self._indent(f"server-state-file {global_config.server_state_file}"))
+
+        if global_config.load_server_state_from_file:
+            lines.append(self._indent(f"load-server-state-from-file {global_config.load_server_state_from_file}"))
+
         # Performance tuning (basic)
         if "nbthread" in global_config.tuning:
             lines.append(self._indent(f"nbthread {global_config.tuning['nbthread']}"))

@@ -204,6 +204,11 @@ class DSLTransformer(Transformer):
         maxcomprate = None
         default_path = None
 
+        # Server State Management (Phase 10 Batch 3)
+        server_state_base = None
+        server_state_file = None
+        load_server_state_from_file = None
+
         # HTTP Client Configuration (Phase 4B Part 1)
         httpclient_resolvers_disabled = None
         httpclient_resolvers_id = None
@@ -370,6 +375,13 @@ class DSLTransformer(Transformer):
                     maxcomprate = value
                 elif key == "default_path":
                     default_path = value
+                # Phase 10 Batch 3 - Server State Management
+                elif key == "server_state_base":
+                    server_state_base = value
+                elif key == "server_state_file":
+                    server_state_file = value
+                elif key == "load_server_state_from_file":
+                    load_server_state_from_file = value
                 # Phase 4B Part 1 - HTTP Client Configuration
                 elif key == "httpclient_resolvers_disabled":
                     httpclient_resolvers_disabled = value
@@ -624,6 +636,10 @@ class DSLTransformer(Transformer):
             maxcompcpuusage=maxcompcpuusage,
             maxcomprate=maxcomprate,
             default_path=default_path,
+            # Server State Management (Phase 10 Batch 3)
+            server_state_base=server_state_base,
+            server_state_file=server_state_file,
+            load_server_state_from_file=load_server_state_from_file,
             # HTTP Client Configuration (Phase 4B Part 1)
             httpclient_resolvers_disabled=httpclient_resolvers_disabled,
             httpclient_resolvers_id=httpclient_resolvers_id,
@@ -976,6 +992,16 @@ class DSLTransformer(Transformer):
 
     def global_default_path(self, items: list[Any]) -> tuple[str, str]:
         return ("default_path", items[0])
+
+    # Phase 10 Batch 3 - Server State Management directives
+    def global_server_state_base(self, items: list[Any]) -> tuple[str, str]:
+        return ("server_state_base", items[0])
+
+    def global_server_state_file(self, items: list[Any]) -> tuple[str, str]:
+        return ("server_state_file", items[0])
+
+    def global_load_server_state_from_file(self, items: list[Any]) -> tuple[str, str]:
+        return ("load_server_state_from_file", items[0])
 
     # Phase 4A - Lua Configuration directives
     def global_tune_lua_forced_yield(self, items: list[Any]) -> tuple[str, int]:

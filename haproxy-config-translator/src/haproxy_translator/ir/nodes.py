@@ -430,6 +430,11 @@ class GlobalConfig(IRNode):
     maxcomprate: int | None = None
     default_path: str | None = None
 
+    # Server State Management (Phase 10 Batch 3)
+    server_state_base: str | None = None
+    server_state_file: str | None = None
+    load_server_state_from_file: str | None = None
+
     # HTTP Client Configuration (Phase 4B Part 1)
     httpclient_resolvers_disabled: bool | None = None
     httpclient_resolvers_id: str | None = None
