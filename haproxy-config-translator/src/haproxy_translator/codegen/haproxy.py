@@ -158,6 +158,17 @@ class HAProxyCodeGenerator:
         if global_config.maxsessrate:
             lines.append(self._indent(f"maxsessrate {global_config.maxsessrate}"))
 
+        # Resource limits (Phase 10 Batch 2)
+        if global_config.fd_hard_limit is not None:
+            lines.append(self._indent(f"fd-hard-limit {global_config.fd_hard_limit}"))
+
+        if global_config.maxzlibmem is not None:
+            lines.append(self._indent(f"maxzlibmem {global_config.maxzlibmem}"))
+
+        if global_config.strict_limits is not None:
+            value = "on" if global_config.strict_limits else "off"
+            lines.append(self._indent(f"strict-limits {value}"))
+
         if global_config.user:
             lines.append(self._indent(f"user {global_config.user}"))
 

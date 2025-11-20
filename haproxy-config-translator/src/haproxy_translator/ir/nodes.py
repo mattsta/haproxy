@@ -385,6 +385,11 @@ class GlobalConfig(IRNode):
     maxsessrate: int | None = None
     maxpipes: int | None = None
 
+    # Resource limits (Phase 10 Batch 2)
+    fd_hard_limit: int | None = None
+    maxzlibmem: int | None = None
+    strict_limits: bool | None = None
+
     # SSL/TLS paths
     ca_base: str | None = None
     crt_base: str | None = None

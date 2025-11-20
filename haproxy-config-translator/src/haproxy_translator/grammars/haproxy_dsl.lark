@@ -37,6 +37,9 @@ global_section: "global" "{" global_property* "}"
                 | "maxsessrate" ":" number             -> global_maxsessrate
                 | "maxpipes" ":" number                -> global_maxpipes
                 | "ulimit-n" ":" number                -> global_ulimit_n
+                | "fd-hard-limit" ":" number           -> global_fd_hard_limit
+                | "maxzlibmem" ":" number              -> global_maxzlibmem
+                | "strict-limits" ":" boolean          -> global_strict_limits
                 | "user" ":" string                    -> global_user
                 | "group" ":" string                   -> global_group
                 | "chroot" ":" string                  -> global_chroot

@@ -159,6 +159,11 @@ class DSLTransformer(Transformer):
         maxsessrate = None
         maxpipes = None
 
+        # Resource limits (Phase 10 Batch 2)
+        fd_hard_limit = None
+        maxzlibmem = None
+        strict_limits = None
+
         # SSL/TLS paths
         ca_base = None
         crt_base = None
@@ -299,6 +304,13 @@ class DSLTransformer(Transformer):
                     pidfile = value
                 elif key == "maxpipes":
                     maxpipes = value
+                # Phase 10 Batch 2 - Resource limits
+                elif key == "fd_hard_limit":
+                    fd_hard_limit = value
+                elif key == "maxzlibmem":
+                    maxzlibmem = value
+                elif key == "strict_limits":
+                    strict_limits = value
                 elif key == "ca_base":
                     ca_base = value
                 elif key == "crt_base":
@@ -574,6 +586,10 @@ class DSLTransformer(Transformer):
             maxsslrate=maxsslrate,
             maxsessrate=maxsessrate,
             maxpipes=maxpipes,
+            # Resource limits (Phase 10 Batch 2)
+            fd_hard_limit=fd_hard_limit,
+            maxzlibmem=maxzlibmem,
+            strict_limits=strict_limits,
             # SSL/TLS paths
             ca_base=ca_base,
             crt_base=crt_base,
@@ -714,6 +730,15 @@ class DSLTransformer(Transformer):
 
     def global_ulimit_n(self, items: list[Any]) -> tuple[str, int]:
         return ("ulimit_n", items[0])
+
+    def global_fd_hard_limit(self, items: list[Any]) -> tuple[str, int]:
+        return ("fd_hard_limit", items[0])
+
+    def global_maxzlibmem(self, items: list[Any]) -> tuple[str, int]:
+        return ("maxzlibmem", items[0])
+
+    def global_strict_limits(self, items: list[Any]) -> tuple[str, bool]:
+        return ("strict_limits", items[0])
 
     def global_nbproc(self, items: list[Any]) -> tuple[str, int]:
         return ("nbproc", items[0])

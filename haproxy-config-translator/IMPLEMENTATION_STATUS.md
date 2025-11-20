@@ -6,7 +6,7 @@
 ## Current Status
 
 ### Tests & Code Quality ✅
-- **Tests:** 986 passing, 0 skipped, 0 failures
+- **Tests:** 999 passing, 0 skipped, 0 failures
 - **Test Coverage:** ~95%
 - **Mypy:** 0 errors (100% type safe)
 - **Ruff:** 27 minor style warnings (non-blocking, only in existing code)
@@ -16,9 +16,9 @@
 
 #### Global Directives
 - **Total HAProxy Directives:** 172
-- **Implemented:** 129
-- **Coverage:** 75.0%
-- **Missing:** 43 directives
+- **Implemented:** 132
+- **Coverage:** 76.7%
+- **Missing:** 40 directives
 
 #### Proxy Keywords (Frontend/Backend/Listen/Defaults)
 - **Total HAProxy Keywords:** 89
@@ -149,6 +149,23 @@ Status: 100% complete (3 of 3 directives implemented)
 - Now properly implemented as a separate GlobalConfig field (not in tuning dict)
 - Updated old tests to match new implementation
 - All threading directives work together for NUMA-optimized deployments
+
+### Priority 8: Resource Limits (Phase 10 Batch 2) ✅ COMPLETE
+Status: 100% complete (3 of 3 directives implemented)
+
+**Completed:**
+1. ✅ **fd-hard-limit** - Maximum number of file descriptors HAProxy can use
+2. ✅ **maxzlibmem** - Restricts memory available for zlib compression operations
+3. ✅ **strict-limits** - Enforces strict validation of connection and resource limits
+
+**Phase 10 Batch 2 Results:** +13 tests (986 → 999), 3 new global directives, 0 failures
+**Phase 10 Batch 2 Status:** 100% COMPLETE (3/3 directives) ✅
+
+**Implementation Notes:**
+- Critical for production deployments with high connection counts
+- Works with ulimit-n and maxconn for comprehensive resource management
+- strict-limits helps prevent configuration errors in production
+- Enables fine-tuned control over system resource consumption
 
 ### Features Implemented (Previous Sessions)
 1. ✅ **Phases 1-3:** Core directives, SSL/TLS, HTTP/2, system integration
