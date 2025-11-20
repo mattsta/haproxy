@@ -195,6 +195,13 @@ global_section: "global" "{" global_property* "}"
                 | "profiling.tasks.on" ":" boolean               -> global_profiling_tasks_on
                 | "profiling.tasks.automatic" ":" boolean        -> global_profiling_tasks_automatic
                 | "profiling.memory.on" ":" boolean              -> global_profiling_memory_on
+                // Phase 7 - Debugging & Development (6 directives)
+                | "quiet" ":" boolean                            -> global_quiet
+                | "debug.counters" ":" string                    -> global_debug_counters
+                | "anonkey" ":" number                           -> global_anonkey
+                | "zero-warning" ":" boolean                     -> global_zero_warning
+                | "warn-blocked-traffic-after" ":" string        -> global_warn_blocked_traffic_after
+                | "force-cfg-parser-pause" ":" boolean           -> global_force_cfg_parser_pause
                 // Phase 4B Part 3 - QUIC/HTTP3 Support (7 directives)
                 | "tune.quic.frontend.conn-tx-buffers.limit" ":" number   -> global_tune_quic_frontend_conn_tx_buffers_limit
                 | "tune.quic.frontend.max-idle-timeout" ":" string        -> global_tune_quic_frontend_max_idle_timeout

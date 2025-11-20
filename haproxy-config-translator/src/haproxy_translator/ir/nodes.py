@@ -454,6 +454,14 @@ class GlobalConfig(IRNode):
     profiling_tasks_automatic: bool | None = None
     profiling_memory_on: bool | None = None
 
+    # Debugging & Development (Phase 7)
+    quiet: bool | None = None
+    debug_counters: str | None = None
+    anonkey: int | None = None
+    zero_warning: bool | None = None
+    warn_blocked_traffic_after: str | None = None
+    force_cfg_parser_pause: bool | None = None
+
     # Device Detection - DeviceAtlas (Phase 4B Part 4)
     deviceatlas_json_file: str | None = None
     deviceatlas_log_level: int | None = None

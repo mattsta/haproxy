@@ -228,6 +228,14 @@ class DSLTransformer(Transformer):
         profiling_tasks_automatic = None
         profiling_memory_on = None
 
+        # Debugging & Development (Phase 7)
+        quiet = None
+        debug_counters = None
+        anonkey = None
+        zero_warning = None
+        warn_blocked_traffic_after = None
+        force_cfg_parser_pause = None
+
         # Device Detection - DeviceAtlas (Phase 4B Part 4)
         deviceatlas_json_file = None
         deviceatlas_log_level = None
@@ -393,6 +401,19 @@ class DSLTransformer(Transformer):
                     profiling_tasks_automatic = value
                 elif key == "profiling_memory_on":
                     profiling_memory_on = value
+                # Phase 7 - Debugging & Development
+                elif key == "quiet":
+                    quiet = value
+                elif key == "debug_counters":
+                    debug_counters = value
+                elif key == "anonkey":
+                    anonkey = value
+                elif key == "zero_warning":
+                    zero_warning = value
+                elif key == "warn_blocked_traffic_after":
+                    warn_blocked_traffic_after = value
+                elif key == "force_cfg_parser_pause":
+                    force_cfg_parser_pause = value
                 # Phase 4B Part 4 - Device Detection - DeviceAtlas
                 elif key == "deviceatlas_json_file":
                     deviceatlas_json_file = value
@@ -603,6 +624,13 @@ class DSLTransformer(Transformer):
             profiling_tasks_on=profiling_tasks_on,
             profiling_tasks_automatic=profiling_tasks_automatic,
             profiling_memory_on=profiling_memory_on,
+            # Debugging & Development (Phase 7)
+            quiet=quiet,
+            debug_counters=debug_counters,
+            anonkey=anonkey,
+            zero_warning=zero_warning,
+            warn_blocked_traffic_after=warn_blocked_traffic_after,
+            force_cfg_parser_pause=force_cfg_parser_pause,
             # Device Detection - DeviceAtlas (Phase 4B Part 4)
             deviceatlas_json_file=deviceatlas_json_file,
             deviceatlas_log_level=deviceatlas_log_level,
@@ -1148,6 +1176,25 @@ class DSLTransformer(Transformer):
 
     def global_profiling_memory_on(self, items: list[Any]) -> tuple[str, bool]:
         return ("profiling_memory_on", items[0])
+
+    # Phase 7 - Debugging & Development directives
+    def global_quiet(self, items: list[Any]) -> tuple[str, bool]:
+        return ("quiet", items[0])
+
+    def global_debug_counters(self, items: list[Any]) -> tuple[str, str]:
+        return ("debug_counters", items[0])
+
+    def global_anonkey(self, items: list[Any]) -> tuple[str, int]:
+        return ("anonkey", items[0])
+
+    def global_zero_warning(self, items: list[Any]) -> tuple[str, bool]:
+        return ("zero_warning", items[0])
+
+    def global_warn_blocked_traffic_after(self, items: list[Any]) -> tuple[str, str]:
+        return ("warn_blocked_traffic_after", items[0])
+
+    def global_force_cfg_parser_pause(self, items: list[Any]) -> tuple[str, bool]:
+        return ("force_cfg_parser_pause", items[0])
 
     # Phase 4B Part 3 - QUIC/HTTP3 Support directives
     def global_tune_quic_frontend_conn_tx_buffers_limit(self, items: list[Any]) -> tuple[str, int]:

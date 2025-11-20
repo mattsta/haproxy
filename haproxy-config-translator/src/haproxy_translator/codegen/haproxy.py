@@ -339,6 +339,28 @@ class HAProxyCodeGenerator:
             if global_config.profiling_memory_on:
                 lines.append(self._indent("profiling.memory.on"))
 
+        # Debugging & Development (Phase 7)
+        if global_config.quiet is not None:
+            if global_config.quiet:
+                lines.append(self._indent("quiet"))
+
+        if global_config.debug_counters:
+            lines.append(self._indent(f"debug.counters {global_config.debug_counters}"))
+
+        if global_config.anonkey is not None:
+            lines.append(self._indent(f"anonkey {global_config.anonkey}"))
+
+        if global_config.zero_warning is not None:
+            if global_config.zero_warning:
+                lines.append(self._indent("zero-warning"))
+
+        if global_config.warn_blocked_traffic_after:
+            lines.append(self._indent(f"warn-blocked-traffic-after {global_config.warn_blocked_traffic_after}"))
+
+        if global_config.force_cfg_parser_pause is not None:
+            if global_config.force_cfg_parser_pause:
+                lines.append(self._indent("force-cfg-parser-pause"))
+
         # Device Detection - DeviceAtlas (Phase 4B Part 4)
         if global_config.deviceatlas_json_file:
             lines.append(self._indent(f"deviceatlas-json-file {global_config.deviceatlas_json_file}"))
