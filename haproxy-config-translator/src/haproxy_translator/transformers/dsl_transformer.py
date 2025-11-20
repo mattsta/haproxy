@@ -142,12 +142,15 @@ class DSLTransformer(Transformer):
         chroot = None
         pidfile = None
         nbproc = None
+        nbthread = None  # Phase 10
+        thread_groups = None  # Phase 10
         master_worker = None
         mworker_max_reloads = None
         node = None
         description = None
         hard_stop_after = None
         external_check = None
+        numa_cpu_mapping = None  # Phase 10
 
         # Connection limits
         maxconn = 2000
@@ -276,6 +279,10 @@ class DSLTransformer(Transformer):
                     maxconn = value
                 elif key == "nbproc":
                     nbproc = value
+                elif key == "nbthread":  # Phase 10
+                    nbthread = value
+                elif key == "thread_groups":  # Phase 10
+                    thread_groups = value
                 elif key == "maxconnrate":
                     maxconnrate = value
                 elif key == "maxsslrate":
@@ -336,6 +343,8 @@ class DSLTransformer(Transformer):
                     hard_stop_after = value
                 elif key == "external_check":
                     external_check = value
+                elif key == "numa_cpu_mapping":  # Phase 10
+                    numa_cpu_mapping = value
                 # Phase 4A - Performance & Runtime
                 elif key == "busy_polling":
                     busy_polling = value
@@ -550,12 +559,15 @@ class DSLTransformer(Transformer):
             chroot=chroot,
             pidfile=pidfile,
             nbproc=nbproc,
+            nbthread=nbthread,  # Phase 10
+            thread_groups=thread_groups,  # Phase 10
             master_worker=master_worker,
             mworker_max_reloads=mworker_max_reloads,
             node=node,
             description=description,
             hard_stop_after=hard_stop_after,
             external_check=external_check,
+            numa_cpu_mapping=numa_cpu_mapping,  # Phase 10
             # Connection limits
             maxconn=maxconn,
             maxconnrate=maxconnrate,
@@ -693,6 +705,9 @@ class DSLTransformer(Transformer):
 
     def global_nbthread(self, items: list[Any]) -> tuple[str, int]:
         return ("nbthread", items[0])
+
+    def global_thread_groups(self, items: list[Any]) -> tuple[str, int]:
+        return ("thread_groups", items[0])
 
     def global_maxsslconn(self, items: list[Any]) -> tuple[str, int]:
         return ("maxsslconn", items[0])
@@ -905,6 +920,9 @@ class DSLTransformer(Transformer):
 
     def global_external_check(self, items: list[Any]) -> tuple[str, bool]:
         return ("external_check", items[0])
+
+    def global_numa_cpu_mapping(self, items: list[Any]) -> tuple[str, bool]:
+        return ("numa_cpu_mapping", items[0])
 
     # Phase 4A - Performance & Runtime directives
     def global_busy_polling(self, items: list[Any]) -> tuple[str, bool]:

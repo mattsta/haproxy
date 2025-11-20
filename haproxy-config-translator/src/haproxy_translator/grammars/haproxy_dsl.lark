@@ -29,6 +29,7 @@ global_section: "global" "{" global_property* "}"
 ?global_property: "daemon" ":" boolean                 -> global_daemon
                 | "maxconn" ":" number                 -> global_maxconn
                 | "nbthread" ":" number                -> global_nbthread
+                | "thread-groups" ":" number           -> global_thread_groups
                 | "nbproc" ":" number                  -> global_nbproc
                 | "maxsslconn" ":" number              -> global_maxsslconn
                 | "maxconnrate" ":" number             -> global_maxconnrate
@@ -98,6 +99,7 @@ global_section: "global" "{" global_property* "}"
                 | "node" ":" string                         -> global_node
                 | "description" ":" string                  -> global_description
                 | "external-check" ":" boolean              -> global_external_check
+                | "numa-cpu-mapping" ":" boolean            -> global_numa_cpu_mapping
                 // Phase 4A - Performance & Runtime (9 directives)
                 | "busy-polling" ":" boolean              -> global_busy_polling
                 | "max-spread-checks" ":" number          -> global_max_spread_checks

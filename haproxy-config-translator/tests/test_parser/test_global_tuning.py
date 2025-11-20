@@ -29,8 +29,7 @@ class TestGlobalTuning:
         """
         ir = parser.parse(source)
 
-        assert "nbthread" in ir.global_config.tuning
-        assert ir.global_config.tuning["nbthread"] == 4
+        assert ir.global_config.nbthread == 4
 
         output = codegen.generate(ir)
         assert "nbthread 4" in output
@@ -88,7 +87,7 @@ class TestGlobalTuning:
 
         # Verify all tuning options
         assert ir.global_config.maxconn == 50000
-        assert ir.global_config.tuning["nbthread"] == 8
+        assert ir.global_config.nbthread == 8
         assert ir.global_config.tuning["maxsslconn"] == 20000
         assert ir.global_config.tuning["ulimit_n"] == 100000
 
@@ -134,7 +133,7 @@ class TestGlobalTuning:
 
         # Verify global tuning
         assert ir.global_config.maxconn == 50000
-        assert ir.global_config.tuning["nbthread"] == 16
+        assert ir.global_config.nbthread == 16
         assert ir.global_config.tuning["maxsslconn"] == 25000
         assert ir.global_config.tuning["ulimit_n"] == 200000
 

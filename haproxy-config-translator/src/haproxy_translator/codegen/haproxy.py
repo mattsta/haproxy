@@ -137,6 +137,17 @@ class HAProxyCodeGenerator:
         if global_config.nbproc:
             lines.append(self._indent(f"nbproc {global_config.nbproc}"))
 
+        # Threading (Phase 10)
+        if global_config.nbthread is not None:
+            lines.append(self._indent(f"nbthread {global_config.nbthread}"))
+
+        if global_config.thread_groups is not None:
+            lines.append(self._indent(f"thread-groups {global_config.thread_groups}"))
+
+        if global_config.numa_cpu_mapping is not None:
+            value = "on" if global_config.numa_cpu_mapping else "off"
+            lines.append(self._indent(f"numa-cpu-mapping {value}"))
+
         # Rate limiting
         if global_config.maxconnrate:
             lines.append(self._indent(f"maxconnrate {global_config.maxconnrate}"))

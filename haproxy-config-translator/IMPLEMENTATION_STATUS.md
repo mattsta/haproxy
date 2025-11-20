@@ -1,12 +1,12 @@
 # HAProxy Config Translator - Implementation Status
 
-**Last Updated:** 2025-11-19
-**Session:** claude/merge-haproxy-config-01METEkq7jB9oPH7jThxXfUN
+**Last Updated:** 2025-11-20
+**Session:** claude/merge-haproxy-continue-01Bmzz3vDGC9g8e9Gq49zyBp
 
 ## Current Status
 
 ### Tests & Code Quality ✅
-- **Tests:** 973 passing, 0 skipped, 0 failures
+- **Tests:** 986 passing, 0 skipped, 0 failures
 - **Test Coverage:** ~95%
 - **Mypy:** 0 errors (100% type safe)
 - **Ruff:** 27 minor style warnings (non-blocking, only in existing code)
@@ -16,9 +16,9 @@
 
 #### Global Directives
 - **Total HAProxy Directives:** 172
-- **Implemented:** 126
-- **Coverage:** 73.3%
-- **Missing:** 46 directives
+- **Implemented:** 129
+- **Coverage:** 75.0%
+- **Missing:** 43 directives
 
 #### Proxy Keywords (Frontend/Backend/Listen/Defaults)
 - **Total HAProxy Keywords:** 89
@@ -132,6 +132,23 @@ Status: 100% complete - Full test coverage added for all device detection librar
 **Phase 9 Status:** 100% COMPLETE (15/15 directives fully tested) ✅
 
 **Note:** Phase 9 directives were already implemented in grammar/transformer/codegen in previous sessions, but lacked test coverage. This phase added comprehensive test coverage for all 15 device detection directives.
+
+### Priority 7: Threading & Process Control (Phase 10 Batch 1) ✅ COMPLETE
+Status: 100% complete (3 of 3 directives implemented)
+
+**Completed:**
+1. ✅ **nbthread** - Number of worker threads for processing connections
+2. ✅ **thread-groups** - Number of thread groups for organizing worker threads
+3. ✅ **numa-cpu-mapping** - Enable/disable NUMA-aware CPU mapping
+
+**Phase 10 Batch 1 Results:** +13 tests (973 → 986), 3 new global directives, 0 failures
+**Phase 10 Batch 1 Status:** 100% COMPLETE (3/3 directives) ✅
+
+**Implementation Notes:**
+- nbthread was already in grammar but not fully implemented (no IR field, transformer processing, or codegen)
+- Now properly implemented as a separate GlobalConfig field (not in tuning dict)
+- Updated old tests to match new implementation
+- All threading directives work together for NUMA-optimized deployments
 
 ### Features Implemented (Previous Sessions)
 1. ✅ **Phases 1-3:** Core directives, SSL/TLS, HTTP/2, system integration

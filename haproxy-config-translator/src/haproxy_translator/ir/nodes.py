@@ -368,12 +368,15 @@ class GlobalConfig(IRNode):
     chroot: str | None = None
     pidfile: str | None = None
     nbproc: int | None = None
+    nbthread: int | None = None  # Phase 10
+    thread_groups: int | None = None  # Phase 10
     master_worker: bool | None = None
     mworker_max_reloads: int | None = None
     node: str | None = None
     description: str | None = None
     hard_stop_after: str | None = None
     external_check: bool | None = None
+    numa_cpu_mapping: bool | None = None  # Phase 10
 
     # Connection limits
     maxconn: int = 2000
