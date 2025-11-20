@@ -210,6 +210,11 @@ global_section: "global" "{" global_property* "}"
                 | "tune.quic.retry-threshold" ":" number                  -> global_tune_quic_retry_threshold
                 | "tune.quic.socket.owner" ":" string                     -> global_tune_quic_socket_owner
                 | "tune.quic.max-frame-loss" ":" number                   -> global_tune_quic_max_frame_loss
+                // Phase 8 - Additional QUIC/HTTP3 directives (4 new)
+                | "tune.quic.cc-hystart" ":" boolean                      -> global_tune_quic_cc_hystart
+                | "tune.quic.reorder-ratio" ":" number                    -> global_tune_quic_reorder_ratio
+                | "tune.quic.zero-copy-fwd-send" ":" boolean              -> global_tune_quic_zero_copy_fwd_send
+                | "tune.h2.zero-copy-fwd-send" ":" boolean                -> global_tune_h2_zero_copy_fwd_send
                 // Phase 4B Part 4 - Device Detection (15 directives)
                 // DeviceAtlas (4 directives)
                 | "deviceatlas-json-file" ":" string                      -> global_deviceatlas_json_file

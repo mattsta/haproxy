@@ -1218,6 +1218,19 @@ class DSLTransformer(Transformer):
     def global_tune_quic_max_frame_loss(self, items: list[Any]) -> tuple[str, int]:
         return ("tune_quic_max_frame_loss", items[0])
 
+    # Phase 8 - Additional QUIC/HTTP3 directives
+    def global_tune_quic_cc_hystart(self, items: list[Any]) -> tuple[str, bool]:
+        return ("tune_quic_cc_hystart", items[0])
+
+    def global_tune_quic_reorder_ratio(self, items: list[Any]) -> tuple[str, int]:
+        return ("tune_quic_reorder_ratio", items[0])
+
+    def global_tune_quic_zero_copy_fwd_send(self, items: list[Any]) -> tuple[str, bool]:
+        return ("tune_quic_zero_copy_fwd_send", items[0])
+
+    def global_tune_h2_zero_copy_fwd_send(self, items: list[Any]) -> tuple[str, bool]:
+        return ("tune_h2_zero_copy_fwd_send", items[0])
+
     # Phase 4B Part 4 - Device Detection directives
     # DeviceAtlas
     def global_deviceatlas_json_file(self, items: list[Any]) -> tuple[str, str]:
