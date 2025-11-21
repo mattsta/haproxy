@@ -1972,6 +1972,7 @@ class DSLTransformer(Transformer):
         srvtcpka_cnt = None
         srvtcpka_idle = None
         srvtcpka_intvl = None
+        persist_rdp_cookie = None
 
         for item in items:
             if isinstance(item, tuple):
@@ -1999,6 +2000,8 @@ class DSLTransformer(Transformer):
                     srvtcpka_idle = value
                 elif key == "srvtcpka_intvl":
                     srvtcpka_intvl = value
+                elif key == "persist_rdp_cookie":
+                    persist_rdp_cookie = value  # Empty string means use default "msts"
                 elif key == "rate_limit_sessions":
                     rate_limit_sessions = value
                 elif key == "errorloc":
@@ -2067,6 +2070,7 @@ class DSLTransformer(Transformer):
             srvtcpka_cnt=srvtcpka_cnt,
             srvtcpka_idle=srvtcpka_idle,
             srvtcpka_intvl=srvtcpka_intvl,
+            persist_rdp_cookie=persist_rdp_cookie,
         )
 
     def defaults_mode(self, items: list[Any]) -> tuple[str, str]:
@@ -2717,6 +2721,14 @@ class DSLTransformer(Transformer):
         """Transform srvtcpka-intvl for backend."""
         return ("srvtcpka_intvl", str(items[0]))
 
+    def backend_persist_rdp_cookie(self, items: list[Any]) -> tuple[str, str]:
+        """Transform persist rdp-cookie for backend (default msts cookie)."""
+        return ("persist_rdp_cookie", "")  # Empty string means use default "msts"
+
+    def backend_persist_rdp_cookie_named(self, items: list[Any]) -> tuple[str, str]:
+        """Transform persist rdp-cookie with custom cookie name for backend."""
+        return ("persist_rdp_cookie", str(items[0]))
+
     def listen_clitcpka_cnt(self, items: list[Any]) -> tuple[str, int]:
         """Transform clitcpka-cnt for listen."""
         return ("clitcpka_cnt", int(items[0]))
@@ -2746,6 +2758,14 @@ class DSLTransformer(Transformer):
         """Transform rate-limit sessions for defaults."""
         return ("rate_limit_sessions", int(items[0]))
 
+    def defaults_persist_rdp_cookie(self, items: list[Any]) -> tuple[str, str]:
+        """Transform persist rdp-cookie (default msts cookie)."""
+        return ("persist_rdp_cookie", "")  # Empty string means use default "msts"
+
+    def defaults_persist_rdp_cookie_named(self, items: list[Any]) -> tuple[str, str]:
+        """Transform persist rdp-cookie with custom cookie name."""
+        return ("persist_rdp_cookie", str(items[0]))
+
     def frontend_rate_limit_sessions(self, items: list[Any]) -> tuple[str, int]:
         """Transform rate-limit sessions for frontend."""
         return ("rate_limit_sessions", int(items[0]))
@@ -2753,6 +2773,14 @@ class DSLTransformer(Transformer):
     def listen_rate_limit_sessions(self, items: list[Any]) -> tuple[str, int]:
         """Transform rate-limit sessions for listen."""
         return ("rate_limit_sessions", int(items[0]))
+
+    def listen_persist_rdp_cookie(self, items: list[Any]) -> tuple[str, str]:
+        """Transform persist rdp-cookie for listen (default msts cookie)."""
+        return ("persist_rdp_cookie", "")  # Empty string means use default "msts"
+
+    def listen_persist_rdp_cookie_named(self, items: list[Any]) -> tuple[str, str]:
+        """Transform persist rdp-cookie with custom cookie name for listen."""
+        return ("persist_rdp_cookie", str(items[0]))
 
     def frontend_declare_capture(self, items: list[Any]) -> DeclareCapture:
         """Transform declare capture for frontend."""
@@ -3447,6 +3475,7 @@ class DSLTransformer(Transformer):
         srvtcpka_cnt = None
         srvtcpka_idle = None
         srvtcpka_intvl = None
+        persist_rdp_cookie = None
         errorfiles = None
         dispatch = None
         use_fcgi_app = None
@@ -3627,6 +3656,8 @@ class DSLTransformer(Transformer):
                     srvtcpka_idle = value
                 elif key == "srvtcpka_intvl":
                     srvtcpka_intvl = value
+                elif key == "persist_rdp_cookie":
+                    persist_rdp_cookie = value  # Empty string means use default "msts"
 
         # Build metadata with server loops if any
         metadata = {}
@@ -3702,6 +3733,7 @@ class DSLTransformer(Transformer):
             srvtcpka_cnt=srvtcpka_cnt,
             srvtcpka_idle=srvtcpka_idle,
             srvtcpka_intvl=srvtcpka_intvl,
+            persist_rdp_cookie=persist_rdp_cookie,
             metadata=metadata,
         )
 
@@ -4025,6 +4057,8 @@ class DSLTransformer(Transformer):
         declare_captures = []
         force_persist_rules = []
         ignore_persist_rules = []
+        rate_limit_sessions = None
+        persist_rdp_cookie = None
 
         for prop in properties:
             if isinstance(prop, Bind):
@@ -4113,6 +4147,10 @@ class DSLTransformer(Transformer):
                     log_format_sd = value
                 elif key == "log_steps":
                     log_steps = value
+                elif key == "rate_limit_sessions":
+                    rate_limit_sessions = value
+                elif key == "persist_rdp_cookie":
+                    persist_rdp_cookie = value  # Empty string means use default "msts"
 
         # Build metadata
         metadata: dict[str, Any] = {}
@@ -4157,6 +4195,8 @@ class DSLTransformer(Transformer):
             declare_captures=declare_captures,
             force_persist_rules=force_persist_rules,
             ignore_persist_rules=ignore_persist_rules,
+            rate_limit_sessions=rate_limit_sessions,
+            persist_rdp_cookie=persist_rdp_cookie,
             metadata=metadata,
         )
 

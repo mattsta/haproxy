@@ -378,6 +378,8 @@ defaults_section: "defaults" "{" defaults_property* "}"
                   | "srvtcpka-idle" ":" duration       -> defaults_srvtcpka_idle
                   | "srvtcpka-intvl" ":" duration      -> defaults_srvtcpka_intvl
                   | "rate-limit" "sessions" ":" number -> defaults_rate_limit_sessions
+                  | "persist" "rdp-cookie"             -> defaults_persist_rdp_cookie
+                  | "persist" "rdp-cookie" "(" string ")" -> defaults_persist_rdp_cookie_named
 
 timeout_block: "timeout" ":" "{" timeout_item+ "}"
 
@@ -711,6 +713,8 @@ backend_section: "backend" identifier "{" backend_property* "}"
                  | "srvtcpka-cnt" ":" number               -> backend_srvtcpka_cnt
                  | "srvtcpka-idle" ":" duration            -> backend_srvtcpka_idle
                  | "srvtcpka-intvl" ":" duration           -> backend_srvtcpka_intvl
+                 | "persist" "rdp-cookie"                  -> backend_persist_rdp_cookie
+                 | "persist" "rdp-cookie" "(" string ")"   -> backend_persist_rdp_cookie_named
 
 ?server_state_file_name_value: SERVER_STATE_USE_BACKEND_NAME | string
 
@@ -961,6 +965,8 @@ listen_section: "listen" identifier "{" listen_property* "}"
                 | "srvtcpka-idle" ":" duration             -> listen_srvtcpka_idle
                 | "srvtcpka-intvl" ":" duration            -> listen_srvtcpka_intvl
                 | "rate-limit" "sessions" ":" number       -> listen_rate_limit_sessions
+                | "persist" "rdp-cookie"                   -> listen_persist_rdp_cookie
+                | "persist" "rdp-cookie" "(" string ")"    -> listen_persist_rdp_cookie_named
 
 // ===== Stats Socket =====
 stats_socket_item: "stats_socket" string "{" stats_socket_param* "}"

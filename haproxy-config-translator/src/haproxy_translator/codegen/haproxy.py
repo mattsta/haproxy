@@ -659,6 +659,13 @@ class HAProxyCodeGenerator:
         if defaults.http_check:
             lines.extend(self._generate_http_check(defaults.http_check, indent=True))
 
+        # Persist RDP cookie
+        if defaults.persist_rdp_cookie is not None:
+            if defaults.persist_rdp_cookie:
+                lines.append(self._indent(f"persist rdp-cookie({defaults.persist_rdp_cookie})"))
+            else:
+                lines.append(self._indent("persist rdp-cookie"))
+
         return lines
 
     def _generate_frontend(self, frontend: Frontend) -> list[str]:
@@ -916,6 +923,13 @@ class HAProxyCodeGenerator:
         # Hash balance factor (tuning for hash-based load balancing)
         if backend.hash_balance_factor:
             lines.append(self._indent(f"hash-balance-factor {backend.hash_balance_factor}"))
+
+        # Persist RDP cookie
+        if backend.persist_rdp_cookie is not None:
+            if backend.persist_rdp_cookie:
+                lines.append(self._indent(f"persist rdp-cookie({backend.persist_rdp_cookie})"))
+            else:
+                lines.append(self._indent("persist rdp-cookie"))
 
         # Load server state from file
         if backend.load_server_state_from:
@@ -1193,6 +1207,13 @@ class HAProxyCodeGenerator:
         # Options
         for option in listen.options:
             lines.append(self._indent(f"option {option}"))
+
+        # Persist RDP cookie
+        if listen.persist_rdp_cookie is not None:
+            if listen.persist_rdp_cookie:
+                lines.append(self._indent(f"persist rdp-cookie({listen.persist_rdp_cookie})"))
+            else:
+                lines.append(self._indent("persist rdp-cookie"))
 
         # HTTP request rules
         for req_rule in listen.http_request_rules:

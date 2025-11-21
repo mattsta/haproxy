@@ -562,6 +562,7 @@ class DefaultsConfig(IRNode):
     srvtcpka_cnt: int | None = None  # Max keepalive probes before dropping server connection
     srvtcpka_idle: str | None = None  # Time before sending server keepalive probes
     srvtcpka_intvl: str | None = None  # Interval between server keepalive probes
+    persist_rdp_cookie: str | None = None  # RDP cookie name for persistence (None = default "msts")
 
 
 @dataclass(frozen=True)
@@ -888,6 +889,7 @@ class Backend(IRNode):
     srvtcpka_cnt: int | None = None  # Max keepalive probes before dropping connection
     srvtcpka_idle: str | None = None  # Time before sending keepalive probes
     srvtcpka_intvl: str | None = None  # Interval between keepalive probes
+    persist_rdp_cookie: str | None = None  # RDP cookie name for persistence (None = default "msts")
 
 
 @dataclass(frozen=True)
@@ -940,6 +942,7 @@ class Listen(IRNode):
     srvtcpka_cnt: int | None = None  # Max keepalive probes before dropping server connection
     srvtcpka_idle: str | None = None  # Time before sending server keepalive probes
     srvtcpka_intvl: str | None = None  # Interval between server keepalive probes
+    persist_rdp_cookie: str | None = None  # RDP cookie name for persistence (None = default "msts")
 
 
 # DSL-specific IR nodes (for advanced features)
