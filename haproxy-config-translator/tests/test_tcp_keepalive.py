@@ -1,6 +1,5 @@
 """Tests for TCP keepalive directives (clitcpka-*, srvtcpka-*)."""
 
-from haproxy_translator.codegen.haproxy import HAProxyCodeGenerator
 from haproxy_translator.parsers import DSLParser
 
 

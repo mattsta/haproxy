@@ -191,5 +191,16 @@ exclude_lines = [
     "@abstractmethod",
 ]
 
+[dependency-groups]
+dev = [
+    "black>=25.11.0",
+    "mypy>=1.18.2",
+    "pytest>=9.0.1",
+    "pytest-cov>=7.0.0",
+    "pytest-xdist>=3.8.0",
+    "ruff>=0.14.5",
+    "types-pyyaml>=6.0.12.20250915",
+]
+
 # Development commands available via Makefile
 # Run: make help

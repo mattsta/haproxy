@@ -1122,53 +1122,8 @@ class DSLTransformer(Transformer):
     def global_tune_applet_zero_copy_forwarding(self, items: list[Any]) -> tuple[str, bool]:
         return ("tune_applet_zero_copy_forwarding", items[0])
 
-    def global_tune_buffers_limit(self, items: list[Any]) -> tuple[str, int]:
-        return ("tune_buffers_limit", items[0])
-
-    def global_tune_buffers_reserve(self, items: list[Any]) -> tuple[str, int]:
-        return ("tune_buffers_reserve", items[0])
-
-    def global_tune_comp_maxlevel(self, items: list[Any]) -> tuple[str, int]:
-        return ("tune_comp_maxlevel", items[0])
-
-    def global_tune_http_cookielen(self, items: list[Any]) -> tuple[str, int]:
-        return ("tune_http_cookielen", items[0])
-
-    def global_tune_http_logurilen(self, items: list[Any]) -> tuple[str, int]:
-        return ("tune_http_logurilen", items[0])
-
-    def global_tune_http_maxhdr(self, items: list[Any]) -> tuple[str, int]:
-        return ("tune_http_maxhdr", items[0])
-
-    def global_tune_ssl_cachesize(self, items: list[Any]) -> tuple[str, int]:
-        return ("tune_ssl_cachesize", items[0])
-
-    def global_tune_ssl_default_dh_param(self, items: list[Any]) -> tuple[str, int]:
-        return ("tune_ssl_default_dh_param", items[0])
-
     def global_tune_ssl_force_private_cache(self, items: list[Any]) -> tuple[str, bool]:
         return ("tune_ssl_force_private_cache", items[0])
-
-    def global_tune_ssl_keylog(self, items: list[Any]) -> tuple[str, str]:
-        return ("tune_ssl_keylog", items[0])
-
-    def global_tune_ssl_lifetime(self, items: list[Any]) -> tuple[str, int]:
-        return ("tune_ssl_lifetime", items[0])
-
-    def global_tune_ssl_maxrecord(self, items: list[Any]) -> tuple[str, int]:
-        return ("tune_ssl_maxrecord", items[0])
-
-    def global_tune_pattern_cache_size(self, items: list[Any]) -> tuple[str, int]:
-        return ("tune_pattern_cache_size", items[0])
-
-    def global_tune_vars_global_max_size(self, items: list[Any]) -> tuple[str, int]:
-        return ("tune_vars_global_max_size", items[0])
-
-    def global_tune_vars_proc_max_size(self, items: list[Any]) -> tuple[str, int]:
-        return ("tune_vars_proc_max_size", items[0])
-
-    def global_tune_vars_txn_max_size(self, items: list[Any]) -> tuple[str, int]:
-        return ("tune_vars_txn_max_size", items[0])
 
     # Phase 4B Part 1 - HTTP Client Configuration directives
     def global_httpclient_resolvers_disabled(self, items: list[Any]) -> tuple[str, bool]:

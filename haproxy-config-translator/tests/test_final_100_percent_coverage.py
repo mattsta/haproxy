@@ -1,6 +1,5 @@
 """Final push to 100% test coverage - targeting remaining 138 lines."""
 
-import pytest
 
 from haproxy_translator.codegen.haproxy import HAProxyCodeGenerator
 from haproxy_translator.ir.nodes import TcpRequestRule, TcpResponseRule
