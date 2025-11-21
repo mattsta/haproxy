@@ -1,22 +1,22 @@
 # HAProxy Config Translator - Implementation Status
 
-**Last Updated:** 2025-11-20
-**Session:** claude/merge-haproxy-continue-01Bmzz3vDGC9g8e9Gq49zyBp
+**Last Updated:** 2025-11-21
+**Session:** claude/haproxy-merge-continue-017rwzEHmRZXwvRrn8iXZ8pS
 
 ## Current Status
 
 ### Tests & Code Quality ✅
-- **Tests:** 1028 passing, 0 skipped, 0 failures
+- **Tests:** 1057 passing, 0 skipped, 0 failures
 - **Test Coverage:** ~95%
 - **Mypy:** 0 errors (100% type safe)
-- **Ruff:** 27 minor style warnings (non-blocking, only in existing code)
+- **Ruff:** Clean (all issues resolved)
 - **Pass Rate:** 100%
 
 ### Feature Parity Status
 
 #### Global Directives
 - **Total HAProxy Directives:** 172
-- **Implemented:** 141
+- **Implemented:** 141 (tested and verified)
 - **Coverage:** 82.0%
 - **Missing:** 31 directives
 
@@ -206,6 +206,43 @@ Status: 100% complete (6 of 6 directives - test coverage added)
 - Critical for secure production deployments with proper SSL/TLS certificate management
 - ssl-dh-param-file enables Perfect Forward Secrecy (PFS) for enhanced security
 - ssl-engine enables hardware acceleration for SSL/TLS operations
+
+### Priority 11: Rate Limiting & Process Control (Phase 12) 🎯 IN PROGRESS
+Status: 66% complete (2 of 3 batches completed)
+
+#### Phase 12 Batch 1: Rate Limiting ✅ COMPLETE
+**Completed:**
+1. ✅ **maxconnrate** - Maximum connection rate per second for DDoS protection
+2. ✅ **maxsessrate** - Maximum session rate per second to prevent abuse
+3. ✅ **maxsslrate** - Maximum SSL handshake rate per second (CPU protection)
+4. ✅ **maxpipes** - Maximum number of pipes for splice operations
+5. ✅ **maxcompcpuusage** - Maximum CPU percentage for compression
+
+**Phase 12 Batch 1 Results:** +17 tests (1028 → 1045), 5 directives with test coverage, 0 failures
+**Phase 12 Batch 1 Status:** 100% COMPLETE (5/5 directives) ✅
+
+**Implementation Notes:**
+- All 5 directives were already fully implemented in all 4 layers (IR/Grammar/Transformer/Codegen)
+- Fixed maxpipes codegen to properly handle zero values with `is not None` check
+- Added comprehensive tests covering basic usage, production scenarios, and edge cases
+- Critical for production deployments with high traffic and resource constraints
+- Enables fine-grained control over connection rates, SSL overhead, and system resources
+
+#### Phase 12 Batch 2: Master-Worker Mode ✅ COMPLETE
+**Completed:**
+1. ✅ **master-worker** - Enable master-worker mode for seamless reloads
+2. ✅ **mworker-max-reloads** - Maximum reload attempts for production safety
+3. ✅ **nbproc** - Number of worker processes (legacy multi-process mode)
+
+**Phase 12 Batch 2 Results:** +12 tests (1045 → 1057), 3 directives with test coverage, 0 failures
+**Phase 12 Batch 2 Status:** 100% COMPLETE (3/3 directives) ✅
+
+**Implementation Notes:**
+- All 3 directives were already fully implemented in all 4 layers
+- Added comprehensive tests for zero-downtime reload scenarios
+- Tests cover master-worker enablement, reload limits, and multi-process configurations
+- Essential for production environments requiring continuous availability
+- Enables graceful reloads without dropping connections
 
 ### Features Implemented (Previous Sessions)
 1. ✅ **Phases 1-3:** Core directives, SSL/TLS, HTTP/2, system integration
