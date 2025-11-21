@@ -6,7 +6,7 @@
 ## Current Status
 
 ### Tests & Code Quality ✅
-- **Tests:** 1091 passing, 0 skipped, 0 failures
+- **Tests:** 1114 passing, 0 skipped, 0 failures
 - **Test Coverage:** ~95%
 - **Mypy:** 0 errors (100% type safe)
 - **Ruff:** Clean (all issues resolved)
@@ -16,9 +16,9 @@
 
 #### Global Directives
 - **Total HAProxy Directives:** 172
-- **Implemented:** 149 (tested and verified)
-- **Coverage:** 86.6%
-- **Missing:** 23 directives
+- **Implemented:** 162 (tested and verified)
+- **Coverage:** 94.2%
+- **Missing:** 10 directives
 
 #### Proxy Keywords (Frontend/Backend/Listen/Defaults)
 - **Total HAProxy Keywords:** 89
@@ -208,7 +208,7 @@ Status: 100% complete (6 of 6 directives - test coverage added)
 - ssl-engine enables hardware acceleration for SSL/TLS operations
 
 ### Priority 11: Rate Limiting & Process Control (Phase 12) ✅ COMPLETE
-Status: 100% complete (3 of 3 batches completed)
+Status: 100% complete (6 of 6 batches completed)
 
 #### Phase 12 Batch 1: Rate Limiting ✅ COMPLETE
 **Completed:**
@@ -297,6 +297,39 @@ Status: 100% complete (3 of 3 batches completed)
 - Development vs. production configurations tested
 - Critical for Lua script debugging and performance optimization
 - Works seamlessly with existing tune.lua.* directives
+
+#### Phase 12 Batch 6: Performance Tuning ✅ COMPLETE
+**Completed:**
+1. ✅ **noevports** - Disable evports polling mechanism (platform-specific)
+2. ✅ **noktls** - Disable kernel TLS offload (platform-specific)
+3. ✅ **no-memory-trimming** - Disable automatic memory trimming (platform-specific)
+4. ✅ **profiling.memory** - Memory profiling (on/off) for debugging
+5. ✅ **profiling.tasks** - Task profiling (on/off) for debugging
+6. ✅ **tune.epoll.mask-events** - Epoll event masking threshold
+7. ✅ **tune.fail-alloc** - Memory allocation failure testing
+8. ✅ **tune.h1.zero-copy-fwd-recv** - HTTP/1 zero-copy forwarding for receive
+9. ✅ **tune.h1.zero-copy-fwd-send** - HTTP/1 zero-copy forwarding for send
+10. ✅ **tune.pt.zero-copy-forwarding** - Pass-through zero-copy forwarding
+11. ✅ **tune.renice.runtime** - Runtime process priority adjustment
+12. ✅ **tune.renice.startup** - Startup process priority adjustment
+13. ✅ **tune.takeover-other-tg-connections** - Thread group connection takeover
+
+**Phase 12 Batch 6 Results:** +23 tests (1091 → 1114), 13 new global directives, 0 failures
+**Phase 12 Batch 6 Status:** 100% COMPLETE (13/13 directives) ✅
+
+**Implementation Notes:**
+- Mixed architecture: 5 IR fields (platform/profiling) + 8 tuning dict (tune.* directives)
+- Grammar enhanced to support negative numbers (/-?\d+/ pattern) for priority values
+- Transformer tune_key conversion enhanced for multi-level directives:
+  - tune_takeover_other_tg_connections → tune.takeover-other-tg-connections (5 parts)
+  - tune_epoll_mask_events → tune.epoll.mask-events (categorized)
+  - tune_renice_runtime → tune.renice.runtime (categorized)
+  - tune_h1_zero_copy_fwd_recv → tune.h1.zero-copy-fwd-recv (multi-level)
+- Platform options (noevports, noktls, no-memory-trimming) use boolean IR fields
+- Profiling options (profiling.memory, profiling.tasks) use string IR fields
+- Tests cover negative priority values, zero-copy optimizations, and production scenarios
+- Critical for high-performance configurations and low-latency applications
+- Enables fine-grained control over platform features, profiling, and zero-copy optimizations
 
 ### Features Implemented (Previous Sessions)
 1. ✅ **Phases 1-3:** Core directives, SSL/TLS, HTTP/2, system integration
