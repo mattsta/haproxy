@@ -308,6 +308,10 @@ global_section: "global" "{" global_property* "}"
                 | "presetenv" string string            -> global_presetenv
                 | "resetenv" string                    -> global_resetenv
                 | "unsetenv" string                    -> global_unsetenv
+                // Phase 13 Batch 3 - Lua Global Directives (3 directives)
+                | "lua-load" string string*            -> global_lua_load
+                | "lua-load-per-thread" string string* -> global_lua_load_per_thread
+                | "lua-prepend-path" string [string]   -> global_lua_prepend_path
                 | log_target                           -> global_log
                 | lua_section                          -> global_lua
                 | stats_section                        -> global_stats

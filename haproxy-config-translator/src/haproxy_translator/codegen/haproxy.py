@@ -518,6 +518,29 @@ class HAProxyCodeGenerator:
                 lines.append(self._indent(f"lua-load {script.content}"))
                 self.lua_files.append(script.content)
 
+        # Phase 13 Batch 3 - Lua global directives
+        for file_path, args in global_config.lua_load_files:
+            args_str = " ".join(args) if args else ""
+            lua_load_line = f"lua-load {file_path}"
+            if args_str:
+                lua_load_line += f" {args_str}"
+            lines.append(self._indent(lua_load_line))
+            self.lua_files.append(file_path)
+
+        for file_path, args in global_config.lua_load_per_thread_files:
+            args_str = " ".join(args) if args else ""
+            lua_load_line = f"lua-load-per-thread {file_path}"
+            if args_str:
+                lua_load_line += f" {args_str}"
+            lines.append(self._indent(lua_load_line))
+            self.lua_files.append(file_path)
+
+        for path, path_type in global_config.lua_prepend_paths:
+            if path_type and path_type != "path":
+                lines.append(self._indent(f"lua-prepend-path {path} {path_type}"))
+            else:
+                lines.append(self._indent(f"lua-prepend-path {path}"))
+
         # Stats sockets (Runtime API)
         for stats_socket in global_config.stats_sockets:
             socket_line = f"stats socket {stats_socket.path}"

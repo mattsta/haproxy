@@ -505,6 +505,11 @@ class GlobalConfig(IRNode):
     # Lua scripts
     lua_scripts: list[LuaScript] = field(default_factory=list)
 
+    # Lua global directives (Phase 13 Batch 3)
+    lua_load_files: list[tuple[str, list[str]]] = field(default_factory=list)  # (file, args)
+    lua_load_per_thread_files: list[tuple[str, list[str]]] = field(default_factory=list)  # (file, args)
+    lua_prepend_paths: list[tuple[str, str]] = field(default_factory=list)  # (path, type)
+
     # Stats
     stats: StatsConfig | None = None
     stats_sockets: list[StatsSocket] = field(default_factory=list)

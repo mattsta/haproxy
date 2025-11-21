@@ -279,6 +279,11 @@ class DSLTransformer(Transformer):
         # Lua scripts
         lua_scripts = []
 
+        # Lua global directives (Phase 13 Batch 3)
+        lua_load_files = []
+        lua_load_per_thread_files = []
+        lua_prepend_paths = []
+
         # Stats
         stats = None
         stats_sockets = []
@@ -513,6 +518,13 @@ class DSLTransformer(Transformer):
                     reset_env_vars.append(value)
                 elif key == "unsetenv":
                     unset_env_vars.append(value)
+                # Phase 13 Batch 3 - Lua global directives
+                elif key == "lua_load":
+                    lua_load_files.append(value)
+                elif key == "lua_load_per_thread":
+                    lua_load_per_thread_files.append(value)
+                elif key == "lua_prepend_path":
+                    lua_prepend_paths.append(value)
                 elif key in ("nbthread", "maxsslconn", "ulimit_n"):
                     tuning[key] = value
                 elif key.startswith("tune_"):
@@ -750,6 +762,10 @@ class DSLTransformer(Transformer):
             wurfl_useragent_priority=wurfl_useragent_priority,
             # Lua scripts
             lua_scripts=lua_scripts,
+            # Lua global directives (Phase 13 Batch 3)
+            lua_load_files=lua_load_files,
+            lua_load_per_thread_files=lua_load_per_thread_files,
+            lua_prepend_paths=lua_prepend_paths,
             # Stats
             stats=stats,
             stats_sockets=stats_sockets,
@@ -855,6 +871,25 @@ class DSLTransformer(Transformer):
 
     def global_unsetenv(self, items: list[Any]) -> tuple[str, str]:
         return ("unsetenv", items[0])
+
+    # Phase 13 Batch 3 - Lua Global Directives
+    def global_lua_load(self, items: list[Any]) -> tuple[str, tuple[str, list[str]]]:
+        """Phase 13 Batch 3 - Load Lua file in shared context."""
+        file_path = items[0]
+        args = list(items[1:]) if len(items) > 1 else []
+        return ("lua_load", (file_path, args))
+
+    def global_lua_load_per_thread(self, items: list[Any]) -> tuple[str, tuple[str, list[str]]]:
+        """Phase 13 Batch 3 - Load Lua file per thread."""
+        file_path = items[0]
+        args = list(items[1:]) if len(items) > 1 else []
+        return ("lua_load_per_thread", (file_path, args))
+
+    def global_lua_prepend_path(self, items: list[Any]) -> tuple[str, tuple[str, str]]:
+        """Phase 13 Batch 3 - Prepend to Lua's package.path or package.cpath."""
+        path = items[0]
+        path_type = items[1] if len(items) > 1 else "path"  # Default to "path"
+        return ("lua_prepend_path", (path, path_type))
 
     # Phase 2 global directives - Buffer and performance tuning
     def global_maxpipes(self, items: list[Any]) -> tuple[str, int]:
