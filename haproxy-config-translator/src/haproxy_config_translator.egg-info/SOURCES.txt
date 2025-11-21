@@ -46,6 +46,7 @@ tests/test_email_alert.py
 tests/test_error_log_format.py
 tests/test_errorfiles.py
 tests/test_external_check.py
+tests/test_filters.py
 tests/test_final_100_percent_coverage.py
 tests/test_guid.py
 tests/test_hash_preserve_affinity.py
@@ -81,6 +82,7 @@ tests/test_phase7_debugging.py
 tests/test_phase8_quic_http3.py
 tests/test_phase9_device_detection.py
 tests/test_proxy_directives.py
+tests/test_quic_initial.py
 tests/test_rate_limit_sessions.py
 tests/test_server_state_file_name.py
 tests/test_stats.py

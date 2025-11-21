@@ -214,6 +214,15 @@ class TcpResponseRule(IRNode):
 
 
 @dataclass(frozen=True)
+class QuicInitialRule(IRNode):
+    """QUIC Initial packet processing rule."""
+
+    action: str = ""  # accept, reject, expect-proxy, track-sc0-2, set-var, etc.
+    condition: str | None = None  # ACL condition (if/unless)
+    parameters: dict[str, Any] = field(default_factory=dict)  # track_key, var_name, etc.
+
+
+@dataclass(frozen=True)
 class RedirectRule(IRNode):
     """HTTP redirect rule."""
 
@@ -563,6 +572,7 @@ class DefaultsConfig(IRNode):
     srvtcpka_idle: str | None = None  # Time before sending server keepalive probes
     srvtcpka_intvl: str | None = None  # Interval between server keepalive probes
     persist_rdp_cookie: str | None = None  # RDP cookie name for persistence (None = default "msts")
+    quic_initial_rules: list[QuicInitialRule] = field(default_factory=list)  # QUIC Initial packet processing rules
 
 
 @dataclass(frozen=True)
@@ -754,6 +764,29 @@ class UseBackendRule(IRNode):
 
 
 @dataclass(frozen=True)
+class Filter(IRNode):
+    """Content filter configuration."""
+
+    filter_type: str = ""  # compression, spoe, cache, trace, bwlim-in, bwlim-out
+    name: str | None = None  # Filter name (for cache, trace, bwlim)
+
+    # SPOE-specific
+    engine: str | None = None
+    config: str | None = None
+
+    # Bandwidth limit specific
+    default_limit: str | None = None  # e.g., "1m", "500k"
+    default_period: str | None = None  # e.g., "10s", "1s"
+    limit: str | None = None
+    period: str | None = None
+    key: str | None = None
+    table: str | None = None
+
+    # Generic parameters for extensibility
+    parameters: dict[str, Any] = field(default_factory=dict)
+
+
+@dataclass(frozen=True)
 class Frontend(IRNode):
     """Frontend section."""
 
@@ -766,11 +799,13 @@ class Frontend(IRNode):
     binds: list[Bind] = field(default_factory=list)
     mode: Mode = Mode.HTTP
     acls: list[ACL] = field(default_factory=list)
+    filters: list[Filter] = field(default_factory=list)
     http_request_rules: list[HttpRequestRule] = field(default_factory=list)
     http_response_rules: list[HttpResponseRule] = field(default_factory=list)
     http_after_response_rules: list[HttpAfterResponseRule] = field(default_factory=list)
     tcp_request_rules: list["TcpRequestRule"] = field(default_factory=list)
     tcp_response_rules: list["TcpResponseRule"] = field(default_factory=list)
+    quic_initial_rules: list[QuicInitialRule] = field(default_factory=list)
     use_backend_rules: list[UseBackendRule] = field(default_factory=list)
     default_backend: str | None = None
     options: list[str] = field(default_factory=list)
@@ -833,6 +868,7 @@ class Backend(IRNode):
     default_server: DefaultServer | None = None  # Default server options
     health_check: HealthCheck | None = None
     acls: list[ACL] = field(default_factory=list)
+    filters: list[Filter] = field(default_factory=list)
     options: list[str] = field(default_factory=list)
     http_request_rules: list[HttpRequestRule] = field(default_factory=list)
     http_response_rules: list[HttpResponseRule] = field(default_factory=list)
@@ -907,11 +943,13 @@ class Listen(IRNode):
     balance: BalanceAlgorithm = BalanceAlgorithm.ROUNDROBIN
     servers: list[Server] = field(default_factory=list)
     acls: list[ACL] = field(default_factory=list)
+    filters: list[Filter] = field(default_factory=list)
     http_request_rules: list[HttpRequestRule] = field(default_factory=list)
     http_response_rules: list[HttpResponseRule] = field(default_factory=list)
     http_after_response_rules: list[HttpAfterResponseRule] = field(default_factory=list)
     tcp_request_rules: list["TcpRequestRule"] = field(default_factory=list)
     tcp_response_rules: list["TcpResponseRule"] = field(default_factory=list)
+    quic_initial_rules: list[QuicInitialRule] = field(default_factory=list)
     options: list[str] = field(default_factory=list)
     stick_table: Optional["StickTable"] = None
     stick_rules: list["StickRule"] = field(default_factory=list)

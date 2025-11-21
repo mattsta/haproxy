@@ -12,6 +12,7 @@ from ..ir.nodes import (
     DefaultsConfig,
     DefaultServer,
     EmailAlert,
+    Filter,
     ForcePersistRule,
     Frontend,
     GlobalConfig,
@@ -666,6 +667,10 @@ class HAProxyCodeGenerator:
             else:
                 lines.append(self._indent("persist rdp-cookie"))
 
+        # QUIC Initial rules
+        for quic_rule in defaults.quic_initial_rules:
+            lines.append(self._indent(self._format_quic_initial_rule(quic_rule)))
+
         return lines
 
     def _generate_frontend(self, frontend: Frontend) -> list[str]:
@@ -802,6 +807,10 @@ class HAProxyCodeGenerator:
         for acl in frontend.acls:
             lines.append(self._indent(self._format_acl(acl)))
 
+        # Filters
+        for filter_obj in frontend.filters:
+            lines.append(self._indent(self._format_filter(filter_obj)))
+
         # Stick table
         if frontend.stick_table:
             lines.append(self._indent(self._format_stick_table(frontend.stick_table)))
@@ -817,6 +826,10 @@ class HAProxyCodeGenerator:
         # TCP response rules
         for tcp_resp in frontend.tcp_response_rules:
             lines.append(self._indent(self._format_tcp_response_rule(tcp_resp)))
+
+        # QUIC Initial rules
+        for quic_rule in frontend.quic_initial_rules:
+            lines.append(self._indent(self._format_quic_initial_rule(quic_rule)))
 
         # HTTP request rules
         for req_rule in frontend.http_request_rules:
@@ -999,6 +1012,10 @@ class HAProxyCodeGenerator:
         # ACLs
         for acl in backend.acls:
             lines.append(self._indent(self._format_acl(acl)))
+
+        # Filters
+        for filter_obj in backend.filters:
+            lines.append(self._indent(self._format_filter(filter_obj)))
 
         # Stick table
         if backend.stick_table:
@@ -1204,6 +1221,10 @@ class HAProxyCodeGenerator:
         for acl in listen.acls:
             lines.append(self._indent(self._format_acl(acl)))
 
+        # Filters
+        for filter_obj in listen.filters:
+            lines.append(self._indent(self._format_filter(filter_obj)))
+
         # Options
         for option in listen.options:
             lines.append(self._indent(f"option {option}"))
@@ -1226,6 +1247,10 @@ class HAProxyCodeGenerator:
         # HTTP after-response rules
         for after_resp_rule in listen.http_after_response_rules:
             lines.append(self._indent(self._format_http_after_response_rule(after_resp_rule)))
+
+        # QUIC Initial rules
+        for quic_rule in listen.quic_initial_rules:
+            lines.append(self._indent(self._format_quic_initial_rule(quic_rule)))
 
         # HTTP error responses
         for http_error in listen.http_errors:
@@ -1312,6 +1337,54 @@ class HAProxyCodeGenerator:
 
         if acl.values:
             parts.extend(acl.values)
+
+        return " ".join(parts)
+
+    def _format_filter(self, filter_obj: "Filter") -> str:
+        """Format filter directive."""
+        parts = ["filter"]
+
+        if filter_obj.filter_type == "compression":
+            parts.append("compression")
+
+        elif filter_obj.filter_type == "spoe":
+            parts.append("spoe")
+            if filter_obj.engine:
+                parts.append(f"engine {filter_obj.engine}")
+            if filter_obj.config:
+                parts.append(f"config {filter_obj.config}")
+
+        elif filter_obj.filter_type == "cache":
+            parts.append("cache")
+            if filter_obj.name:
+                parts.append(filter_obj.name)
+
+        elif filter_obj.filter_type == "trace":
+            parts.append("trace")
+            if filter_obj.name:
+                parts.append(f"name {filter_obj.name}")
+
+        elif filter_obj.filter_type == "bwlim-in":
+            parts.append("bwlim-in")
+            if filter_obj.name:
+                parts.append(filter_obj.name)
+            if filter_obj.default_limit:
+                parts.append(f"default-limit {filter_obj.default_limit}")
+            if filter_obj.default_period:
+                parts.append(f"default-period {filter_obj.default_period}")
+            if filter_obj.key:
+                parts.append(f"key {filter_obj.key}")
+            if filter_obj.table:
+                parts.append(f"table {filter_obj.table}")
+
+        elif filter_obj.filter_type == "bwlim-out":
+            parts.append("bwlim-out")
+            if filter_obj.name:
+                parts.append(filter_obj.name)
+            if filter_obj.limit:
+                parts.append(f"limit {filter_obj.limit}")
+            if filter_obj.period:
+                parts.append(f"period {filter_obj.period}")
 
         return " ".join(parts)
 
@@ -1812,6 +1885,41 @@ class HAProxyCodeGenerator:
 
         if tcp_resp.condition:
             parts.append(f"if {tcp_resp.condition}")
+
+        return " ".join(parts)
+
+    def _format_quic_initial_rule(self, quic_rule: "QuicInitialRule") -> str:
+        """Format quic-initial rule.
+
+        Examples:
+        - quic-initial accept if valid_quic
+        - quic-initial reject if bad_source
+        - quic-initial track-sc0 src if authenticated
+        - quic-initial set-var(txn.quic_version) req.quic_version
+        """
+        parts = [f"quic-initial {quic_rule.action}"]
+
+        # Add parameters based on action type
+        if quic_rule.action.startswith("track-sc"):
+            # track-sc0 src [if condition]
+            if "track_key" in quic_rule.parameters:
+                parts.append(quic_rule.parameters["track_key"])
+        elif quic_rule.action.startswith("set-var"):
+            # set-var(txn.var) value [if condition]
+            if "var_name" in quic_rule.parameters:
+                parts[0] = f"quic-initial set-var({quic_rule.parameters['var_name']})"
+            if "var_value" in quic_rule.parameters:
+                parts.append(quic_rule.parameters["var_value"])
+        else:
+            # Generic parameters for other actions
+            for key, value in quic_rule.parameters.items():
+                if key not in ("track_key", "var_name", "var_value"):
+                    parts.append(f"{key} {value}")
+
+        # Add condition (if/unless)
+        if quic_rule.condition:
+            # The condition string should already include "if" or "unless"
+            parts.append(quic_rule.condition)
 
         return " ".join(parts)
 

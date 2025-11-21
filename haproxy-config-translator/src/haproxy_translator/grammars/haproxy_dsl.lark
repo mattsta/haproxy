@@ -380,6 +380,7 @@ defaults_section: "defaults" "{" defaults_property* "}"
                   | "rate-limit" "sessions" ":" number -> defaults_rate_limit_sessions
                   | "persist" "rdp-cookie"             -> defaults_persist_rdp_cookie
                   | "persist" "rdp-cookie" "(" string ")" -> defaults_persist_rdp_cookie_named
+                  | quic_initial_block                 -> defaults_quic_initial
 
 timeout_block: "timeout" ":" "{" timeout_item+ "}"
 
@@ -407,11 +408,13 @@ frontend_section: "frontend" identifier "{" frontend_property* "}"
                   | acl_block
                   | acl_definition
                   | use_acl_directive
+                  | filters_block                          -> frontend_filters
                   | http_request_block
                   | http_response_block
                   | http_after_response_block
                   | tcp_request_block
                   | tcp_response_block
+                  | quic_initial_block                     -> frontend_quic_initial
                   | stick_table_block
                   | stick_rule
                   | routing_block
@@ -588,6 +591,17 @@ TCP_ACTION_KEYWORD.10: /(?!connection\b|content\b|inspect-delay\b|if\b)[a-zA-Z_]
 
 tcp_action_param.10: duration | TCP_ACTION_KEYWORD | number
 
+// ===== QUIC Initial Rules =====
+quic_initial_block: "quic_initial" ":" "[" quic_initial_rule ("," quic_initial_rule)* "]"
+
+quic_initial_rule: "{" quic_initial_rule_property ("," quic_initial_rule_property)* "}"
+
+?quic_initial_rule_property: "action" ":" string -> quic_rule_action
+                           | "condition" ":" string -> quic_rule_condition
+                           | "track_key" ":" string -> quic_rule_track_key
+                           | "var_name" ":" string -> quic_rule_var_name
+                           | "var_value" ":" string -> quic_rule_var_value
+
 // ===== Stick Table and Rules =====
 stick_table_block: "stick-table" "{" stick_table_property* "}"
 
@@ -658,6 +672,7 @@ backend_section: "backend" identifier "{" backend_property* "}"
                  | "option" ":" string_or_array             -> backend_option
                  | "cookie" ":" string                      -> backend_cookie
                  | acl_definition                           -> backend_acl
+                 | filters_block                            -> backend_filters
                  | health_check_block                       -> backend_health_check
                  | default_server_directive                 -> backend_default_server
                  | servers_block                            -> backend_servers
@@ -923,6 +938,22 @@ compression_block: "compression" "{" compression_property* "}"
 ?compression_property: "algo" ":" string              -> compression_algo
                      | "type" ":" string_array        -> compression_type
 
+// ===== Filter Block =====
+filters_block: "filters" ":" "[" filter_item ("," filter_item)* "]"
+
+filter_item: "{" filter_property ("," filter_property)* "}"
+
+?filter_property: "type" ":" string -> filter_type
+                | "name" ":" string -> filter_name
+                | "engine" ":" string -> filter_engine
+                | "config" ":" string -> filter_config
+                | "default_limit" ":" string -> filter_default_limit
+                | "default_period" ":" string -> filter_default_period
+                | "limit" ":" string -> filter_limit
+                | "period" ":" string -> filter_period
+                | "key" ":" string -> filter_key
+                | "table" ":" string -> filter_table
+
 // ===== Listen Section =====
 listen_section: "listen" identifier "{" listen_property* "}"
 
@@ -936,6 +967,7 @@ listen_section: "listen" identifier "{" listen_property* "}"
                 | "balance" ":" balance_algo               -> listen_balance
                 | acl_definition
                 | acl_block
+                | filters_block                            -> listen_filters
                 | "option" ":" string_or_array             -> listen_option
                 | servers_block                            -> listen_servers
                 | health_check_block                       -> listen_health_check
@@ -953,6 +985,7 @@ listen_section: "listen" identifier "{" listen_property* "}"
                 | http_request_block                     -> listen_http_request
                 | http_response_block                    -> listen_http_response
                 | http_after_response_block              -> listen_http_after_response
+                | quic_initial_block                     -> listen_quic_initial
                 | http_error_block                         -> listen_http_error
                 | email_alert_block                        -> listen_email_alert
                 | declare_capture_directive                -> listen_declare_capture

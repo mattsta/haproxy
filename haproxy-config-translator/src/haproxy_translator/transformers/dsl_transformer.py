@@ -16,6 +16,7 @@ from ..ir.nodes import (
     DefaultServer,
     EmailAlert,
     ErrorFile,
+    Filter,
     ForcePersistRule,
     ForLoop,
     Frontend,
@@ -39,6 +40,7 @@ from ..ir.nodes import (
     Nameserver,
     Peer,
     PeersSection,
+    QuicInitialRule,
     RedirectRule,
     ResolversSection,
     Server,
@@ -1973,6 +1975,7 @@ class DSLTransformer(Transformer):
         srvtcpka_idle = None
         srvtcpka_intvl = None
         persist_rdp_cookie = None
+        quic_initial_rules = []
 
         for item in items:
             if isinstance(item, tuple):
@@ -2041,6 +2044,8 @@ class DSLTransformer(Transformer):
                             timeout_tarpit = timeout_value
             elif isinstance(item, EmailAlert):
                 email_alert = item
+            elif isinstance(item, list) and all(isinstance(r, QuicInitialRule) for r in item):
+                quic_initial_rules = item
 
         return DefaultsConfig(
             mode=mode,
@@ -2071,6 +2076,7 @@ class DSLTransformer(Transformer):
             srvtcpka_idle=srvtcpka_idle,
             srvtcpka_intvl=srvtcpka_intvl,
             persist_rdp_cookie=persist_rdp_cookie,
+            quic_initial_rules=quic_initial_rules,
         )
 
     def defaults_mode(self, items: list[Any]) -> tuple[str, str]:
@@ -2130,11 +2136,13 @@ class DSLTransformer(Transformer):
         guid = None
         binds = []
         acls = []
+        filters = []
         http_request_rules = []
         http_response_rules = []
         http_after_response_rules = []
         tcp_request_rules = []
         tcp_response_rules = []
+        quic_initial_rules = []
         use_backend_rules = []
         default_backend = None
         options = []
@@ -2224,6 +2232,10 @@ class DSLTransformer(Transformer):
                 tcp_response_rules.append(prop)
             elif isinstance(prop, list) and all(isinstance(x, TcpResponseRule) for x in prop):
                 tcp_response_rules.extend(prop)
+            elif isinstance(prop, QuicInitialRule):
+                quic_initial_rules.append(prop)
+            elif isinstance(prop, list) and all(isinstance(x, QuicInitialRule) for x in prop):
+                quic_initial_rules.extend(prop)
             elif isinstance(prop, StickTable):
                 stick_table = prop
             elif isinstance(prop, StickRule):
@@ -2310,6 +2322,8 @@ class DSLTransformer(Transformer):
                     errorloc302.update(value)
                 elif key == "errorloc303":
                     errorloc303.update(value)
+                elif key == "filters":
+                    filters = value
                 elif key == "clitcpka_cnt":
                     clitcpka_cnt = value
                 elif key == "clitcpka_idle":
@@ -2329,11 +2343,13 @@ class DSLTransformer(Transformer):
             mode=mode,
             binds=binds,
             acls=acls,
+            filters=filters,
             http_request_rules=http_request_rules,
             http_response_rules=http_response_rules,
             http_after_response_rules=http_after_response_rules,
             tcp_request_rules=tcp_request_rules,
             tcp_response_rules=tcp_response_rules,
+            quic_initial_rules=quic_initial_rules,
             use_backend_rules=use_backend_rules,
             default_backend=default_backend,
             options=options,
@@ -3436,6 +3452,7 @@ class DSLTransformer(Transformer):
         default_server = None
         health_check = None
         acls = []
+        filters = []
         options = []
         http_request_rules = []
         http_response_rules = []
@@ -3650,6 +3667,8 @@ class DSLTransformer(Transformer):
                     load_server_state_from = LoadServerStateFrom(value)
                 elif key == "server_state_file_name":
                     server_state_file_name = value
+                elif key == "filters":
+                    filters = value
                 elif key == "srvtcpka_cnt":
                     srvtcpka_cnt = value
                 elif key == "srvtcpka_idle":
@@ -3678,6 +3697,7 @@ class DSLTransformer(Transformer):
             default_server=default_server,
             health_check=health_check,
             acls=acls,
+            filters=filters,
             options=options,
             http_request_rules=http_request_rules,
             http_response_rules=http_response_rules,
@@ -4036,9 +4056,13 @@ class DSLTransformer(Transformer):
         servers = []
         server_loops = []
         acls = []
+        filters = []
         http_request_rules = []
         http_response_rules = []
         http_after_response_rules = []
+        tcp_request_rules = []
+        tcp_response_rules = []
+        quic_initial_rules = []
         options = []
         timeout_client = None
         timeout_server = None
@@ -4085,6 +4109,12 @@ class DSLTransformer(Transformer):
                             http_response_rules.append(item)
                         elif isinstance(item, HttpAfterResponseRule):
                             http_after_response_rules.append(item)
+                        elif isinstance(item, TcpRequestRule):
+                            tcp_request_rules.append(item)
+                        elif isinstance(item, TcpResponseRule):
+                            tcp_response_rules.append(item)
+                        elif isinstance(item, QuicInitialRule):
+                            quic_initial_rules.append(item)
             elif isinstance(prop, Server):
                 servers.append(prop)
             elif isinstance(prop, ForLoop):
@@ -4103,6 +4133,12 @@ class DSLTransformer(Transformer):
                 ignore_persist_rules.append(prop)
             elif isinstance(prop, list) and all(isinstance(x, HttpAfterResponseRule) for x in prop):
                 http_after_response_rules.extend(prop)
+            elif isinstance(prop, list) and all(isinstance(x, TcpRequestRule) for x in prop):
+                tcp_request_rules.extend(prop)
+            elif isinstance(prop, list) and all(isinstance(x, TcpResponseRule) for x in prop):
+                tcp_response_rules.extend(prop)
+            elif isinstance(prop, list) and all(isinstance(x, QuicInitialRule) for x in prop):
+                quic_initial_rules.extend(prop)
             elif isinstance(prop, tuple):
                 key, value = prop
                 if key == "mode":
@@ -4149,6 +4185,8 @@ class DSLTransformer(Transformer):
                     log_steps = value
                 elif key == "rate_limit_sessions":
                     rate_limit_sessions = value
+                elif key == "filters":
+                    filters = value
                 elif key == "persist_rdp_cookie":
                     persist_rdp_cookie = value  # Empty string means use default "msts"
 
@@ -4179,9 +4217,13 @@ class DSLTransformer(Transformer):
             balance=balance,
             servers=servers,
             acls=acls,
+            filters=filters,
             http_request_rules=http_request_rules,
             http_response_rules=http_response_rules,
             http_after_response_rules=http_after_response_rules,
+            tcp_request_rules=tcp_request_rules,
+            tcp_response_rules=tcp_response_rules,
+            quic_initial_rules=quic_initial_rules,
             options=options,
             load_server_state_from=load_server_state_from,
             server_state_file_name=server_state_file_name,
@@ -4755,6 +4797,109 @@ class DSLTransformer(Transformer):
     def compression_type(self, items: list[Any]) -> tuple[str, list[str]]:
         return ("type", items[0])
 
+    # ===== Filter Block =====
+    def filters_block(self, items: list[Any]) -> list[Filter]:
+        """Transform filters block containing list of filter objects."""
+        return [item for item in items if isinstance(item, Filter)]
+
+    def filter_item(self, items: list[Any]) -> Filter:
+        """Transform individual filter object."""
+        filter_type = ""
+        name = None
+        engine = None
+        config = None
+        default_limit = None
+        default_period = None
+        limit = None
+        period = None
+        key = None
+        table = None
+        parameters = {}
+
+        for item in items:
+            if isinstance(item, tuple):
+                prop_key, value = item
+                if prop_key == "type":
+                    filter_type = value
+                elif prop_key == "name":
+                    name = value
+                elif prop_key == "engine":
+                    engine = value
+                elif prop_key == "config":
+                    config = value
+                elif prop_key == "default_limit":
+                    default_limit = value
+                elif prop_key == "default_period":
+                    default_period = value
+                elif prop_key == "limit":
+                    limit = value
+                elif prop_key == "period":
+                    period = value
+                elif prop_key == "key":
+                    key = value
+                elif prop_key == "table":
+                    table = value
+
+        return Filter(
+            filter_type=filter_type,
+            name=name,
+            engine=engine,
+            config=config,
+            default_limit=default_limit,
+            default_period=default_period,
+            limit=limit,
+            period=period,
+            key=key,
+            table=table,
+            parameters=parameters,
+        )
+
+    def filter_type(self, items: list[Any]) -> tuple[str, str]:
+        return ("type", items[0])
+
+    def filter_name(self, items: list[Any]) -> tuple[str, str]:
+        return ("name", items[0])
+
+    def filter_engine(self, items: list[Any]) -> tuple[str, str]:
+        return ("engine", items[0])
+
+    def filter_config(self, items: list[Any]) -> tuple[str, str]:
+        return ("config", items[0])
+
+    def filter_default_limit(self, items: list[Any]) -> tuple[str, str]:
+        return ("default_limit", items[0])
+
+    def filter_default_period(self, items: list[Any]) -> tuple[str, str]:
+        return ("default_period", items[0])
+
+    def filter_limit(self, items: list[Any]) -> tuple[str, str]:
+        return ("limit", items[0])
+
+    def filter_period(self, items: list[Any]) -> tuple[str, str]:
+        return ("period", items[0])
+
+    def filter_key(self, items: list[Any]) -> tuple[str, str]:
+        return ("key", items[0])
+
+    def filter_table(self, items: list[Any]) -> tuple[str, str]:
+        return ("table", items[0])
+
+    # Section-specific filter handlers
+    def frontend_filters(self, items: list[Any]) -> tuple[str, list[Filter]]:
+        """Transform frontend filters block."""
+        filters = items[0] if items else []
+        return ("filters", filters)
+
+    def backend_filters(self, items: list[Any]) -> tuple[str, list[Filter]]:
+        """Transform backend filters block."""
+        filters = items[0] if items else []
+        return ("filters", filters)
+
+    def listen_filters(self, items: list[Any]) -> tuple[str, list[Filter]]:
+        """Transform listen filters block."""
+        filters = items[0] if items else []
+        return ("filters", filters)
+
     # ===== ACL =====
     def acl_block(self, items: list[Any]) -> list[ACL]:
         """Transform ACL block containing multiple ACLs."""
@@ -5138,6 +5283,70 @@ class DSLTransformer(Transformer):
     def tcp_rule_value(self, items: list[Any]) -> Any:
         """Transform tcp rule value."""
         return items[0]
+
+    # ===== QUIC Initial Rules =====
+    def quic_initial_block(self, items: list[Any]) -> list[QuicInitialRule]:
+        """Transform quic_initial block (list of rules)."""
+        return items
+
+    def quic_initial_rule(self, items: list[Any]) -> QuicInitialRule:
+        """Transform individual quic_initial rule object."""
+        action = ""
+        condition = None
+        parameters: dict[str, Any] = {}
+
+        # Process all property tuples
+        for item in items:
+            if isinstance(item, tuple):
+                prop_name, prop_value = item
+                if prop_name == "action":
+                    action = str(prop_value)
+                elif prop_name == "condition":
+                    condition = str(prop_value)
+                elif prop_name == "track_key":
+                    parameters["track_key"] = str(prop_value)
+                elif prop_name == "var_name":
+                    parameters["var_name"] = str(prop_value)
+                elif prop_name == "var_value":
+                    parameters["var_value"] = str(prop_value)
+
+        return QuicInitialRule(
+            action=action,
+            condition=condition,
+            parameters=parameters,
+        )
+
+    def quic_rule_action(self, items: list[Any]) -> tuple[str, str]:
+        """Extract action property."""
+        return ("action", str(items[0]) if items else "")
+
+    def quic_rule_condition(self, items: list[Any]) -> tuple[str, str]:
+        """Extract condition property."""
+        return ("condition", str(items[0]) if items else "")
+
+    def quic_rule_track_key(self, items: list[Any]) -> tuple[str, str]:
+        """Extract track_key property."""
+        return ("track_key", str(items[0]) if items else "")
+
+    def quic_rule_var_name(self, items: list[Any]) -> tuple[str, str]:
+        """Extract var_name property."""
+        return ("var_name", str(items[0]) if items else "")
+
+    def quic_rule_var_value(self, items: list[Any]) -> tuple[str, str]:
+        """Extract var_value property."""
+        return ("var_value", str(items[0]) if items else "")
+
+    def defaults_quic_initial(self, items: list[Any]) -> list[QuicInitialRule]:
+        """Transform quic_initial in defaults."""
+        return items[0] if items else []
+
+    def frontend_quic_initial(self, items: list[Any]) -> list[QuicInitialRule]:
+        """Transform quic_initial in frontend."""
+        return items[0] if items else []
+
+    def listen_quic_initial(self, items: list[Any]) -> list[QuicInitialRule]:
+        """Transform quic_initial in listen."""
+        return items[0] if items else []
 
     # ===== Backend ACL Support =====
     def backend_acl(self, items: list[Any]) -> ACL:
