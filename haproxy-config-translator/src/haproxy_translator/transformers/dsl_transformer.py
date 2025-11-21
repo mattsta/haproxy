@@ -564,9 +564,20 @@ class DSLTransformer(Transformer):
                             subcategory = parts[2]
                             directive_parts = parts[3:]
                             tune_key = f"tune.{category}.{subcategory}.{'-'.join(directive_parts)}"
-                        # Special case for top-level multi-word tune directives (Phase 6)
-                        elif len(parts) == 3 and parts[1] in ("recv", "runqueue", "pipesize"):
-                            # tune_recv_enough, tune_runqueue_depth, tune_pipesize
+                        # Special case for top-level multi-word tune directives (Phase 6 & 12 Batch 6)
+                        elif len(parts) == 3 and parts[1] in ("recv", "runqueue", "pipesize", "fail"):
+                            # tune_recv_enough, tune_runqueue_depth, tune_pipesize, tune_fail_alloc
+                            tune_key = f"tune.{'-'.join(parts[1:])}"
+                        # Special case for categorized directives with sub-params (Phase 12 Batch 6)
+                        elif len(parts) == 3 and parts[1] in ("epoll", "renice"):
+                            # tune_epoll_mask_events → tune.epoll.mask-events
+                            # tune_renice_runtime → tune.renice.runtime
+                            category = parts[1]
+                            directive_parts = [parts[2]]
+                            tune_key = f"tune.{category}.{'-'.join(directive_parts)}"
+                        # Special case for very long multi-word directives (Phase 12 Batch 6)
+                        elif len(parts) == 5 and parts[1] == "takeover":
+                            # tune_takeover_other_tg_connections → tune.takeover-other-tg-connections
                             tune_key = f"tune.{'-'.join(parts[1:])}"
                         elif len(parts) >= 3 and parts[1] == "max":
                             # tune_max_checks_per_thread, tune_max_rules_at_once

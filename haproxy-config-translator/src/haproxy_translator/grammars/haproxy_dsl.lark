@@ -1057,8 +1057,8 @@ object_pair: (identifier | string) ":" value
 // Use word boundaries to prevent matching TIME_UNIT as part of identifiers
 TIME_UNIT.2: /(?:ms|[smhd])\b/
 BOOLEAN.2: "true" | "false" | "yes" | "no" | "on" | "off" | "1" | "0"
-INT: /\d+/
-FLOAT: /\d+\.\d+/
+INT: /-?\d+/
+FLOAT: /-?\d+\.\d+/
 IDENTIFIER: /[a-zA-Z_][a-zA-Z0-9_]*/
 
 identifier: IDENTIFIER
