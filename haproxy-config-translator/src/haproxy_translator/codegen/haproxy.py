@@ -311,6 +311,10 @@ class HAProxyCodeGenerator:
         if global_config.httpclient_ssl_ca_file:
             lines.append(self._indent(f"httpclient.ssl.ca-file {global_config.httpclient_ssl_ca_file}"))
 
+        # Phase 12 Batch 3 - HTTPClient timeout
+        if global_config.httpclient_timeout_connect:
+            lines.append(self._indent(f"httpclient.timeout.connect {global_config.httpclient_timeout_connect}"))
+
         # Platform-Specific Options (Phase 4B Part 1)
         if global_config.noepoll is not None and global_config.noepoll:
             lines.append(self._indent("noepoll"))

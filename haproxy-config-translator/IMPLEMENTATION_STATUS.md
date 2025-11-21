@@ -6,7 +6,7 @@
 ## Current Status
 
 ### Tests & Code Quality ✅
-- **Tests:** 1057 passing, 0 skipped, 0 failures
+- **Tests:** 1066 passing, 0 skipped, 0 failures
 - **Test Coverage:** ~95%
 - **Mypy:** 0 errors (100% type safe)
 - **Ruff:** Clean (all issues resolved)
@@ -16,9 +16,9 @@
 
 #### Global Directives
 - **Total HAProxy Directives:** 172
-- **Implemented:** 141 (tested and verified)
-- **Coverage:** 82.0%
-- **Missing:** 31 directives
+- **Implemented:** 142 (tested and verified)
+- **Coverage:** 82.6%
+- **Missing:** 30 directives
 
 #### Proxy Keywords (Frontend/Backend/Listen/Defaults)
 - **Total HAProxy Keywords:** 89
@@ -207,8 +207,8 @@ Status: 100% complete (6 of 6 directives - test coverage added)
 - ssl-dh-param-file enables Perfect Forward Secrecy (PFS) for enhanced security
 - ssl-engine enables hardware acceleration for SSL/TLS operations
 
-### Priority 11: Rate Limiting & Process Control (Phase 12) 🎯 IN PROGRESS
-Status: 66% complete (2 of 3 batches completed)
+### Priority 11: Rate Limiting & Process Control (Phase 12) ✅ COMPLETE
+Status: 100% complete (3 of 3 batches completed)
 
 #### Phase 12 Batch 1: Rate Limiting ✅ COMPLETE
 **Completed:**
@@ -243,6 +243,21 @@ Status: 66% complete (2 of 3 batches completed)
 - Tests cover master-worker enablement, reload limits, and multi-process configurations
 - Essential for production environments requiring continuous availability
 - Enables graceful reloads without dropping connections
+
+#### Phase 12 Batch 3: HTTPClient Timeout ✅ COMPLETE
+**Completed:**
+1. ✅ **httpclient.timeout.connect** - Connection timeout for HTTP client operations (health checks, Lua scripts)
+
+**Phase 12 Batch 3 Results:** +9 tests (1057 → 1066), 1 new global directive, 0 failures
+**Phase 12 Batch 3 Status:** 100% COMPLETE (1/1 directive) ✅
+
+**Implementation Notes:**
+- Full 4-layer implementation (IR/Grammar/Transformer/Codegen)
+- Added comprehensive tests for milliseconds, seconds, short/long timeouts
+- Tests cover health check scenarios, Lua integration, and production configs
+- Critical for controlling timeouts when HAProxy acts as HTTP client
+- Works with httpclient.retries and httpclient.ssl.* for complete HTTP client configuration
+- Essential for external health checks and Lua-based HTTP operations
 
 ### Features Implemented (Previous Sessions)
 1. ✅ **Phases 1-3:** Core directives, SSL/TLS, HTTP/2, system integration

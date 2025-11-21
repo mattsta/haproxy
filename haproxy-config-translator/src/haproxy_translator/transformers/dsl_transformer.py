@@ -216,6 +216,7 @@ class DSLTransformer(Transformer):
         httpclient_retries = None
         httpclient_ssl_verify = None
         httpclient_ssl_ca_file = None
+        httpclient_timeout_connect = None  # Phase 12 Batch 3
 
         # Platform-Specific Options (Phase 4B Part 1)
         noepoll = None
@@ -395,6 +396,8 @@ class DSLTransformer(Transformer):
                     httpclient_ssl_verify = value
                 elif key == "httpclient_ssl_ca_file":
                     httpclient_ssl_ca_file = value
+                elif key == "httpclient_timeout_connect":  # Phase 12 Batch 3
+                    httpclient_timeout_connect = value
                 # Phase 4B Part 1 - Platform-Specific Options
                 elif key == "noepoll":
                     noepoll = value
@@ -647,6 +650,7 @@ class DSLTransformer(Transformer):
             httpclient_retries=httpclient_retries,
             httpclient_ssl_verify=httpclient_ssl_verify,
             httpclient_ssl_ca_file=httpclient_ssl_ca_file,
+            httpclient_timeout_connect=httpclient_timeout_connect,  # Phase 12 Batch 3
             # Platform-Specific Options (Phase 4B Part 1)
             noepoll=noepoll,
             nokqueue=nokqueue,
@@ -1143,6 +1147,10 @@ class DSLTransformer(Transformer):
 
     def global_httpclient_ssl_ca_file(self, items: list[Any]) -> tuple[str, str]:
         return ("httpclient_ssl_ca_file", items[0])
+
+    def global_httpclient_timeout_connect(self, items: list[Any]) -> tuple[str, str]:
+        """Phase 12 Batch 3 - HTTPClient timeout.connect directive."""
+        return ("httpclient_timeout_connect", items[0])
 
     # Phase 4B Part 1 - Platform-Specific Options directives
     def global_noepoll(self, items: list[Any]) -> tuple[str, bool]:

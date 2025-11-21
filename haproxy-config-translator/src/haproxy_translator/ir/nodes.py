@@ -442,6 +442,7 @@ class GlobalConfig(IRNode):
     httpclient_retries: int | None = None
     httpclient_ssl_verify: str | None = None
     httpclient_ssl_ca_file: str | None = None
+    httpclient_timeout_connect: str | None = None  # Phase 12 Batch 3
 
     # Platform-Specific Options (Phase 4B Part 1)
     noepoll: bool | None = None

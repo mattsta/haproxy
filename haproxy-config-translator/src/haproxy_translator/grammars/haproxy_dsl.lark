@@ -183,6 +183,7 @@ global_section: "global" "{" global_property* "}"
                 | "httpclient.retries" ":" number                 -> global_httpclient_retries
                 | "httpclient.ssl.verify" ":" string              -> global_httpclient_ssl_verify
                 | "httpclient.ssl.ca-file" ":" string             -> global_httpclient_ssl_ca_file
+                | "httpclient.timeout.connect" ":" string         -> global_httpclient_timeout_connect  // Phase 12 Batch 3
                 // Phase 4B Part 1 - Platform-Specific Options (8 directives)
                 | "noepoll" ":" boolean                           -> global_noepoll
                 | "nokqueue" ":" boolean                          -> global_nokqueue
