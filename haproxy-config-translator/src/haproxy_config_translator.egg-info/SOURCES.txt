@@ -62,6 +62,16 @@ tests/test_phase10_resource_limits.py
 tests/test_phase10_server_state.py
 tests/test_phase10_threading.py
 tests/test_phase11_ssl_paths.py
+tests/test_phase12_httpclient.py
+tests/test_phase12_lua.py
+tests/test_phase12_master_worker.py
+tests/test_phase12_performance.py
+tests/test_phase12_rate_limiting.py
+tests/test_phase12_ssl_advanced.py
+tests/test_phase13_h2_buffers.py
+tests/test_phase13_lua.py
+tests/test_phase13_quic.py
+tests/test_phase13_ssl_advanced.py
 tests/test_phase5a_errorloc.py
 tests/test_phase5a_logging.py
 tests/test_phase6_performance_tuning.py

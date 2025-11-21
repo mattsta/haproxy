@@ -406,6 +406,15 @@ class GlobalConfig(IRNode):
     ssl_server_verify: str | None = None
     ssl_engine: str | None = None
 
+    # SSL/TLS Advanced Configuration (Phase 13 Batch 4)
+    ssl_default_bind_curves: str | None = None
+    ssl_default_bind_sigalgs: str | None = None
+    ssl_default_bind_client_sigalgs: str | None = None
+    ssl_default_server_curves: str | None = None
+    ssl_default_server_sigalgs: str | None = None
+    ssl_default_server_client_sigalgs: str | None = None
+    ssl_security_level: int | None = None
+
     # Logging configuration
     log_tag: str | None = None
     log_send_hostname: str | None = None

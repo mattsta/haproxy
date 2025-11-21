@@ -180,6 +180,15 @@ class DSLTransformer(Transformer):
         ssl_server_verify = None
         ssl_engine = None
 
+        # SSL/TLS Advanced Configuration (Phase 13 Batch 4)
+        ssl_default_bind_curves = None
+        ssl_default_bind_sigalgs = None
+        ssl_default_bind_client_sigalgs = None
+        ssl_default_server_curves = None
+        ssl_default_server_sigalgs = None
+        ssl_default_server_client_sigalgs = None
+        ssl_security_level = None
+
         # Logging configuration
         log_tag = None
         log_send_hostname = None
@@ -355,6 +364,21 @@ class DSLTransformer(Transformer):
                     ssl_server_verify = value
                 elif key == "ssl_engine":
                     ssl_engine = value
+                # Phase 13 Batch 4 - SSL Advanced Configuration
+                elif key == "ssl_default_bind_curves":
+                    ssl_default_bind_curves = value
+                elif key == "ssl_default_bind_sigalgs":
+                    ssl_default_bind_sigalgs = value
+                elif key == "ssl_default_bind_client_sigalgs":
+                    ssl_default_bind_client_sigalgs = value
+                elif key == "ssl_default_server_curves":
+                    ssl_default_server_curves = value
+                elif key == "ssl_default_server_sigalgs":
+                    ssl_default_server_sigalgs = value
+                elif key == "ssl_default_server_client_sigalgs":
+                    ssl_default_server_client_sigalgs = value
+                elif key == "ssl_security_level":
+                    ssl_security_level = value
                 elif key == "master_worker":
                     master_worker = value
                 elif key == "mworker_max_reloads":
@@ -677,6 +701,14 @@ class DSLTransformer(Transformer):
             ssl_default_server_options=ssl_default_server_options,
             ssl_server_verify=ssl_server_verify,
             ssl_engine=ssl_engine,
+            # SSL/TLS Advanced Configuration (Phase 13 Batch 4)
+            ssl_default_bind_curves=ssl_default_bind_curves,
+            ssl_default_bind_sigalgs=ssl_default_bind_sigalgs,
+            ssl_default_bind_client_sigalgs=ssl_default_bind_client_sigalgs,
+            ssl_default_server_curves=ssl_default_server_curves,
+            ssl_default_server_sigalgs=ssl_default_server_sigalgs,
+            ssl_default_server_client_sigalgs=ssl_default_server_client_sigalgs,
+            ssl_security_level=ssl_security_level,
             # Logging configuration
             log_tag=log_tag,
             log_send_hostname=log_send_hostname,
@@ -916,6 +948,35 @@ class DSLTransformer(Transformer):
 
     def global_ssl_engine(self, items: list[Any]) -> tuple[str, str]:
         return ("ssl_engine", items[0])
+
+    # Phase 13 Batch 4 - SSL Advanced Configuration
+    def global_ssl_default_bind_curves(self, items: list[Any]) -> tuple[str, str]:
+        """Phase 13 Batch 4 - SSL/TLS elliptic curves for bind."""
+        return ("ssl_default_bind_curves", items[0])
+
+    def global_ssl_default_bind_sigalgs(self, items: list[Any]) -> tuple[str, str]:
+        """Phase 13 Batch 4 - SSL/TLS signature algorithms for bind."""
+        return ("ssl_default_bind_sigalgs", items[0])
+
+    def global_ssl_default_bind_client_sigalgs(self, items: list[Any]) -> tuple[str, str]:
+        """Phase 13 Batch 4 - SSL/TLS client signature algorithms for bind."""
+        return ("ssl_default_bind_client_sigalgs", items[0])
+
+    def global_ssl_default_server_curves(self, items: list[Any]) -> tuple[str, str]:
+        """Phase 13 Batch 4 - SSL/TLS elliptic curves for server."""
+        return ("ssl_default_server_curves", items[0])
+
+    def global_ssl_default_server_sigalgs(self, items: list[Any]) -> tuple[str, str]:
+        """Phase 13 Batch 4 - SSL/TLS signature algorithms for server."""
+        return ("ssl_default_server_sigalgs", items[0])
+
+    def global_ssl_default_server_client_sigalgs(self, items: list[Any]) -> tuple[str, str]:
+        """Phase 13 Batch 4 - SSL/TLS client signature algorithms for server."""
+        return ("ssl_default_server_client_sigalgs", items[0])
+
+    def global_ssl_security_level(self, items: list[Any]) -> tuple[str, int]:
+        """Phase 13 Batch 4 - OpenSSL security level."""
+        return ("ssl_security_level", items[0])
 
     # Phase 2 - Master-worker mode
     def global_master_worker(self, items: list[Any]) -> tuple[str, bool]:

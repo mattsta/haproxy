@@ -512,6 +512,28 @@ class HAProxyCodeGenerator:
         if global_config.ssl_engine:
             lines.append(self._indent(f"ssl-engine {global_config.ssl_engine}"))
 
+        # Phase 13 Batch 4 - SSL Advanced Configuration
+        if global_config.ssl_default_bind_curves:
+            lines.append(self._indent(f"ssl-default-bind-curves {global_config.ssl_default_bind_curves}"))
+
+        if global_config.ssl_default_bind_sigalgs:
+            lines.append(self._indent(f"ssl-default-bind-sigalgs {global_config.ssl_default_bind_sigalgs}"))
+
+        if global_config.ssl_default_bind_client_sigalgs:
+            lines.append(self._indent(f"ssl-default-bind-client-sigalgs {global_config.ssl_default_bind_client_sigalgs}"))
+
+        if global_config.ssl_default_server_curves:
+            lines.append(self._indent(f"ssl-default-server-curves {global_config.ssl_default_server_curves}"))
+
+        if global_config.ssl_default_server_sigalgs:
+            lines.append(self._indent(f"ssl-default-server-sigalgs {global_config.ssl_default_server_sigalgs}"))
+
+        if global_config.ssl_default_server_client_sigalgs:
+            lines.append(self._indent(f"ssl-default-server-client-sigalgs {global_config.ssl_default_server_client_sigalgs}"))
+
+        if global_config.ssl_security_level is not None:
+            lines.append(self._indent(f"ssl-security-level {global_config.ssl_security_level}"))
+
         # Lua scripts
         for script in global_config.lua_scripts:
             if script.source_type == "file":
