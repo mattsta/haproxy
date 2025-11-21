@@ -364,6 +364,7 @@ defaults_section: "defaults" "{" defaults_property* "}"
                   | "retries" ":" number               -> defaults_retries
                   | "log" ":" string                   -> defaults_log
                   | "error-log-format" ":" string      -> defaults_error_log_format
+                  | "log-steps" ":" string             -> defaults_log_steps
                   | "option" ":" string_or_array       -> defaults_option
                   | timeout_block                      -> defaults_timeout
                   | "errorloc" number string           -> defaults_errorloc
@@ -432,6 +433,7 @@ frontend_section: "frontend" identifier "{" frontend_property* "}"
                   | "log-format" ":" string                -> frontend_log_format
                   | "error-log-format" ":" string          -> frontend_error_log_format
                   | "log-format-sd" ":" string             -> frontend_log_format_sd
+                  | "log-steps" ":" string                 -> frontend_log_steps
                   | stats_block                            -> frontend_stats
                   | "capture" "request" "header" string number  -> frontend_capture_request_header
                   | "capture" "response" "header" string number -> frontend_capture_response_header
@@ -943,6 +945,7 @@ listen_section: "listen" identifier "{" listen_property* "}"
                 | "log-format" ":" string                -> listen_log_format
                 | "error-log-format" ":" string          -> listen_error_log_format
                 | "log-format-sd" ":" string             -> listen_log_format_sd
+                | "log-steps" ":" string                 -> listen_log_steps
                 | http_request_block                     -> listen_http_request
                 | http_response_block                    -> listen_http_response
                 | http_after_response_block              -> listen_http_after_response

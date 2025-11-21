@@ -546,6 +546,7 @@ class DefaultsConfig(IRNode):
     timeout_tarpit: str | None = None  # Tarpit timeout (security)
     log: str | None = "global"
     error_log_format: str | None = None  # Custom error log format string
+    log_steps: str | None = None  # Logging steps (accept, connect, request, response, close, all)
     options: list[str] = field(default_factory=list)
     errorfiles: dict[int, str] = field(default_factory=dict)
     errorloc: dict[int, str] = field(default_factory=dict)  # 302 redirect
@@ -792,6 +793,7 @@ class Frontend(IRNode):
     log_format: str | None = None  # Custom log format string
     error_log_format: str | None = None  # Custom error log format string
     log_format_sd: str | None = None  # Structured data log format (RFC 5424)
+    log_steps: str | None = None  # Logging steps (accept, connect, request, response, close, all)
     unique_id_format: str | None = None  # Format string for unique request IDs
     unique_id_header: str | None = None  # HTTP header name for unique request ID
     stats_config: StatsConfig | None = None  # Statistics reporting configuration
@@ -926,6 +928,7 @@ class Listen(IRNode):
     log_format: str | None = None  # Custom log format string
     error_log_format: str | None = None  # Custom error log format string
     log_format_sd: str | None = None  # Structured data log format (RFC 5424)
+    log_steps: str | None = None  # Logging steps (accept, connect, request, response, close, all)
     email_alert: EmailAlert | None = None  # Email alert configuration
     declare_captures: list[DeclareCapture] = field(default_factory=list)  # Declare capture slots
     force_persist_rules: list[ForcePersistRule] = field(default_factory=list)  # Force persistence rules

@@ -597,6 +597,10 @@ class HAProxyCodeGenerator:
         if defaults.error_log_format:
             lines.append(self._indent(f"error-log-format {defaults.error_log_format}"))
 
+        # Log steps
+        if defaults.log_steps:
+            lines.append(self._indent(f"log-steps {defaults.log_steps}"))
+
         lines.append(self._indent(f"retries {defaults.retries}"))
 
         # Timeouts
@@ -747,6 +751,9 @@ class HAProxyCodeGenerator:
 
         if frontend.log_format_sd:
             lines.append(self._indent(f"log-format-sd {frontend.log_format_sd}"))
+
+        if frontend.log_steps:
+            lines.append(self._indent(f"log-steps {frontend.log_steps}"))
 
         # Unique ID tracking
         if frontend.unique_id_format:
@@ -1175,6 +1182,9 @@ class HAProxyCodeGenerator:
 
         if listen.log_format_sd:
             lines.append(self._indent(f"log-format-sd {listen.log_format_sd}"))
+
+        if listen.log_steps:
+            lines.append(self._indent(f"log-steps {listen.log_steps}"))
 
         # ACLs
         for acl in listen.acls:

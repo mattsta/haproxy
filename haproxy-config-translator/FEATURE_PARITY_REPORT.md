@@ -1,6 +1,6 @@
 # HAProxy Config Translator - Feature Parity Report
 
-**Generated:** 2025-11-21 04:01:43
+**Generated:** 2025-11-21 13:07:17
 **HAProxy Version:** 3.3
 **Documentation Source:** `/home/user/haproxy/doc/configuration.txt`
 
@@ -14,11 +14,11 @@ configuration language and the haproxy-config-translator implementation.
 ### Global Directives
 
 - **Total HAProxy Directives:** 172
-- **Implemented:** 135
-- **Coverage:** `78.5%`
+- **Implemented:** 165
+- **Coverage:** `95.9%`
 
 ```
-[=======================================           ] 78.5%
+[===============================================   ] 95.9%
 ```
 
 ### Proxy Keywords (Frontend/Backend/Listen/Defaults)
@@ -29,7 +29,7 @@ configuration language and the haproxy-config-translator implementation.
 
 ### Test Coverage
 
-- **Total Test Files:** 101
+- **Total Test Files:** 105
 - **Global Directive Tests:** 10
 - **Proxy Tests:** 0
 - **Bind Option Tests:** 2
@@ -75,50 +75,20 @@ configuration language and the haproxy-config-translator implementation.
 #### Quic Http3
 
 - **Total:** 57
-- **Implemented:** 20
-- **Missing:** 37
+- **Implemented:** 50
+- **Missing:** 7
 
 <details>
-<summary>Missing Directives (37)</summary>
+<summary>Missing Directives (7)</summary>
 
 ```
-  - tune.h2.be.rxbuf
-  - tune.h2.fe.rxbuf
-  - tune.quic.be.cc.cubic-min-losses
-  - tune.quic.be.cc.hystart
-  - tune.quic.be.cc.max-frame-loss
-  - tune.quic.be.cc.max-win-size
-  - tune.quic.be.cc.reorder-ratio
-  - tune.quic.be.max-idle-timeout
-  - tune.quic.be.sec.glitches-threshold
-  - tune.quic.be.stream.data-ratio
-  - tune.quic.be.stream.max-concurrent
-  - tune.quic.be.stream.rxbuf
-  - tune.quic.be.tx.pacing
-  - tune.quic.be.tx.udp-gso
   - tune.quic.cc.cubic.min-losses
   - tune.quic.disable-tx-pacing
   - tune.quic.disable-udp-gso
-  - tune.quic.fe.cc.cubic-min-losses
-  - tune.quic.fe.cc.hystart
-  - tune.quic.fe.cc.max-frame-loss
-  - tune.quic.fe.cc.max-win-size
-  - tune.quic.fe.cc.reorder-ratio
-  - tune.quic.fe.max-idle-timeout
-  - tune.quic.fe.sec.glitches-threshold
-  - tune.quic.fe.sec.retry-threshold
-  - tune.quic.fe.sock-per-conn
-  - tune.quic.fe.stream.data-ratio
-  - tune.quic.fe.stream.max-concurrent
-  - tune.quic.fe.stream.rxbuf
-  - tune.quic.fe.tx.pacing
-  - tune.quic.fe.tx.udp-gso
   - tune.quic.frontend.default-max-window-size
   - tune.quic.frontend.max-data-size
   - tune.quic.frontend.max-tx-mem
   - tune.quic.frontend.stream-data-ratio
-  - tune.quic.listen
-  - tune.quic.mem.tx-max
 ```
 
 </details>
@@ -293,8 +263,8 @@ Based on the analysis, here are recommended priorities for achieving 100% parity
 
 ## Conclusion
 
-The haproxy-config-translator currently implements **135** out of 
-**172** global directives (78.5% coverage), 
+The haproxy-config-translator currently implements **165** out of 
+**172** global directives (95.9% coverage), 
 demonstrating strong foundational support for HAProxy configuration.
 
 **Strengths:**
@@ -318,7 +288,7 @@ with HAProxy 3.3 is highly achievable.
 ### Appendix A: Implemented Global Directives
 
 <details>
-<summary>All Implemented Global Directives (206)</summary>
+<summary>All Implemented Global Directives (243)</summary>
 
 ```
   ✓ 51degrees-cache-size
@@ -397,10 +367,16 @@ with HAProxy 3.3 is highly achievable.
   ✓ spread-checks
   ✓ ssl-default-bind-ciphers
   ✓ ssl-default-bind-ciphersuites
+  ✓ ssl-default-bind-client-sigalgs
+  ✓ ssl-default-bind-curves
   ✓ ssl-default-bind-options
+  ✓ ssl-default-bind-sigalgs
   ✓ ssl-default-server-ciphers
   ✓ ssl-default-server-ciphersuites
+  ✓ ssl-default-server-client-sigalgs
+  ✓ ssl-default-server-curves
   ✓ ssl-default-server-options
+  ✓ ssl-default-server-sigalgs
   ✓ ssl-dh-param-file
   ✓ ssl-engine
   ✓ ssl-load-extra-del-ext
@@ -409,6 +385,7 @@ with HAProxy 3.3 is highly achievable.
   ✓ ssl-propquery
   ✓ ssl-provider
   ✓ ssl-provider-path
+  ✓ ssl-security-level
   ✓ ssl-server-verify
   ✓ strict-limits
   ✓ thread-groups
@@ -429,10 +406,12 @@ with HAProxy 3.3 is highly achievable.
   ✓ tune.h2.be.glitches-threshold
   ✓ tune.h2.be.initial-window-size
   ✓ tune.h2.be.max-concurrent-streams
+  ✓ tune.h2.be.rxbuf
   ✓ tune.h2.fe.glitches-threshold
   ✓ tune.h2.fe.initial-window-size
   ✓ tune.h2.fe.max-concurrent-streams
   ✓ tune.h2.fe.max-total-streams
+  ✓ tune.h2.fe.rxbuf
   ✓ tune.h2.header-table-size
   ✓ tune.h2.initial-window-size
   ✓ tune.h2.max-concurrent-streams
@@ -466,12 +445,40 @@ with HAProxy 3.3 is highly achievable.
   ✓ tune.pool.high-fd-ratio
   ✓ tune.pool.low-fd-ratio
   ✓ tune.pt.zero-copy-forwarding
+  ✓ tune.quic.be.cc.cubic-min-losses
+  ✓ tune.quic.be.cc.hystart
+  ✓ tune.quic.be.cc.max-frame-loss
+  ✓ tune.quic.be.cc.max-win-size
+  ✓ tune.quic.be.cc.reorder-ratio
+  ✓ tune.quic.be.max-idle-timeout
+  ✓ tune.quic.be.sec.glitches-threshold
+  ✓ tune.quic.be.stream.data-ratio
+  ✓ tune.quic.be.stream.max-concurrent
+  ✓ tune.quic.be.stream.rxbuf
+  ✓ tune.quic.be.tx.pacing
+  ✓ tune.quic.be.tx.udp-gso
   ✓ tune.quic.cc-hystart
+  ✓ tune.quic.fe.cc.cubic-min-losses
+  ✓ tune.quic.fe.cc.hystart
+  ✓ tune.quic.fe.cc.max-frame-loss
+  ✓ tune.quic.fe.cc.max-win-size
+  ✓ tune.quic.fe.cc.reorder-ratio
+  ✓ tune.quic.fe.max-idle-timeout
+  ✓ tune.quic.fe.sec.glitches-threshold
+  ✓ tune.quic.fe.sec.retry-threshold
+  ✓ tune.quic.fe.sock-per-conn
+  ✓ tune.quic.fe.stream.data-ratio
+  ✓ tune.quic.fe.stream.max-concurrent
+  ✓ tune.quic.fe.stream.rxbuf
+  ✓ tune.quic.fe.tx.pacing
+  ✓ tune.quic.fe.tx.udp-gso
   ✓ tune.quic.frontend.conn-tx-buffers.limit
   ✓ tune.quic.frontend.glitches-threshold
   ✓ tune.quic.frontend.max-idle-timeout
   ✓ tune.quic.frontend.max-streams-bidi
+  ✓ tune.quic.listen
   ✓ tune.quic.max-frame-loss
+  ✓ tune.quic.mem.tx-max
   ✓ tune.quic.reorder-ratio
   ✓ tune.quic.retry-threshold
   ✓ tune.quic.socket.owner

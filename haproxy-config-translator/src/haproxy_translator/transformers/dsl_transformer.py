@@ -1962,6 +1962,7 @@ class DSLTransformer(Transformer):
         errorloc302 = {}
         errorloc303 = {}
         error_log_format = None
+        log_steps = None
         email_alert = None
         rate_limit_sessions = None  # Phase 5B
         # TCP keepalive (Phase 5B)
@@ -2011,6 +2012,8 @@ class DSLTransformer(Transformer):
                     errorloc303[code] = url
                 elif key == "error_log_format":
                     error_log_format = value
+                elif key == "log_steps":
+                    log_steps = value
                 elif key == "timeout":
                     for timeout_key, timeout_value in value.items():
                         if timeout_key == "connect":
@@ -2055,6 +2058,7 @@ class DSLTransformer(Transformer):
             errorloc302=errorloc302,
             errorloc303=errorloc303,
             error_log_format=error_log_format,
+            log_steps=log_steps,
             email_alert=email_alert,
             rate_limit_sessions=rate_limit_sessions,
             clitcpka_cnt=clitcpka_cnt,
@@ -2077,6 +2081,10 @@ class DSLTransformer(Transformer):
     def defaults_error_log_format(self, items: list[Any]) -> tuple[str, str]:
         """Transform error-log-format directive (custom error logging format)."""
         return ("error_log_format", str(items[0]))
+
+    def defaults_log_steps(self, items: list[Any]) -> tuple[str, str]:
+        """Transform log-steps directive (logging steps for transaction processing)."""
+        return ("log_steps", str(items[0]))
 
     def defaults_option(self, items: list[Any]) -> tuple[str, Any]:
         return ("option", items[0])
@@ -2145,6 +2153,7 @@ class DSLTransformer(Transformer):
         log_format = None
         error_log_format = None
         log_format_sd = None
+        log_steps = None
         unique_id_format = None
         unique_id_header = None
         stats_config = None
@@ -2281,6 +2290,8 @@ class DSLTransformer(Transformer):
                     error_log_format = value
                 elif key == "log_format_sd":
                     log_format_sd = value
+                elif key == "log_steps":
+                    log_steps = value
                 elif key == "unique_id_format":
                     unique_id_format = value
                 elif key == "unique_id_header":
@@ -2341,6 +2352,7 @@ class DSLTransformer(Transformer):
             log_format=log_format,
             error_log_format=error_log_format,
             log_format_sd=log_format_sd,
+            log_steps=log_steps,
             unique_id_format=unique_id_format,
             unique_id_header=unique_id_header,
             stats_config=stats_config,
@@ -2466,6 +2478,10 @@ class DSLTransformer(Transformer):
     def frontend_log_format_sd(self, items: list[Any]) -> tuple[str, str]:
         """Transform log-format-sd directive (RFC 5424 structured data)."""
         return ("log_format_sd", str(items[0]))
+
+    def frontend_log_steps(self, items: list[Any]) -> tuple[str, str]:
+        """Transform log-steps directive (logging steps for transaction processing)."""
+        return ("log_steps", str(items[0]))
 
     def frontend_stats(self, items: list[Any]) -> StatsConfig:
         """Transform stats block."""
@@ -4003,6 +4019,7 @@ class DSLTransformer(Transformer):
         log_format = None
         error_log_format = None
         log_format_sd = None
+        log_steps = None
         http_errors = []
         email_alert = None
         declare_captures = []
@@ -4094,6 +4111,8 @@ class DSLTransformer(Transformer):
                     error_log_format = value
                 elif key == "log_format_sd":
                     log_format_sd = value
+                elif key == "log_steps":
+                    log_steps = value
 
         # Build metadata
         metadata: dict[str, Any] = {}
@@ -4132,6 +4151,7 @@ class DSLTransformer(Transformer):
             log_format=log_format,
             error_log_format=error_log_format,
             log_format_sd=log_format_sd,
+            log_steps=log_steps,
             http_errors=http_errors,
             email_alert=email_alert,
             declare_captures=declare_captures,
@@ -4210,6 +4230,10 @@ class DSLTransformer(Transformer):
     def listen_log_format_sd(self, items: list[Any]) -> tuple[str, str]:
         """Transform log-format-sd directive (structured data log format - RFC 5424)."""
         return ("log_format_sd", str(items[0]))
+
+    def listen_log_steps(self, items: list[Any]) -> tuple[str, str]:
+        """Transform log-steps directive (logging steps for transaction processing)."""
+        return ("log_steps", str(items[0]))
 
     def health_check_block(self, items: list[Any]) -> HealthCheck:
         method = "GET"
