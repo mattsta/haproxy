@@ -1042,6 +1042,18 @@ class DSLTransformer(Transformer):
     def global_tune_lua_log_loggers(self, items: list[Any]) -> tuple[str, str]:
         return ("tune_lua_log_loggers", items[0])
 
+    def global_tune_lua_bool_sample_conversion(self, items: list[Any]) -> tuple[str, bool]:
+        """Phase 12 Batch 5 - Lua boolean sample conversion."""
+        return ("tune_lua_bool_sample_conversion", items[0])
+
+    def global_tune_lua_burst_timeout(self, items: list[Any]) -> tuple[str, int]:
+        """Phase 12 Batch 5 - Lua burst timeout in milliseconds."""
+        return ("tune_lua_burst_timeout", items[0])
+
+    def global_tune_lua_log_stderr(self, items: list[Any]) -> tuple[str, str]:
+        """Phase 12 Batch 5 - Lua log to stderr (on/off/auto)."""
+        return ("tune_lua_log_stderr", items[0])
+
     # Phase 4A - Variables Configuration directives
     def global_tune_vars_global_max_size(self, items: list[Any]) -> tuple[str, int]:
         return ("tune_vars_global_max_size", items[0])

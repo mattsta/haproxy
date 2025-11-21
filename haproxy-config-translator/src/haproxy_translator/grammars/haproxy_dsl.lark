@@ -128,6 +128,9 @@ global_section: "global" "{" global_property* "}"
                 | "tune.lua.task-timeout" ":" string      -> global_tune_lua_task_timeout
                 | "tune.lua.service-timeout" ":" string   -> global_tune_lua_service_timeout
                 | "tune.lua.log.loggers" ":" string       -> global_tune_lua_log_loggers
+                | "tune.lua.bool-sample-conversion" ":" boolean -> global_tune_lua_bool_sample_conversion  // Phase 12 Batch 5
+                | "tune.lua.burst-timeout" ":" number     -> global_tune_lua_burst_timeout                // Phase 12 Batch 5
+                | "tune.lua.log.stderr" ":" string        -> global_tune_lua_log_stderr                   // Phase 12 Batch 5
                 // Phase 4A - Variables Configuration (5 directives)
                 | "tune.vars.global-max-size" ":" number  -> global_tune_vars_global_max_size
                 | "tune.vars.proc-max-size" ":" number    -> global_tune_vars_proc_max_size

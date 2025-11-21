@@ -6,7 +6,7 @@
 ## Current Status
 
 ### Tests & Code Quality ✅
-- **Tests:** 1078 passing, 0 skipped, 0 failures
+- **Tests:** 1091 passing, 0 skipped, 0 failures
 - **Test Coverage:** ~95%
 - **Mypy:** 0 errors (100% type safe)
 - **Ruff:** Clean (all issues resolved)
@@ -16,9 +16,9 @@
 
 #### Global Directives
 - **Total HAProxy Directives:** 172
-- **Implemented:** 146 (tested and verified)
-- **Coverage:** 84.9%
-- **Missing:** 26 directives
+- **Implemented:** 149 (tested and verified)
+- **Coverage:** 86.6%
+- **Missing:** 23 directives
 
 #### Proxy Keywords (Frontend/Backend/Listen/Defaults)
 - **Total HAProxy Keywords:** 89
@@ -278,6 +278,25 @@ Status: 100% complete (3 of 3 batches completed)
 - Tests cover basic usage, production scenarios, and integration with existing SSL settings
 - Critical for OCSP stapling updates and SSL performance tuning in high-traffic environments
 - Works seamlessly with existing tune.ssl.* directives
+
+#### Phase 12 Batch 5: Lua Tuning ✅ COMPLETE
+**Completed:**
+1. ✅ **tune.lua.bool-sample-conversion** - Enable/disable automatic boolean conversion for Lua samples
+2. ✅ **tune.lua.burst-timeout** - Timeout in milliseconds for Lua burst operations
+3. ✅ **tune.lua.log.stderr** - Configure Lua logging to stderr (on/off/auto)
+
+**Phase 12 Batch 5 Results:** +13 tests (1078 → 1091), 3 new global directives, 0 failures
+**Phase 12 Batch 5 Status:** 100% COMPLETE (3/3 directives) ✅
+
+**Implementation Notes:**
+- All 3 directives use the tuning dict infrastructure
+- Grammar rules added alongside existing tune.lua.* directives
+- Transformer methods return proper keys for tune_key conversion
+- Special handling for tune.lua.log.stderr via lua.log.* pattern (line 538-540 in transformer)
+- Tests cover boolean conversion, timeout values, and stderr logging modes
+- Development vs. production configurations tested
+- Critical for Lua script debugging and performance optimization
+- Works seamlessly with existing tune.lua.* directives
 
 ### Features Implemented (Previous Sessions)
 1. ✅ **Phases 1-3:** Core directives, SSL/TLS, HTTP/2, system integration
