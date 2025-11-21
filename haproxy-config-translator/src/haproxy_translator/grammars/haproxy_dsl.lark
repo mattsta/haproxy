@@ -251,6 +251,37 @@ global_section: "global" "{" global_property* "}"
                 | "tune.quic.reorder-ratio" ":" number                    -> global_tune_quic_reorder_ratio
                 | "tune.quic.zero-copy-fwd-send" ":" boolean              -> global_tune_quic_zero_copy_fwd_send
                 | "tune.h2.zero-copy-fwd-send" ":" boolean                -> global_tune_h2_zero_copy_fwd_send
+                // Phase 13 Batch 2 - Modern QUIC Backend Directives (12 new)
+                | "tune.quic.be.cc.cubic-min-losses" ":" number           -> global_tune_quic_be_cc_cubic_min_losses
+                | "tune.quic.be.cc.hystart" ":" boolean                   -> global_tune_quic_be_cc_hystart
+                | "tune.quic.be.cc.max-frame-loss" ":" number             -> global_tune_quic_be_cc_max_frame_loss
+                | "tune.quic.be.cc.max-win-size" ":" number               -> global_tune_quic_be_cc_max_win_size
+                | "tune.quic.be.cc.reorder-ratio" ":" number              -> global_tune_quic_be_cc_reorder_ratio
+                | "tune.quic.be.max-idle-timeout" ":" string              -> global_tune_quic_be_max_idle_timeout
+                | "tune.quic.be.sec.glitches-threshold" ":" number        -> global_tune_quic_be_sec_glitches_threshold
+                | "tune.quic.be.stream.data-ratio" ":" number             -> global_tune_quic_be_stream_data_ratio
+                | "tune.quic.be.stream.max-concurrent" ":" number         -> global_tune_quic_be_stream_max_concurrent
+                | "tune.quic.be.stream.rxbuf" ":" number                  -> global_tune_quic_be_stream_rxbuf
+                | "tune.quic.be.tx.pacing" ":" boolean                    -> global_tune_quic_be_tx_pacing
+                | "tune.quic.be.tx.udp-gso" ":" boolean                   -> global_tune_quic_be_tx_udp_gso
+                // Phase 13 Batch 2 - Modern QUIC Frontend Directives (14 new)
+                | "tune.quic.fe.cc.cubic-min-losses" ":" number           -> global_tune_quic_fe_cc_cubic_min_losses
+                | "tune.quic.fe.cc.hystart" ":" boolean                   -> global_tune_quic_fe_cc_hystart
+                | "tune.quic.fe.cc.max-frame-loss" ":" number             -> global_tune_quic_fe_cc_max_frame_loss
+                | "tune.quic.fe.cc.max-win-size" ":" number               -> global_tune_quic_fe_cc_max_win_size
+                | "tune.quic.fe.cc.reorder-ratio" ":" number              -> global_tune_quic_fe_cc_reorder_ratio
+                | "tune.quic.fe.max-idle-timeout" ":" string              -> global_tune_quic_fe_max_idle_timeout
+                | "tune.quic.fe.sec.glitches-threshold" ":" number        -> global_tune_quic_fe_sec_glitches_threshold
+                | "tune.quic.fe.sec.retry-threshold" ":" number           -> global_tune_quic_fe_sec_retry_threshold
+                | "tune.quic.fe.sock-per-conn" ":" string                 -> global_tune_quic_fe_sock_per_conn
+                | "tune.quic.fe.stream.data-ratio" ":" number             -> global_tune_quic_fe_stream_data_ratio
+                | "tune.quic.fe.stream.max-concurrent" ":" number         -> global_tune_quic_fe_stream_max_concurrent
+                | "tune.quic.fe.stream.rxbuf" ":" number                  -> global_tune_quic_fe_stream_rxbuf
+                | "tune.quic.fe.tx.pacing" ":" boolean                    -> global_tune_quic_fe_tx_pacing
+                | "tune.quic.fe.tx.udp-gso" ":" boolean                   -> global_tune_quic_fe_tx_udp_gso
+                // Phase 13 Batch 2 - QUIC Global Directives (2 new)
+                | "tune.quic.listen" ":" boolean                          -> global_tune_quic_listen
+                | "tune.quic.mem.tx-max" ":" number                       -> global_tune_quic_mem_tx_max
                 // Phase 4B Part 4 - Device Detection (15 directives)
                 // DeviceAtlas (4 directives)
                 | "deviceatlas-json-file" ":" string                      -> global_deviceatlas_json_file

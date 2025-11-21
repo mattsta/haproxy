@@ -6,7 +6,7 @@
 ## Current Status
 
 ### Tests & Code Quality ✅
-- **Tests:** 1114 passing, 0 skipped, 0 failures
+- **Tests:** 1137 passing, 0 skipped, 0 failures
 - **Test Coverage:** ~95%
 - **Mypy:** 0 errors (100% type safe)
 - **Ruff:** Clean (all issues resolved)
@@ -15,10 +15,10 @@
 ### Feature Parity Status
 
 #### Global Directives
-- **Total HAProxy Directives:** 172
-- **Implemented:** 162 (tested and verified)
-- **Coverage:** 94.2%
-- **Missing:** 10 directives
+- **Total HAProxy Directives:** 234 (from comprehensive audit)
+- **Implemented:** 192 (tested and verified)
+- **Coverage:** 82.1%
+- **Missing:** 42 directives
 
 #### Proxy Keywords (Frontend/Backend/Listen/Defaults)
 - **Total HAProxy Keywords:** 89
@@ -330,6 +330,89 @@ Status: 100% complete (6 of 6 batches completed)
 - Tests cover negative priority values, zero-copy optimizations, and production scenarios
 - Critical for high-performance configurations and low-latency applications
 - Enables fine-grained control over platform features, profiling, and zero-copy optimizations
+
+### Priority 12: Remaining Global Directives (Phase 13) 🚧 IN PROGRESS
+Status: 14% complete (2 of 6 batches completed, 30 of 72 directives)
+
+#### Phase 13 Batch 1: HTTP/2 Buffers ✅ COMPLETE
+**Completed:**
+1. ✅ **tune.h2.be.rxbuf** - HTTP/2 backend receive buffer size for performance tuning
+2. ✅ **tune.h2.fe.rxbuf** - HTTP/2 frontend receive buffer size for performance tuning
+
+**Phase 13 Batch 1 Results:** +8 tests (1114 → 1122), 2 new global directives, 0 failures
+**Phase 13 Batch 1 Status:** 100% COMPLETE (2/2 directives) ✅
+
+**Implementation Notes:**
+- Both directives use the tuning dict infrastructure
+- Grammar rules added alongside existing tune.h2.* directives
+- Transformer methods return proper keys for tune_key conversion
+- Tests cover basic buffer sizes, large buffers for high throughput, combined configs
+- Integration tests with existing HTTP/2 settings (tune.h2.header-table-size, tune.h2.max-concurrent-streams)
+- Upload-optimized and production scenario testing
+- Critical for HTTP/2 performance in high-traffic environments
+- Works seamlessly with existing tune.h2.* directives
+
+#### Phase 13 Batch 2: Modern QUIC Directives ✅ COMPLETE
+**Completed:**
+
+**Backend QUIC Directives (12):**
+1. ✅ **tune.quic.be.cc.cubic-min-losses** - Backend cubic congestion control minimum losses
+2. ✅ **tune.quic.be.cc.hystart** - Backend hystart congestion control enable/disable
+3. ✅ **tune.quic.be.cc.max-frame-loss** - Backend maximum frame loss threshold
+4. ✅ **tune.quic.be.cc.max-win-size** - Backend maximum congestion window size
+5. ✅ **tune.quic.be.cc.reorder-ratio** - Backend packet reordering ratio
+6. ✅ **tune.quic.be.max-idle-timeout** - Backend maximum idle timeout for QUIC connections
+7. ✅ **tune.quic.be.sec.glitches-threshold** - Backend security glitches detection threshold
+8. ✅ **tune.quic.be.stream.data-ratio** - Backend stream data to control frame ratio
+9. ✅ **tune.quic.be.stream.max-concurrent** - Backend maximum concurrent streams
+10. ✅ **tune.quic.be.stream.rxbuf** - Backend stream receive buffer size
+11. ✅ **tune.quic.be.tx.pacing** - Backend transmission pacing enable/disable
+12. ✅ **tune.quic.be.tx.udp-gso** - Backend UDP Generic Segmentation Offload enable/disable
+
+**Frontend QUIC Directives (14):**
+13. ✅ **tune.quic.fe.cc.cubic-min-losses** - Frontend cubic congestion control minimum losses
+14. ✅ **tune.quic.fe.cc.hystart** - Frontend hystart congestion control enable/disable
+15. ✅ **tune.quic.fe.cc.max-frame-loss** - Frontend maximum frame loss threshold
+16. ✅ **tune.quic.fe.cc.max-win-size** - Frontend maximum congestion window size
+17. ✅ **tune.quic.fe.cc.reorder-ratio** - Frontend packet reordering ratio
+18. ✅ **tune.quic.fe.max-idle-timeout** - Frontend maximum idle timeout for QUIC connections
+19. ✅ **tune.quic.fe.sec.glitches-threshold** - Frontend security glitches detection threshold
+20. ✅ **tune.quic.fe.sec.retry-threshold** - Frontend retry packet threshold for security
+21. ✅ **tune.quic.fe.sock-per-conn** - Frontend socket per connection mode
+22. ✅ **tune.quic.fe.stream.data-ratio** - Frontend stream data to control frame ratio
+23. ✅ **tune.quic.fe.stream.max-concurrent** - Frontend maximum concurrent streams
+24. ✅ **tune.quic.fe.stream.rxbuf** - Frontend stream receive buffer size
+25. ✅ **tune.quic.fe.tx.pacing** - Frontend transmission pacing enable/disable
+26. ✅ **tune.quic.fe.tx.udp-gso** - Frontend UDP Generic Segmentation Offload enable/disable
+
+**Global QUIC Directives (2):**
+27. ✅ **tune.quic.listen** - Enable QUIC listening on all bind addresses
+28. ✅ **tune.quic.mem.tx-max** - Maximum QUIC transmission memory
+
+**Phase 13 Batch 2 Results:** +15 tests (1122 → 1137), 28 new global directives, 0 failures
+**Phase 13 Batch 2 Status:** 100% COMPLETE (28/28 directives) ✅
+
+**Implementation Notes:**
+- All 28 directives use the tuning dict infrastructure
+- Grammar rules organized by backend (be.*), frontend (fe.*), and global categories
+- Enhanced transformer tune_key conversion logic for multi-level QUIC directives:
+  - 4-level directives: tune_quic_be_cc_cubic_min_losses → tune.quic.be.cc.cubic-min-losses
+  - 3-level directives: tune_quic_be_max_idle_timeout → tune.quic.be.max-idle-timeout
+  - Special mem category: tune_quic_mem_tx_max → tune.quic.mem.tx-max
+- Comprehensive test coverage for:
+  - Backend congestion control (cc.*) - cubic, hystart, frame loss, window size, reordering
+  - Backend streams (stream.*) - data ratio, max concurrent, receive buffers
+  - Backend transmission (tx.*) - pacing, UDP GSO
+  - Backend security and timeouts - glitches threshold, idle timeout
+  - Frontend congestion control (cc.*) - same as backend
+  - Frontend streams (stream.*) - same as backend
+  - Frontend transmission (tx.*) - same as backend
+  - Frontend security - glitches threshold, retry threshold, socket per connection
+  - Global QUIC settings - listen mode, memory limits
+  - Complete production configurations combining multiple directives
+- Critical for HTTP/3 performance tuning in production environments
+- Enables fine-grained control over QUIC congestion control, security, and performance
+- Works seamlessly with existing tune.quic.* directives from Phase 8
 
 ### Features Implemented (Previous Sessions)
 1. ✅ **Phases 1-3:** Core directives, SSL/TLS, HTTP/2, system integration

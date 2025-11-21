@@ -534,9 +534,29 @@ class DSLTransformer(Transformer):
                                 subcategory = parts[2]
                                 directive_parts = parts[3:]
                                 tune_key = f"tune.quic.{subcategory}.{'-'.join(directive_parts)}"
+                            elif len(parts) >= 4 and parts[2] in ("be", "fe"):
+                                # Phase 13 Batch 2: Modern QUIC backend/frontend directives
+                                # tune_quic_be_cc_cubic_min_losses → tune.quic.be.cc.cubic-min-losses
+                                # tune_quic_fe_stream_rxbuf → tune.quic.fe.stream.rxbuf
+                                # tune_quic_be_max_idle_timeout → tune.quic.be.max-idle-timeout
+                                subcategory = parts[2]  # be or fe
+                                if len(parts) >= 5 and parts[3] in ("cc", "sec", "stream", "tx"):
+                                    # Has a sub-subcategory (cc, sec, stream, tx)
+                                    subsubcategory = parts[3]
+                                    directive_parts = parts[4:]
+                                    tune_key = f"tune.quic.{subcategory}.{subsubcategory}.{'-'.join(directive_parts)}"
+                                else:
+                                    # No sub-subcategory (e.g., max-idle-timeout)
+                                    directive_parts = parts[3:]
+                                    tune_key = f"tune.quic.{subcategory}.{'-'.join(directive_parts)}"
+                            elif len(parts) >= 4 and parts[2] == "mem":
+                                # Phase 13 Batch 2: tune_quic_mem_tx_max → tune.quic.mem.tx-max
+                                directive_parts = parts[3:]
+                                tune_key = f"tune.quic.mem.{'-'.join(directive_parts)}"
                             else:
                                 # tune_quic_retry_threshold → tune.quic.retry-threshold
                                 # tune_quic_max_frame_loss → tune.quic.max-frame-loss
+                                # tune_quic_listen → tune.quic.listen
                                 directive_parts = parts[2:]
                                 tune_key = f"tune.quic.{'-'.join(directive_parts)}"
                         # Special case for ocsp-update directives
@@ -1381,6 +1401,121 @@ class DSLTransformer(Transformer):
 
     def global_tune_h2_zero_copy_fwd_send(self, items: list[Any]) -> tuple[str, bool]:
         return ("tune_h2_zero_copy_fwd_send", items[0])
+
+    # Phase 13 Batch 2 - Modern QUIC Backend Directives (12 methods)
+    def global_tune_quic_be_cc_cubic_min_losses(self, items: list[Any]) -> tuple[str, int]:
+        """QUIC backend cubic congestion control minimum losses."""
+        return ("tune_quic_be_cc_cubic_min_losses", items[0])
+
+    def global_tune_quic_be_cc_hystart(self, items: list[Any]) -> tuple[str, bool]:
+        """QUIC backend hystart congestion control."""
+        return ("tune_quic_be_cc_hystart", items[0])
+
+    def global_tune_quic_be_cc_max_frame_loss(self, items: list[Any]) -> tuple[str, int]:
+        """QUIC backend maximum frame loss."""
+        return ("tune_quic_be_cc_max_frame_loss", items[0])
+
+    def global_tune_quic_be_cc_max_win_size(self, items: list[Any]) -> tuple[str, int]:
+        """QUIC backend maximum window size."""
+        return ("tune_quic_be_cc_max_win_size", items[0])
+
+    def global_tune_quic_be_cc_reorder_ratio(self, items: list[Any]) -> tuple[str, int]:
+        """QUIC backend reorder ratio (0-100 percent)."""
+        return ("tune_quic_be_cc_reorder_ratio", items[0])
+
+    def global_tune_quic_be_max_idle_timeout(self, items: list[Any]) -> tuple[str, str]:
+        """QUIC backend maximum idle timeout."""
+        return ("tune_quic_be_max_idle_timeout", items[0])
+
+    def global_tune_quic_be_sec_glitches_threshold(self, items: list[Any]) -> tuple[str, int]:
+        """QUIC backend security glitches threshold."""
+        return ("tune_quic_be_sec_glitches_threshold", items[0])
+
+    def global_tune_quic_be_stream_data_ratio(self, items: list[Any]) -> tuple[str, int]:
+        """QUIC backend stream data ratio (0-100 percent)."""
+        return ("tune_quic_be_stream_data_ratio", items[0])
+
+    def global_tune_quic_be_stream_max_concurrent(self, items: list[Any]) -> tuple[str, int]:
+        """QUIC backend maximum concurrent streams."""
+        return ("tune_quic_be_stream_max_concurrent", items[0])
+
+    def global_tune_quic_be_stream_rxbuf(self, items: list[Any]) -> tuple[str, int]:
+        """QUIC backend stream receive buffer size."""
+        return ("tune_quic_be_stream_rxbuf", items[0])
+
+    def global_tune_quic_be_tx_pacing(self, items: list[Any]) -> tuple[str, bool]:
+        """QUIC backend TX pacing."""
+        return ("tune_quic_be_tx_pacing", items[0])
+
+    def global_tune_quic_be_tx_udp_gso(self, items: list[Any]) -> tuple[str, bool]:
+        """QUIC backend UDP GSO (Generic Segmentation Offload)."""
+        return ("tune_quic_be_tx_udp_gso", items[0])
+
+    # Phase 13 Batch 2 - Modern QUIC Frontend Directives (14 methods)
+    def global_tune_quic_fe_cc_cubic_min_losses(self, items: list[Any]) -> tuple[str, int]:
+        """QUIC frontend cubic congestion control minimum losses."""
+        return ("tune_quic_fe_cc_cubic_min_losses", items[0])
+
+    def global_tune_quic_fe_cc_hystart(self, items: list[Any]) -> tuple[str, bool]:
+        """QUIC frontend hystart congestion control."""
+        return ("tune_quic_fe_cc_hystart", items[0])
+
+    def global_tune_quic_fe_cc_max_frame_loss(self, items: list[Any]) -> tuple[str, int]:
+        """QUIC frontend maximum frame loss."""
+        return ("tune_quic_fe_cc_max_frame_loss", items[0])
+
+    def global_tune_quic_fe_cc_max_win_size(self, items: list[Any]) -> tuple[str, int]:
+        """QUIC frontend maximum window size."""
+        return ("tune_quic_fe_cc_max_win_size", items[0])
+
+    def global_tune_quic_fe_cc_reorder_ratio(self, items: list[Any]) -> tuple[str, int]:
+        """QUIC frontend reorder ratio (0-100 percent)."""
+        return ("tune_quic_fe_cc_reorder_ratio", items[0])
+
+    def global_tune_quic_fe_max_idle_timeout(self, items: list[Any]) -> tuple[str, str]:
+        """QUIC frontend maximum idle timeout."""
+        return ("tune_quic_fe_max_idle_timeout", items[0])
+
+    def global_tune_quic_fe_sec_glitches_threshold(self, items: list[Any]) -> tuple[str, int]:
+        """QUIC frontend security glitches threshold."""
+        return ("tune_quic_fe_sec_glitches_threshold", items[0])
+
+    def global_tune_quic_fe_sec_retry_threshold(self, items: list[Any]) -> tuple[str, int]:
+        """QUIC frontend security retry threshold."""
+        return ("tune_quic_fe_sec_retry_threshold", items[0])
+
+    def global_tune_quic_fe_sock_per_conn(self, items: list[Any]) -> tuple[str, str]:
+        """QUIC frontend socket per connection (default-on/force-off)."""
+        return ("tune_quic_fe_sock_per_conn", items[0])
+
+    def global_tune_quic_fe_stream_data_ratio(self, items: list[Any]) -> tuple[str, int]:
+        """QUIC frontend stream data ratio (0-100 percent)."""
+        return ("tune_quic_fe_stream_data_ratio", items[0])
+
+    def global_tune_quic_fe_stream_max_concurrent(self, items: list[Any]) -> tuple[str, int]:
+        """QUIC frontend maximum concurrent streams."""
+        return ("tune_quic_fe_stream_max_concurrent", items[0])
+
+    def global_tune_quic_fe_stream_rxbuf(self, items: list[Any]) -> tuple[str, int]:
+        """QUIC frontend stream receive buffer size."""
+        return ("tune_quic_fe_stream_rxbuf", items[0])
+
+    def global_tune_quic_fe_tx_pacing(self, items: list[Any]) -> tuple[str, bool]:
+        """QUIC frontend TX pacing."""
+        return ("tune_quic_fe_tx_pacing", items[0])
+
+    def global_tune_quic_fe_tx_udp_gso(self, items: list[Any]) -> tuple[str, bool]:
+        """QUIC frontend UDP GSO (Generic Segmentation Offload)."""
+        return ("tune_quic_fe_tx_udp_gso", items[0])
+
+    # Phase 13 Batch 2 - QUIC Global Directives (2 methods)
+    def global_tune_quic_listen(self, items: list[Any]) -> tuple[str, bool]:
+        """QUIC listen on all bind addresses."""
+        return ("tune_quic_listen", items[0])
+
+    def global_tune_quic_mem_tx_max(self, items: list[Any]) -> tuple[str, int]:
+        """QUIC maximum TX memory."""
+        return ("tune_quic_mem_tx_max", items[0])
 
     # Phase 4B Part 4 - Device Detection directives
     # DeviceAtlas
