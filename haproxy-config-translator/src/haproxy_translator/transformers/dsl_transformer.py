@@ -926,6 +926,10 @@ class DSLTransformer(Transformer):
     def global_tune_h2_be_max_concurrent_streams(self, items: list[Any]) -> tuple[str, int]:
         return ("tune_h2_be_max_concurrent_streams", items[0])
 
+    def global_tune_h2_be_rxbuf(self, items: list[Any]) -> tuple[str, int]:
+        """Phase 13 Batch 1 - HTTP/2 backend receive buffer."""
+        return ("tune_h2_be_rxbuf", items[0])
+
     def global_tune_h2_fe_glitches_threshold(self, items: list[Any]) -> tuple[str, int]:
         return ("tune_h2_fe_glitches_threshold", items[0])
 
@@ -937,6 +941,10 @@ class DSLTransformer(Transformer):
 
     def global_tune_h2_fe_max_total_streams(self, items: list[Any]) -> tuple[str, int]:
         return ("tune_h2_fe_max_total_streams", items[0])
+
+    def global_tune_h2_fe_rxbuf(self, items: list[Any]) -> tuple[str, int]:
+        """Phase 13 Batch 1 - HTTP/2 frontend receive buffer."""
+        return ("tune_h2_fe_rxbuf", items[0])
 
     def global_tune_h2_header_table_size(self, items: list[Any]) -> tuple[str, int]:
         return ("tune_h2_header_table_size", items[0])
