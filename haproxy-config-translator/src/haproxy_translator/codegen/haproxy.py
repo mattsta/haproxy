@@ -200,7 +200,7 @@ class HAProxyCodeGenerator:
             lines.append(self._indent("external-check"))
 
         # Connection tuning
-        if global_config.maxpipes:
+        if global_config.maxpipes is not None:
             lines.append(self._indent(f"maxpipes {global_config.maxpipes}"))
 
         # Master-worker mode
