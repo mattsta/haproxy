@@ -334,6 +334,16 @@ class HAProxyCodeGenerator:
         if global_config.noreuseport is not None and global_config.noreuseport:
             lines.append(self._indent("noreuseport"))
 
+        # Phase 12 Batch 6 - Additional platform-specific options
+        if global_config.noevports is not None and global_config.noevports:
+            lines.append(self._indent("noevports"))
+
+        if global_config.noktls is not None and global_config.noktls:
+            lines.append(self._indent("noktls"))
+
+        if global_config.no_memory_trimming is not None and global_config.no_memory_trimming:
+            lines.append(self._indent("no-memory-trimming"))
+
         if global_config.limited_quic is not None and global_config.limited_quic:
             lines.append(self._indent("limited-quic"))
 
@@ -374,6 +384,13 @@ class HAProxyCodeGenerator:
         if global_config.profiling_memory_on is not None:
             if global_config.profiling_memory_on:
                 lines.append(self._indent("profiling.memory.on"))
+
+        # Phase 12 Batch 6 - Additional profiling directives
+        if global_config.profiling_memory:
+            lines.append(self._indent(f"profiling.memory {global_config.profiling_memory}"))
+
+        if global_config.profiling_tasks:
+            lines.append(self._indent(f"profiling.tasks {global_config.profiling_tasks}"))
 
         # Debugging & Development (Phase 7)
         if global_config.quiet is not None:

@@ -451,6 +451,9 @@ class GlobalConfig(IRNode):
     nosplice: bool | None = None
     nogetaddrinfo: bool | None = None
     noreuseport: bool | None = None
+    noevports: bool | None = None  # Phase 12 Batch 6
+    noktls: bool | None = None  # Phase 12 Batch 6
+    no_memory_trimming: bool | None = None  # Phase 12 Batch 6
     limited_quic: bool | None = None
     localpeer: str | None = None
 
@@ -467,6 +470,8 @@ class GlobalConfig(IRNode):
     profiling_tasks_on: bool | None = None
     profiling_tasks_automatic: bool | None = None
     profiling_memory_on: bool | None = None
+    profiling_memory: str | None = None  # Phase 12 Batch 6 (on/off)
+    profiling_tasks: str | None = None  # Phase 12 Batch 6 (on/off)
 
     # Debugging & Development (Phase 7)
     quiet: bool | None = None

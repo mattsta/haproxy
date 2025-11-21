@@ -166,7 +166,15 @@ global_section: "global" "{" global_property* "}"
                 | "tune.memory.hot-size" ":" number       -> global_tune_memory_hot_size
                 | "tune.peers.max-updates-at-once" ":" number -> global_tune_peers_max_updates_at_once
                 | "tune.ring.queues" ":" number           -> global_tune_ring_queues
+                | "tune.epoll.mask-events" ":" number     -> global_tune_epoll_mask_events          // Phase 12 Batch 6
+                | "tune.fail-alloc" ":" number            -> global_tune_fail_alloc                 // Phase 12 Batch 6
+                | "tune.renice.runtime" ":" number        -> global_tune_renice_runtime             // Phase 12 Batch 6
+                | "tune.renice.startup" ":" number        -> global_tune_renice_startup             // Phase 12 Batch 6
+                | "tune.takeover-other-tg-connections" ":" boolean -> global_tune_takeover_other_tg_connections  // Phase 12 Batch 6
                 | "tune.applet.zero-copy-forwarding" ":" boolean -> global_tune_applet_zero_copy_forwarding
+                | "tune.h1.zero-copy-fwd-recv" ":" boolean -> global_tune_h1_zero_copy_fwd_recv   // Phase 12 Batch 6
+                | "tune.h1.zero-copy-fwd-send" ":" boolean -> global_tune_h1_zero_copy_fwd_send   // Phase 12 Batch 6
+                | "tune.pt.zero-copy-forwarding" ":" boolean -> global_tune_pt_zero_copy_forwarding // Phase 12 Batch 6
                 | "tune.buffers.limit" ":" number         -> global_tune_buffers_limit
                 | "tune.buffers.reserve" ":" number       -> global_tune_buffers_reserve
                 | "tune.comp.maxlevel" ":" number         -> global_tune_comp_maxlevel
@@ -202,6 +210,9 @@ global_section: "global" "{" global_property* "}"
                 | "nosplice" ":" boolean                          -> global_nosplice
                 | "nogetaddrinfo" ":" boolean                     -> global_nogetaddrinfo
                 | "noreuseport" ":" boolean                       -> global_noreuseport
+                | "noevports" ":" boolean                        -> global_noevports            // Phase 12 Batch 6
+                | "noktls" ":" boolean                           -> global_noktls               // Phase 12 Batch 6
+                | "no-memory-trimming" ":" boolean               -> global_no_memory_trimming   // Phase 12 Batch 6
                 | "limited-quic" ":" boolean                      -> global_limited_quic
                 | "localpeer" ":" string                          -> global_localpeer
                 // Phase 4B Part 2 - SSL Advanced (7 directives)
@@ -216,6 +227,8 @@ global_section: "global" "{" global_property* "}"
                 | "profiling.tasks.on" ":" boolean               -> global_profiling_tasks_on
                 | "profiling.tasks.automatic" ":" boolean        -> global_profiling_tasks_automatic
                 | "profiling.memory.on" ":" boolean              -> global_profiling_memory_on
+                | "profiling.memory" ":" string                  -> global_profiling_memory          // Phase 12 Batch 6
+                | "profiling.tasks" ":" string                   -> global_profiling_tasks           // Phase 12 Batch 6
                 // Phase 7 - Debugging & Development (6 directives)
                 | "quiet" ":" boolean                            -> global_quiet
                 | "debug.counters" ":" string                    -> global_debug_counters

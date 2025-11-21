@@ -225,6 +225,9 @@ class DSLTransformer(Transformer):
         nosplice = None
         nogetaddrinfo = None
         noreuseport = None
+        noevports = None  # Phase 12 Batch 6
+        noktls = None  # Phase 12 Batch 6
+        no_memory_trimming = None  # Phase 12 Batch 6
         limited_quic = None
         localpeer = None
 
@@ -241,6 +244,8 @@ class DSLTransformer(Transformer):
         profiling_tasks_on = None
         profiling_tasks_automatic = None
         profiling_memory_on = None
+        profiling_memory = None  # Phase 12 Batch 6
+        profiling_tasks = None  # Phase 12 Batch 6
 
         # Debugging & Development (Phase 7)
         quiet = None
@@ -411,6 +416,12 @@ class DSLTransformer(Transformer):
                     nogetaddrinfo = value
                 elif key == "noreuseport":
                     noreuseport = value
+                elif key == "noevports":  # Phase 12 Batch 6
+                    noevports = value
+                elif key == "noktls":  # Phase 12 Batch 6
+                    noktls = value
+                elif key == "no_memory_trimming":  # Phase 12 Batch 6
+                    no_memory_trimming = value
                 elif key == "limited_quic":
                     limited_quic = value
                 elif key == "localpeer":
@@ -437,6 +448,10 @@ class DSLTransformer(Transformer):
                     profiling_tasks_automatic = value
                 elif key == "profiling_memory_on":
                     profiling_memory_on = value
+                elif key == "profiling_memory":  # Phase 12 Batch 6
+                    profiling_memory = value
+                elif key == "profiling_tasks":  # Phase 12 Batch 6
+                    profiling_tasks = value
                 # Phase 7 - Debugging & Development
                 elif key == "quiet":
                     quiet = value
@@ -658,6 +673,9 @@ class DSLTransformer(Transformer):
             nosplice=nosplice,
             nogetaddrinfo=nogetaddrinfo,
             noreuseport=noreuseport,
+            noevports=noevports,  # Phase 12 Batch 6
+            noktls=noktls,  # Phase 12 Batch 6
+            no_memory_trimming=no_memory_trimming,  # Phase 12 Batch 6
             limited_quic=limited_quic,
             localpeer=localpeer,
             # SSL Advanced (Phase 4B Part 2)
@@ -672,6 +690,8 @@ class DSLTransformer(Transformer):
             profiling_tasks_on=profiling_tasks_on,
             profiling_tasks_automatic=profiling_tasks_automatic,
             profiling_memory_on=profiling_memory_on,
+            profiling_memory=profiling_memory,  # Phase 12 Batch 6
+            profiling_tasks=profiling_tasks,  # Phase 12 Batch 6
             # Debugging & Development (Phase 7)
             quiet=quiet,
             debug_counters=debug_counters,
@@ -1151,8 +1171,40 @@ class DSLTransformer(Transformer):
     def global_tune_ring_queues(self, items: list[Any]) -> tuple[str, int]:
         return ("tune_ring_queues", items[0])
 
+    def global_tune_epoll_mask_events(self, items: list[Any]) -> tuple[str, int]:
+        """Phase 12 Batch 6 - Epoll mask events."""
+        return ("tune_epoll_mask_events", items[0])
+
+    def global_tune_fail_alloc(self, items: list[Any]) -> tuple[str, int]:
+        """Phase 12 Batch 6 - Fail allocation threshold."""
+        return ("tune_fail_alloc", items[0])
+
+    def global_tune_renice_runtime(self, items: list[Any]) -> tuple[str, int]:
+        """Phase 12 Batch 6 - Renice priority at runtime."""
+        return ("tune_renice_runtime", items[0])
+
+    def global_tune_renice_startup(self, items: list[Any]) -> tuple[str, int]:
+        """Phase 12 Batch 6 - Renice priority at startup."""
+        return ("tune_renice_startup", items[0])
+
+    def global_tune_takeover_other_tg_connections(self, items: list[Any]) -> tuple[str, bool]:
+        """Phase 12 Batch 6 - Takeover connections from other thread groups."""
+        return ("tune_takeover_other_tg_connections", items[0])
+
     def global_tune_applet_zero_copy_forwarding(self, items: list[Any]) -> tuple[str, bool]:
         return ("tune_applet_zero_copy_forwarding", items[0])
+
+    def global_tune_h1_zero_copy_fwd_recv(self, items: list[Any]) -> tuple[str, bool]:
+        """Phase 12 Batch 6 - H1 zero-copy forwarding receive."""
+        return ("tune_h1_zero_copy_fwd_recv", items[0])
+
+    def global_tune_h1_zero_copy_fwd_send(self, items: list[Any]) -> tuple[str, bool]:
+        """Phase 12 Batch 6 - H1 zero-copy forwarding send."""
+        return ("tune_h1_zero_copy_fwd_send", items[0])
+
+    def global_tune_pt_zero_copy_forwarding(self, items: list[Any]) -> tuple[str, bool]:
+        """Phase 12 Batch 6 - Pass-through zero-copy forwarding."""
+        return ("tune_pt_zero_copy_forwarding", items[0])
 
     def global_tune_ssl_force_private_cache(self, items: list[Any]) -> tuple[str, bool]:
         return ("tune_ssl_force_private_cache", items[0])
@@ -1205,6 +1257,18 @@ class DSLTransformer(Transformer):
     def global_localpeer(self, items: list[Any]) -> tuple[str, str]:
         return ("localpeer", items[0])
 
+    def global_noevports(self, items: list[Any]) -> tuple[str, bool]:
+        """Phase 12 Batch 6 - Disable evports polling."""
+        return ("noevports", items[0])
+
+    def global_noktls(self, items: list[Any]) -> tuple[str, bool]:
+        """Phase 12 Batch 6 - Disable kernel TLS."""
+        return ("noktls", items[0])
+
+    def global_no_memory_trimming(self, items: list[Any]) -> tuple[str, bool]:
+        """Phase 12 Batch 6 - Disable memory trimming."""
+        return ("no_memory_trimming", items[0])
+
     # Phase 4B Part 2 - SSL Advanced directives
     def global_ssl_load_extra_files(self, items: list[Any]) -> tuple[str, str]:
         return ("ssl_load_extra_files", items[0])
@@ -1236,6 +1300,14 @@ class DSLTransformer(Transformer):
 
     def global_profiling_memory_on(self, items: list[Any]) -> tuple[str, bool]:
         return ("profiling_memory_on", items[0])
+
+    def global_profiling_memory(self, items: list[Any]) -> tuple[str, str]:
+        """Phase 12 Batch 6 - Profiling memory (on/off)."""
+        return ("profiling_memory", items[0])
+
+    def global_profiling_tasks(self, items: list[Any]) -> tuple[str, str]:
+        """Phase 12 Batch 6 - Profiling tasks (on/off)."""
+        return ("profiling_tasks", items[0])
 
     # Phase 7 - Debugging & Development directives
     def global_quiet(self, items: list[Any]) -> tuple[str, bool]:
