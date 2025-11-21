@@ -1,6 +1,6 @@
 # HAProxy Config Translator - Feature Parity Report
 
-**Generated:** 2025-11-21 03:02:38
+**Generated:** 2025-11-21 04:01:43
 **HAProxy Version:** 3.3
 **Documentation Source:** `/home/user/haproxy/doc/configuration.txt`
 
@@ -14,11 +14,11 @@ configuration language and the haproxy-config-translator implementation.
 ### Global Directives
 
 - **Total HAProxy Directives:** 172
-- **Implemented:** 114
-- **Coverage:** `66.3%`
+- **Implemented:** 135
+- **Coverage:** `78.5%`
 
 ```
-[=================================                 ] 66.3%
+[=======================================           ] 78.5%
 ```
 
 ### Proxy Keywords (Frontend/Backend/Listen/Defaults)
@@ -29,7 +29,7 @@ configuration language and the haproxy-config-translator implementation.
 
 ### Test Coverage
 
-- **Total Test Files:** 95
+- **Total Test Files:** 101
 - **Global Directive Tests:** 10
 - **Proxy Tests:** 0
 - **Bind Option Tests:** 2
@@ -45,29 +45,8 @@ configuration language and the haproxy-config-translator implementation.
 #### Performance Tuning
 
 - **Total:** 77
-- **Implemented:** 64
-- **Missing:** 13
-
-<details>
-<summary>Missing Directives (13)</summary>
-
-```
-  - no-memory-trimming
-  - noevports
-  - noktls
-  - profiling.memory
-  - profiling.tasks
-  - tune.epoll.mask-events
-  - tune.fail-alloc
-  - tune.h1.zero-copy-fwd-recv
-  - tune.h1.zero-copy-fwd-send
-  - tune.pt.zero-copy-forwarding
-  - tune.renice.runtime
-  - tune.renice.startup
-  - tune.takeover-other-tg-connections
-```
-
-</details>
+- **Implemented:** 77
+- **Missing:** 0
 
 #### Debugging
 
@@ -78,52 +57,20 @@ configuration language and the haproxy-config-translator implementation.
 #### Httpclient
 
 - **Total:** 5
-- **Implemented:** 4
-- **Missing:** 1
-
-<details>
-<summary>Missing Directives (1)</summary>
-
-```
-  - httpclient.timeout.connect
-```
-
-</details>
+- **Implemented:** 5
+- **Missing:** 0
 
 #### Ssl Tls
 
 - **Total:** 18
-- **Implemented:** 14
-- **Missing:** 4
-
-<details>
-<summary>Missing Directives (4)</summary>
-
-```
-  - tune.ssl.hard-maxrecord
-  - tune.ssl.ocsp-update.maxdelay
-  - tune.ssl.ocsp-update.mindelay
-  - tune.ssl.ssl-ctx-cache-size
-```
-
-</details>
+- **Implemented:** 18
+- **Missing:** 0
 
 #### Lua
 
 - **Total:** 9
-- **Implemented:** 6
-- **Missing:** 3
-
-<details>
-<summary>Missing Directives (3)</summary>
-
-```
-  - tune.lua.bool-sample-conversion
-  - tune.lua.burst-timeout
-  - tune.lua.log.stderr
-```
-
-</details>
+- **Implemented:** 9
+- **Missing:** 0
 
 #### Quic Http3
 
@@ -346,8 +293,8 @@ Based on the analysis, here are recommended priorities for achieving 100% parity
 
 ## Conclusion
 
-The haproxy-config-translator currently implements **114** out of 
-**172** global directives (66.3% coverage), 
+The haproxy-config-translator currently implements **135** out of 
+**172** global directives (78.5% coverage), 
 demonstrating strong foundational support for HAProxy configuration.
 
 **Strengths:**
@@ -371,7 +318,7 @@ with HAProxy 3.3 is highly achievable.
 ### Appendix A: Implemented Global Directives
 
 <details>
-<summary>All Implemented Global Directives (185)</summary>
+<summary>All Implemented Global Directives (206)</summary>
 
 ```
   ✓ 51degrees-cache-size
@@ -403,6 +350,7 @@ with HAProxy 3.3 is highly achievable.
   ✓ httpclient.retries
   ✓ httpclient.ssl.ca-file
   ✓ httpclient.ssl.verify
+  ✓ httpclient.timeout.connect
   ✓ issuers-chain-path
   ✓ key-base
   ✓ limited-quic
@@ -424,16 +372,21 @@ with HAProxy 3.3 is highly achievable.
   ✓ mworker-max-reloads
   ✓ nbproc
   ✓ nbthread
+  ✓ no-memory-trimming
   ✓ node
   ✓ noepoll
+  ✓ noevports
   ✓ nogetaddrinfo
   ✓ nokqueue
+  ✓ noktls
   ✓ nopoll
   ✓ noreuseport
   ✓ nosplice
   ✓ numa-cpu-mapping
   ✓ pidfile
+  ✓ profiling.memory
   ✓ profiling.memory.on
+  ✓ profiling.tasks
   ✓ profiling.tasks.automatic
   ✓ profiling.tasks.on
   ✓ quiet
@@ -467,8 +420,12 @@ with HAProxy 3.3 is highly achievable.
   ✓ tune.comp.maxlevel
   ✓ tune.disable-fast-forward
   ✓ tune.disable-zero-copy-forwarding
+  ✓ tune.epoll.mask-events
   ✓ tune.events.max-events-at-once
+  ✓ tune.fail-alloc
   ✓ tune.fd.edge-triggered
+  ✓ tune.h1.zero-copy-fwd-recv
+  ✓ tune.h1.zero-copy-fwd-send
   ✓ tune.h2.be.glitches-threshold
   ✓ tune.h2.be.initial-window-size
   ✓ tune.h2.be.max-concurrent-streams
@@ -486,8 +443,11 @@ with HAProxy 3.3 is highly achievable.
   ✓ tune.http.maxhdr
   ✓ tune.idle-pool.shared
   ✓ tune.idletimer
+  ✓ tune.lua.bool-sample-conversion
+  ✓ tune.lua.burst-timeout
   ✓ tune.lua.forced-yield
   ✓ tune.lua.log.loggers
+  ✓ tune.lua.log.stderr
   ✓ tune.lua.maxmem
   ✓ tune.lua.service-timeout
   ✓ tune.lua.session-timeout
@@ -505,6 +465,7 @@ with HAProxy 3.3 is highly achievable.
   ✓ tune.pipesize
   ✓ tune.pool.high-fd-ratio
   ✓ tune.pool.low-fd-ratio
+  ✓ tune.pt.zero-copy-forwarding
   ✓ tune.quic.cc-hystart
   ✓ tune.quic.frontend.conn-tx-buffers.limit
   ✓ tune.quic.frontend.glitches-threshold
@@ -520,6 +481,8 @@ with HAProxy 3.3 is highly achievable.
   ✓ tune.rcvbuf.frontend
   ✓ tune.rcvbuf.server
   ✓ tune.recv_enough
+  ✓ tune.renice.runtime
+  ✓ tune.renice.startup
   ✓ tune.ring.queues
   ✓ tune.runqueue-depth
   ✓ tune.sched.low-latency
@@ -533,12 +496,17 @@ with HAProxy 3.3 is highly achievable.
   ✓ tune.ssl.capture-cipherlist-size
   ✓ tune.ssl.default-dh-param
   ✓ tune.ssl.force-private-cache
+  ✓ tune.ssl.hard-maxrecord
   ✓ tune.ssl.keylog
   ✓ tune.ssl.lifetime
   ✓ tune.ssl.maxrecord
+  ✓ tune.ssl.ocsp-update.maxdelay
   ✓ tune.ssl.ocsp-update.maxhour
+  ✓ tune.ssl.ocsp-update.mindelay
   ✓ tune.ssl.ocsp-update.minthour
+  ✓ tune.ssl.ssl-ctx-cache-size
   ✓ tune.stick-counters
+  ✓ tune.takeover-other-tg-connections
   ✓ tune.vars.global-max-size
   ✓ tune.vars.proc-max-size
   ✓ tune.vars.reqres-max-size
