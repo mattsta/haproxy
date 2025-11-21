@@ -6,7 +6,7 @@
 ## Current Status
 
 ### Tests & Code Quality ✅
-- **Tests:** 1066 passing, 0 skipped, 0 failures
+- **Tests:** 1078 passing, 0 skipped, 0 failures
 - **Test Coverage:** ~95%
 - **Mypy:** 0 errors (100% type safe)
 - **Ruff:** Clean (all issues resolved)
@@ -16,9 +16,9 @@
 
 #### Global Directives
 - **Total HAProxy Directives:** 172
-- **Implemented:** 142 (tested and verified)
-- **Coverage:** 82.6%
-- **Missing:** 30 directives
+- **Implemented:** 146 (tested and verified)
+- **Coverage:** 84.9%
+- **Missing:** 26 directives
 
 #### Proxy Keywords (Frontend/Backend/Listen/Defaults)
 - **Total HAProxy Keywords:** 89
@@ -258,6 +258,26 @@ Status: 100% complete (3 of 3 batches completed)
 - Critical for controlling timeouts when HAProxy acts as HTTP client
 - Works with httpclient.retries and httpclient.ssl.* for complete HTTP client configuration
 - Essential for external health checks and Lua-based HTTP operations
+
+#### Phase 12 Batch 4: SSL/TLS Advanced ✅ COMPLETE
+**Completed:**
+1. ✅ **tune.ssl.hard-maxrecord** - Hard limit on SSL/TLS record size for latency optimization
+2. ✅ **tune.ssl.ocsp-update.maxdelay** - Maximum delay in seconds for OCSP updates
+3. ✅ **tune.ssl.ocsp-update.mindelay** - Minimum delay in seconds for OCSP updates
+4. ✅ **tune.ssl.ssl-ctx-cache-size** - Size of SSL context cache for performance
+
+**Phase 12 Batch 4 Results:** +12 tests (1066 → 1078), 4 new global directives, 0 failures
+**Phase 12 Batch 4 Status:** 100% COMPLETE (4/4 directives) ✅
+
+**Implementation Notes:**
+- All 4 directives use the tuning dict infrastructure (no IR field changes needed)
+- Grammar rules added to both Phase 1 and Phase 6 sections for consistency
+- Transformer uses existing tune_key conversion logic for SSL directives
+- Special handling for OCSP update directives via ocsp-update pattern
+- tune.ssl.ssl-ctx-cache-size properly maps to "tune.ssl.ssl-ctx-cache-size" (with ssl prefix)
+- Tests cover basic usage, production scenarios, and integration with existing SSL settings
+- Critical for OCSP stapling updates and SSL performance tuning in high-traffic environments
+- Works seamlessly with existing tune.ssl.* directives
 
 ### Features Implemented (Previous Sessions)
 1. ✅ **Phases 1-3:** Core directives, SSL/TLS, HTTP/2, system integration

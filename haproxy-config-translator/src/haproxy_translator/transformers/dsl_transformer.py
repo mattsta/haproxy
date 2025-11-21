@@ -869,6 +869,22 @@ class DSLTransformer(Transformer):
     def global_tune_ssl_ocsp_update_maxhour(self, items: list[Any]) -> tuple[str, int]:
         return ("tune_ssl_ocsp_update_maxhour", items[0])
 
+    def global_tune_ssl_ocsp_update_maxdelay(self, items: list[Any]) -> tuple[str, int]:
+        """Phase 12 Batch 4 - SSL OCSP update max delay."""
+        return ("tune_ssl_ocsp_update_maxdelay", items[0])
+
+    def global_tune_ssl_ocsp_update_mindelay(self, items: list[Any]) -> tuple[str, int]:
+        """Phase 12 Batch 4 - SSL OCSP update min delay."""
+        return ("tune_ssl_ocsp_update_mindelay", items[0])
+
+    def global_tune_ssl_hard_maxrecord(self, items: list[Any]) -> tuple[str, int]:
+        """Phase 12 Batch 4 - SSL hard max record size."""
+        return ("tune_ssl_hard_maxrecord", items[0])
+
+    def global_tune_ssl_ctx_cache_size(self, items: list[Any]) -> tuple[str, int]:
+        """Phase 12 Batch 4 - SSL context cache size."""
+        return ("tune_ssl_ssl_ctx_cache_size", items[0])
+
     # Phase 2 - HTTP/2 tuning directives
     def global_tune_h2_be_glitches_threshold(self, items: list[Any]) -> tuple[str, int]:
         return ("tune_h2_be_glitches_threshold", items[0])

@@ -72,6 +72,10 @@ global_section: "global" "{" global_property* "}"
                 | "tune.ssl.default-dh-param" ":" number       -> global_tune_ssl_default_dh_param
                 | "tune.ssl.ocsp-update.minthour" ":" number   -> global_tune_ssl_ocsp_update_minthour
                 | "tune.ssl.ocsp-update.maxhour" ":" number    -> global_tune_ssl_ocsp_update_maxhour
+                | "tune.ssl.ocsp-update.maxdelay" ":" number   -> global_tune_ssl_ocsp_update_maxdelay  // Phase 12 Batch 4
+                | "tune.ssl.ocsp-update.mindelay" ":" number   -> global_tune_ssl_ocsp_update_mindelay  // Phase 12 Batch 4
+                | "tune.ssl.hard-maxrecord" ":" number         -> global_tune_ssl_hard_maxrecord        // Phase 12 Batch 4
+                | "tune.ssl.ssl-ctx-cache-size" ":" number     -> global_tune_ssl_ctx_cache_size        // Phase 12 Batch 4
                 | "tune.h2.be.glitches-threshold" ":" number         -> global_tune_h2_be_glitches_threshold
                 | "tune.h2.be.initial-window-size" ":" number        -> global_tune_h2_be_initial_window_size
                 | "tune.h2.be.max-concurrent-streams" ":" number     -> global_tune_h2_be_max_concurrent_streams
@@ -172,6 +176,10 @@ global_section: "global" "{" global_property* "}"
                 | "tune.ssl.keylog" ":" string          -> global_tune_ssl_keylog
                 | "tune.ssl.lifetime" ":" number        -> global_tune_ssl_lifetime
                 | "tune.ssl.maxrecord" ":" number       -> global_tune_ssl_maxrecord
+                | "tune.ssl.hard-maxrecord" ":" number  -> global_tune_ssl_hard_maxrecord        // Phase 12 Batch 4
+                | "tune.ssl.ssl-ctx-cache-size" ":" number -> global_tune_ssl_ctx_cache_size     // Phase 12 Batch 4
+                | "tune.ssl.ocsp-update.maxdelay" ":" number -> global_tune_ssl_ocsp_update_maxdelay  // Phase 12 Batch 4
+                | "tune.ssl.ocsp-update.mindelay" ":" number -> global_tune_ssl_ocsp_update_mindelay  // Phase 12 Batch 4
                 | "tune.pattern.cache-size" ":" number  -> global_tune_pattern_cache_size
                 | "tune.vars.global-max-size" ":" number -> global_tune_vars_global_max_size
                 | "tune.vars.proc-max-size" ":" number -> global_tune_vars_proc_max_size
