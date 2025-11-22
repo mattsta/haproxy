@@ -607,8 +607,9 @@ config my_config {
 
 ## Templates
 
-Templates allow you to define reusable property sets:
+Templates allow you to define reusable property sets for servers, health checks, and ACLs:
 
+### Server Templates
 ```javascript
 config my_config {
   template server_defaults {
@@ -629,6 +630,161 @@ config my_config {
         address: "10.0.1.2"
         port: 8080
         @server_defaults
+      }
+    }
+  }
+}
+```
+
+### Health Check Templates
+```javascript
+config my_config {
+  template http_health {
+    method: "GET"
+    uri: "/health"
+    expect_status: 200
+  }
+
+  backend api {
+    balance: roundrobin
+    option: ["httpchk"]
+
+    // Apply template to entire health check
+    health-check @http_health
+
+    servers {
+      server api1 { address: "10.0.1.1", port: 8080, check: true }
+    }
+  }
+}
+```
+
+### ACL Templates
+```javascript
+config my_config {
+  template api_path_acl {
+    criterion: "path_beg"
+    values: ["/api/"]
+  }
+
+  template internal_src_acl {
+    criterion: "src"
+    values: ["10.0.0.0/8", "192.168.0.0/16"]
+  }
+
+  frontend web {
+    bind *:80
+
+    // Apply ACL templates
+    acl is_api @api_path_acl
+    acl is_internal @internal_src_acl
+
+    use_backend api_servers if is_api
+    default_backend: web_servers
+  }
+}
+```
+
+### Backend Templates
+
+Backend templates define common backend-level configurations that can be spread into multiple backends using `@template_name`:
+
+```javascript
+config backend_templates {
+  // Define common backend configuration
+  template production_backend {
+    balance: leastconn
+    option: ["httpchk GET /health", "forwardfor"]
+    retries: 3
+  }
+
+  template standard_backend {
+    balance: roundrobin
+    option: ["httpchk"]
+  }
+
+  // Apply backend template with @template_name
+  backend api {
+    @production_backend
+
+    servers {
+      server api1 { address: "10.0.1.1", port: 8080, check: true }
+      server api2 { address: "10.0.1.2", port: 8080, check: true }
+    }
+  }
+
+  // Backend template with explicit overrides
+  backend web {
+    @standard_backend
+    balance: leastconn  // Override template's balance
+
+    servers {
+      server web1 { address: "10.0.2.1", port: 8080, check: true }
+    }
+  }
+}
+```
+
+Backend templates can include:
+- `balance`: Load balancing algorithm (roundrobin, leastconn, source, etc.)
+- `option`: List of backend options
+- `retries`: Number of retries on failure
+- `maxconn`: Maximum connections
+- `cookie`: Cookie configuration
+- `timeout_server`, `timeout_connect`, `timeout_check`: Timeout settings
+- `mode`: Protocol mode (http, tcp)
+
+### Multiple Template Types Together
+```javascript
+config production {
+  // Backend template for production backends
+  template prod_backend {
+    balance: leastconn
+    option: ["httpchk", "forwardfor"]
+    retries: 3
+  }
+
+  // Server template for standardized health checks
+  template prod_server {
+    check: true
+    inter: 3s
+    fall: 3
+    rise: 2
+    maxconn: 500
+  }
+
+  // Health check template for HTTP services
+  template http_health {
+    method: "GET"
+    uri: "/health"
+    expect_status: 200
+  }
+
+  // ACL template for API routing
+  template api_acl {
+    criterion: "path_beg"
+    values: ["/api/"]
+  }
+
+  frontend web {
+    bind *:80
+    acl is_api @api_acl
+    use_backend api if is_api
+    default_backend: web
+  }
+
+  // Backend with multiple template types combined
+  backend api {
+    @prod_backend  // Backend-level template
+    health-check @http_health  // Health check template
+
+    servers {
+      for i in [1..5] {
+        server "api${i}" {
+          address: "10.0.1.${i}"
+          port: 8080
+          @prod_server  // Server template
+        }
       }
     }
   }

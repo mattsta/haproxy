@@ -669,6 +669,7 @@ backend_section: "backend" identifier "{" backend_property* "}"
                  | "id" ":" number                          -> backend_id
                  | "guid" ":" string                        -> backend_guid
                  | "balance" ":" balance_algo               -> backend_balance
+                 | template_spread                          -> backend_template_spread
                  | "option" ":" string_or_array             -> backend_option
                  | "cookie" ":" string                      -> backend_cookie
                  | acl_definition                           -> backend_acl
@@ -783,11 +784,13 @@ HASH_CRC32: "crc32"
 HASH_MOD_AVALANCHE: "avalanche"
 
 health_check_block: "health-check" "{" health_check_property* "}"
+                  | "health-check" template_spread  -> health_check_template_spread
 
 ?health_check_property: "method" ":" string         -> hc_method
                       | "uri" ":" string            -> hc_uri
                       | "expect" ":" expect_value   -> hc_expect
                       | header_definition           -> hc_header
+                      | template_spread             -> hc_template_spread
 
 expect_value: "status" number                       -> expect_status
             | "string" string                       -> expect_string
@@ -1046,6 +1049,7 @@ acl_item: identifier identifier (string | number)*
 
 // Single ACL definition
 acl_definition: "acl" identifier "{" acl_criterion "}"
+              | "acl" identifier template_spread                    -> acl_template_spread
 
 acl_criterion: identifier (string | number)*
 

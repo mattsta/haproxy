@@ -9,9 +9,12 @@ This guide demonstrates the **dramatic advantages** of the DSL over native HAPro
 3. [Microservices Routing](#3-microservices-routing)
 4. [Blue-Green Deployments](#4-blue-green-deployments)
 5. [Health Check Standardization](#5-health-check-standardization)
-6. [SSL/TLS Configuration](#6-ssltls-configuration)
-7. [Rate Limiting Patterns](#7-rate-limiting-patterns)
-8. [Session Affinity](#8-session-affinity)
+6. [Health Check Templates](#6-health-check-templates)
+7. [ACL Templates](#7-acl-templates)
+8. [Backend Templates](#8-backend-templates)
+9. [SSL/TLS Configuration](#9-ssltls-configuration)
+10. [Rate Limiting Patterns](#10-rate-limiting-patterns)
+11. [Session Affinity](#11-session-affinity)
 
 ---
 
@@ -424,7 +427,249 @@ config standardized_health {
 
 ---
 
-## 6. SSL/TLS Configuration
+## 6. Health Check Templates
+
+### The Problem
+Health check configuration requires multiple properties (method, URI, expected status, headers) that need to be consistent across backends.
+
+### Native HAProxy Approach
+```haproxy
+backend api_v1
+    balance roundrobin
+    option httpchk GET /api/v1/health
+    http-check expect status 200
+
+    server api1 10.0.1.1:8080 check
+
+backend api_v2
+    balance roundrobin
+    option httpchk GET /api/v2/health
+    http-check expect status 200
+
+    server api2 10.0.2.1:8080 check
+
+backend api_v3
+    balance roundrobin
+    option httpchk GET /api/v3/health
+    http-check expect status 200
+
+    server api3 10.0.3.1:8080 check
+```
+
+### DSL Solution - Health Check Templates
+```javascript
+config api_cluster {
+  // Define health check templates for different service types
+  template http_health {
+    method: "GET"
+    uri: "/health"
+    expect_status: 200
+  }
+
+  template deep_health {
+    method: "GET"
+    uri: "/health/deep"
+    expect_status: 200
+  }
+
+  // Apply health check template directly with @template_name
+  backend api_v1 {
+    balance: roundrobin
+    option: ["httpchk"]
+    health-check @http_health
+
+    servers {
+      server api1 { address: "10.0.1.1", port: 8080, check: true }
+    }
+  }
+
+  // Or use inside health-check block with additional overrides
+  backend api_v2 {
+    balance: roundrobin
+    option: ["httpchk"]
+    health-check {
+      @http_health
+      uri: "/api/v2/status"  // Override template URI
+    }
+
+    servers {
+      server api2 { address: "10.0.2.1", port: 8080, check: true }
+    }
+  }
+
+  // Deep health check for critical services
+  backend payments {
+    balance: leastconn
+    option: ["httpchk"]
+    health-check @deep_health
+
+    servers {
+      for i in [1..3] {
+        server "pay${i}" { address: "10.0.3.${i}", port: 8080, check: true }
+      }
+    }
+  }
+}
+```
+
+### Key Benefits
+- **Standardized health checks** - define once, use everywhere
+- **Easy override** - template provides defaults, explicit values override
+- **Service tiers** - different templates for different health check depth
+- **Consistency** - impossible to misconfigure health check settings
+
+---
+
+## 7. ACL Templates
+
+### The Problem
+ACL patterns are often repeated across frontends with slight variations (API paths, security checks, etc.).
+
+### Native HAProxy Approach
+```haproxy
+frontend web
+    bind *:443 ssl crt /etc/ssl/cert.pem
+
+    acl is_internal src 10.0.0.0/8 192.168.0.0/16 172.16.0.0/12
+    acl is_admin src 10.0.0.0/8 192.168.0.0/16 172.16.0.0/12
+
+    use_backend admin if is_admin
+    default_backend public
+
+frontend api
+    bind *:8443 ssl crt /etc/ssl/api.pem
+
+    acl is_internal src 10.0.0.0/8 192.168.0.0/16 172.16.0.0/12
+    acl is_trusted src 10.0.0.0/8 192.168.0.0/16 172.16.0.0/12
+
+    http-request deny unless is_internal
+    default_backend api_servers
+```
+
+### DSL Solution - ACL Templates
+```javascript
+config secure_gateway {
+  // Define reusable ACL patterns
+  template internal_network {
+    criterion: "src"
+    values: ["10.0.0.0/8", "192.168.0.0/16", "172.16.0.0/12"]
+  }
+
+  template blocked_paths {
+    criterion: "path_beg"
+    values: ["/admin", "/.git", "/wp-admin", "/phpmyadmin"]
+  }
+
+  template api_paths {
+    criterion: "path_beg"
+    values: ["/api/v1", "/api/v2", "/graphql"]
+  }
+
+  frontend web {
+    bind *:443 ssl { cert: "/etc/ssl/cert.pem" }
+
+    // Apply ACL template directly
+    acl is_internal @internal_network
+    acl is_blocked @blocked_paths
+    acl is_api @api_paths
+
+    http-request deny if is_blocked
+    use_backend api_servers if is_api
+    use_backend internal_only if is_internal
+    default_backend: public
+  }
+
+  frontend admin_portal {
+    bind *:8443 ssl { cert: "/etc/ssl/admin.pem" }
+
+    // Same internal network check reused
+    acl is_internal @internal_network
+
+    http-request deny unless is_internal
+    default_backend: admin_servers
+  }
+}
+```
+
+### Key Benefits
+- **Reusable patterns** - define network ranges, paths, etc. once
+- **Security consistency** - ensure all frontends use the same trusted IPs
+- **Easy auditing** - search for `@internal_network` to find all internal-only access points
+- **Centralized updates** - add a new internal range in one place
+
+---
+
+## 8. Backend Templates
+
+### The Problem
+Multiple backends share common configurations (balance algorithm, options, timeouts) that need to be kept in sync.
+
+### Native HAProxy Approach
+```haproxy
+backend api_v1
+    balance leastconn
+    option httpchk GET /health
+    option forwardfor
+    retries 3
+    server api1 10.0.1.1:8080 check
+
+backend api_v2
+    balance leastconn
+    option httpchk GET /health
+    option forwardfor
+    retries 3
+    server api2 10.0.2.1:8080 check
+
+backend api_v3
+    balance leastconn
+    option httpchk GET /health
+    option forwardfor
+    retries 3
+    server api3 10.0.3.1:8080 check
+```
+
+### DSL Solution - Backend Templates
+```javascript
+config api_services {
+  // Define common backend configuration
+  template production_backend {
+    balance: leastconn
+    option: ["httpchk GET /health", "forwardfor"]
+    retries: 3
+  }
+
+  backend api_v1 {
+    @production_backend
+    servers {
+      server api1 { address: "10.0.1.1", port: 8080, check: true }
+    }
+  }
+
+  backend api_v2 {
+    @production_backend
+    servers {
+      server api2 { address: "10.0.2.1", port: 8080, check: true }
+    }
+  }
+
+  backend api_v3 {
+    @production_backend
+    servers {
+      server api3 { address: "10.0.3.1", port: 8080, check: true }
+    }
+  }
+}
+```
+
+### Key Benefits
+- **Centralized configuration** - change backend settings in one place
+- **Consistency** - all backends use the same options and algorithms
+- **Easy maintenance** - add new backends with minimal configuration
+- **Override support** - individual backends can override template values
+
+---
+
+## 9. SSL/TLS Configuration
 
 ### The Problem
 Modern TLS requires specific ciphers, ALPN, and security options that are easy to misconfigure.
@@ -465,7 +710,7 @@ config secure_frontend {
 
 ---
 
-## 7. Rate Limiting Patterns
+## 10. Rate Limiting Patterns
 
 ### The Problem
 Implement consistent rate limiting across multiple frontends.
@@ -504,7 +749,7 @@ config rate_limited {
 
 ---
 
-## 8. Session Affinity
+## 11. Session Affinity
 
 ### The Problem
 Maintain session affinity for stateful applications with proper cookie handling.
@@ -549,6 +794,9 @@ config sticky_sessions {
 | 5 Microservices | 75 | 55 | 27% | Shared Templates |
 | Blue-Green | 50 | 35 | 30% | Weight Variables |
 | Health Standards | N/A | 45 | - | Enforced Consistency |
+| Health Check Templates | 24 | 20 | 17% | Standardized Health Checks |
+| ACL Templates | 18 | 15 | 17% | Reusable ACL Patterns |
+| Backend Templates | 21 | 15 | 29% | Centralized Backend Config |
 
 ## When to Use the DSL
 

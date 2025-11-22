@@ -3510,6 +3510,7 @@ class DSLTransformer(Transformer):
         hash_preserve_affinity = None  # Phase 5B
         load_server_state_from = None
         server_state_file_name = None
+        template_spreads = []  # Collect template spreads
 
         for prop in properties:
             if isinstance(prop, Server):
@@ -3677,11 +3678,15 @@ class DSLTransformer(Transformer):
                     srvtcpka_intvl = value
                 elif key == "persist_rdp_cookie":
                     persist_rdp_cookie = value  # Empty string means use default "msts"
+                elif key == "__template_spread__":
+                    template_spreads.append(value)
 
-        # Build metadata with server loops if any
+        # Build metadata with server loops and template spreads if any
         metadata = {}
         if server_loops:
             metadata["server_loops"] = server_loops
+        if template_spreads:
+            metadata["template_spreads"] = template_spreads
 
         return Backend(
             name=name,
@@ -4326,6 +4331,7 @@ class DSLTransformer(Transformer):
         expect_rstring = None
         expect_negate = False
         headers = {}
+        template_spreads: list[str] = []
 
         for item in items:
             if isinstance(item, tuple):
@@ -4336,6 +4342,8 @@ class DSLTransformer(Transformer):
                         method = value
                     elif key == "uri":
                         uri = value
+                    elif key == "__template_spread__":
+                        template_spreads.append(value)
                 elif len(item) == 3:
                     # New format: (type, value, negate) from expect_* transformers
                     expect_type, expect_value, negate = item
@@ -4360,6 +4368,11 @@ class DSLTransformer(Transformer):
                         header_value = item[2]
                         headers[header_name] = header_value
 
+        # Build metadata with template spreads if any
+        metadata = {}
+        if template_spreads:
+            metadata["template_spreads"] = template_spreads
+
         return HealthCheck(
             method=method,
             uri=uri,
@@ -4368,7 +4381,8 @@ class DSLTransformer(Transformer):
             expect_rstatus=expect_rstatus,
             expect_rstring=expect_rstring,
             expect_negate=expect_negate,
-            headers=headers
+            headers=headers,
+            metadata=metadata
         )
 
     def hc_method(self, items: list[Any]) -> tuple[str, str]:
@@ -4383,6 +4397,21 @@ class DSLTransformer(Transformer):
 
     def hc_header(self, items: list[Any]) -> tuple[str, str, str]:
         return ("header", items[0][0], items[0][1])
+
+    def hc_template_spread(self, items: list[Any]) -> tuple[str, str]:
+        """Template spread within health check block."""
+        return ("__template_spread__", str(items[0]))
+
+    def backend_template_spread(self, items: list[Any]) -> tuple[str, str]:
+        """Template spread within backend block."""
+        return ("__template_spread__", str(items[0]))
+
+    def health_check_template_spread(self, items: list[Any]) -> HealthCheck:
+        """Health check defined entirely by a template spread."""
+        template_name = str(items[0])
+        return HealthCheck(
+            metadata={"template_spreads": [template_name]}
+        )
 
     def expect_status(self, items: list[Any]) -> tuple[str, int, bool]:
         return ("status", items[0], False)
@@ -4928,6 +4957,16 @@ class DSLTransformer(Transformer):
 
     def acl_criterion(self, items: list[Any]) -> list[Any]:
         return items
+
+    def acl_template_spread(self, items: list[Any]) -> ACL:
+        """ACL defined by a template spread."""
+        name = str(items[0])
+        template_name = str(items[1])
+        return ACL(
+            name=name,
+            criterion="",  # Will be filled from template
+            metadata={"template_spreads": [template_name]}
+        )
 
     # ===== Template =====
     def template_property(self, items: list[Any]) -> tuple[str, Any]:
