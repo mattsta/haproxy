@@ -1458,47 +1458,48 @@ class HAProxyCodeGenerator:
         """Format filter directive."""
         parts = ["filter"]
 
-        if filter_obj.filter_type == "compression":
-            parts.append("compression")
+        match filter_obj.filter_type:
+            case "compression":
+                parts.append("compression")
 
-        elif filter_obj.filter_type == "spoe":
-            parts.append("spoe")
-            if filter_obj.engine:
-                parts.append(f"engine {filter_obj.engine}")
-            if filter_obj.config:
-                parts.append(f"config {filter_obj.config}")
+            case "spoe":
+                parts.append("spoe")
+                if filter_obj.engine:
+                    parts.append(f"engine {filter_obj.engine}")
+                if filter_obj.config:
+                    parts.append(f"config {filter_obj.config}")
 
-        elif filter_obj.filter_type == "cache":
-            parts.append("cache")
-            if filter_obj.name:
-                parts.append(filter_obj.name)
+            case "cache":
+                parts.append("cache")
+                if filter_obj.name:
+                    parts.append(filter_obj.name)
 
-        elif filter_obj.filter_type == "trace":
-            parts.append("trace")
-            if filter_obj.name:
-                parts.append(f"name {filter_obj.name}")
+            case "trace":
+                parts.append("trace")
+                if filter_obj.name:
+                    parts.append(f"name {filter_obj.name}")
 
-        elif filter_obj.filter_type == "bwlim-in":
-            parts.append("bwlim-in")
-            if filter_obj.name:
-                parts.append(filter_obj.name)
-            if filter_obj.default_limit:
-                parts.append(f"default-limit {filter_obj.default_limit}")
-            if filter_obj.default_period:
-                parts.append(f"default-period {filter_obj.default_period}")
-            if filter_obj.key:
-                parts.append(f"key {filter_obj.key}")
-            if filter_obj.table:
-                parts.append(f"table {filter_obj.table}")
+            case "bwlim-in":
+                parts.append("bwlim-in")
+                if filter_obj.name:
+                    parts.append(filter_obj.name)
+                if filter_obj.default_limit:
+                    parts.append(f"default-limit {filter_obj.default_limit}")
+                if filter_obj.default_period:
+                    parts.append(f"default-period {filter_obj.default_period}")
+                if filter_obj.key:
+                    parts.append(f"key {filter_obj.key}")
+                if filter_obj.table:
+                    parts.append(f"table {filter_obj.table}")
 
-        elif filter_obj.filter_type == "bwlim-out":
-            parts.append("bwlim-out")
-            if filter_obj.name:
-                parts.append(filter_obj.name)
-            if filter_obj.limit:
-                parts.append(f"limit {filter_obj.limit}")
-            if filter_obj.period:
-                parts.append(f"period {filter_obj.period}")
+            case "bwlim-out":
+                parts.append("bwlim-out")
+                if filter_obj.name:
+                    parts.append(filter_obj.name)
+                if filter_obj.limit:
+                    parts.append(f"limit {filter_obj.limit}")
+                if filter_obj.period:
+                    parts.append(f"period {filter_obj.period}")
 
         return " ".join(parts)
 
@@ -1512,16 +1513,17 @@ class HAProxyCodeGenerator:
             # Convert underscores to hyphens for HAProxy syntax
             haproxy_key = key.replace("_", "-")
 
-            if key in ["header", "name"]:
-                parts.append(value)
-            elif key == "status":
-                parts.append(f"status {value}")
-            elif key == "deny_status":
-                parts.append(f"deny status {value}")
-            elif isinstance(value, str) and " " in value:
-                parts.append(f'{haproxy_key} "{value}"')
-            else:
-                parts.append(f"{haproxy_key} {value}")
+            match key:
+                case "header" | "name":
+                    parts.append(value)
+                case "status":
+                    parts.append(f"status {value}")
+                case "deny_status":
+                    parts.append(f"deny status {value}")
+                case _ if isinstance(value, str) and " " in value:
+                    parts.append(f'{haproxy_key} "{value}"')
+                case _:
+                    parts.append(f"{haproxy_key} {value}")
 
         if rule.condition:
             parts.append(f"if {rule.condition}")
@@ -1684,78 +1686,83 @@ class HAProxyCodeGenerator:
 
     def _format_http_check_rule(self, http_check: HttpCheckRule) -> str:
         """Format http-check rule."""
-        if http_check.type == "send":
-            parts = ["http-check send"]
-            if http_check.method:
-                parts.append(f"meth {http_check.method}")
-            if http_check.uri:
-                parts.append(f"uri {http_check.uri}")
-            if http_check.headers:
-                for header_name, header_value in http_check.headers.items():
-                    parts.append(f"hdr {header_name} {header_value}")
-            return " ".join(parts)
+        match http_check.type:
+            case "send":
+                parts = ["http-check send"]
+                if http_check.method:
+                    parts.append(f"meth {http_check.method}")
+                if http_check.uri:
+                    parts.append(f"uri {http_check.uri}")
+                if http_check.headers:
+                    for header_name, header_value in http_check.headers.items():
+                        parts.append(f"hdr {header_name} {header_value}")
+                return " ".join(parts)
 
-        if http_check.type == "expect":
-            parts = ["http-check expect"]
-            if http_check.expect_negate:
-                parts.append("!")
-            if http_check.expect_type == "status":
-                parts.append(f"status {http_check.expect_value}")
-            elif http_check.expect_type == "string":
-                parts.append(f"string {http_check.expect_value}")
-            elif http_check.expect_type == "rstatus":
-                parts.append(f"rstatus {http_check.expect_value}")
-            elif http_check.expect_type == "rstring":
-                parts.append(f"rstring {http_check.expect_value}")
-            return " ".join(parts)
+            case "expect":
+                parts = ["http-check expect"]
+                if http_check.expect_negate:
+                    parts.append("!")
+                match http_check.expect_type:
+                    case "status":
+                        parts.append(f"status {http_check.expect_value}")
+                    case "string":
+                        parts.append(f"string {http_check.expect_value}")
+                    case "rstatus":
+                        parts.append(f"rstatus {http_check.expect_value}")
+                    case "rstring":
+                        parts.append(f"rstring {http_check.expect_value}")
+                return " ".join(parts)
 
-        if http_check.type == "connect":
-            parts = ["http-check connect"]
-            if http_check.port:
-                parts.append(f"port {http_check.port}")
-            if http_check.ssl:
-                parts.append("ssl")
-            if http_check.sni:
-                parts.append(f"sni {http_check.sni}")
-            if http_check.alpn:
-                parts.append(f"alpn {http_check.alpn}")
-            return " ".join(parts)
+            case "connect":
+                parts = ["http-check connect"]
+                if http_check.port:
+                    parts.append(f"port {http_check.port}")
+                if http_check.ssl:
+                    parts.append("ssl")
+                if http_check.sni:
+                    parts.append(f"sni {http_check.sni}")
+                if http_check.alpn:
+                    parts.append(f"alpn {http_check.alpn}")
+                return " ".join(parts)
 
-        if http_check.type == "disable-on-404":
-            return "http-check disable-on-404"
+            case "disable-on-404":
+                return "http-check disable-on-404"
 
-        return ""
+            case _:
+                return ""
 
     def _format_tcp_check_rule(self, tcp_check: TcpCheckRule) -> str:
         """Format tcp-check rule."""
-        if tcp_check.type == "connect":
-            parts = ["tcp-check connect"]
-            if tcp_check.port:
-                parts.append(f"port {tcp_check.port}")
-            if tcp_check.ssl:
-                parts.append("ssl")
-            if tcp_check.sni:
-                parts.append(f"sni {tcp_check.sni}")
-            if tcp_check.alpn:
-                parts.append(f"alpn {tcp_check.alpn}")
-            return " ".join(parts)
+        match tcp_check.type:
+            case "connect":
+                parts = ["tcp-check connect"]
+                if tcp_check.port:
+                    parts.append(f"port {tcp_check.port}")
+                if tcp_check.ssl:
+                    parts.append("ssl")
+                if tcp_check.sni:
+                    parts.append(f"sni {tcp_check.sni}")
+                if tcp_check.alpn:
+                    parts.append(f"alpn {tcp_check.alpn}")
+                return " ".join(parts)
 
-        if tcp_check.type == "send":
-            return f"tcp-check send {tcp_check.data}"
+            case "send":
+                return f"tcp-check send {tcp_check.data}"
 
-        if tcp_check.type == "send-binary":
-            return f"tcp-check send-binary {tcp_check.data}"
+            case "send-binary":
+                return f"tcp-check send-binary {tcp_check.data}"
 
-        if tcp_check.type == "expect":
-            parts = ["tcp-check expect"]
-            if tcp_check.pattern:
-                parts.append(tcp_check.pattern)
-            return " ".join(parts)
+            case "expect":
+                parts = ["tcp-check expect"]
+                if tcp_check.pattern:
+                    parts.append(tcp_check.pattern)
+                return " ".join(parts)
 
-        if tcp_check.type == "comment":
-            return f"tcp-check comment {tcp_check.comment}"
+            case "comment":
+                return f"tcp-check comment {tcp_check.comment}"
 
-        return ""
+            case _:
+                return ""
 
     def _format_default_server(self, default_server: DefaultServer) -> str:
         """Format default-server directive."""

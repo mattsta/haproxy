@@ -133,531 +133,238 @@ class DSLTransformer(Transformer):
         )
 
     # ===== Global Section =====
+
+    # Keys that map directly to GlobalConfig fields (simple assignment)
+    _GLOBAL_SIMPLE_KEYS = frozenset(
+        {
+            "daemon",
+            "maxconn",
+            "nbproc",
+            "nbthread",
+            "thread_groups",
+            "maxconnrate",
+            "maxsslrate",
+            "maxsessrate",
+            "user",
+            "group",
+            "chroot",
+            "pidfile",
+            "maxpipes",
+            "fd_hard_limit",
+            "maxzlibmem",
+            "strict_limits",
+            "ca_base",
+            "crt_base",
+            "key_base",
+            "log_tag",
+            "log_send_hostname",
+            "ssl_dh_param_file",
+            "ssl_default_bind_ciphers",
+            "ssl_default_bind_options",
+            "ssl_default_bind_ciphersuites",
+            "ssl_default_server_ciphers",
+            "ssl_default_server_ciphersuites",
+            "ssl_default_server_options",
+            "ssl_server_verify",
+            "ssl_engine",
+            "ssl_default_bind_curves",
+            "ssl_default_bind_sigalgs",
+            "ssl_default_bind_client_sigalgs",
+            "ssl_default_server_curves",
+            "ssl_default_server_sigalgs",
+            "ssl_default_server_client_sigalgs",
+            "ssl_security_level",
+            "master_worker",
+            "mworker_max_reloads",
+            "uid",
+            "gid",
+            "node",
+            "description",
+            "hard_stop_after",
+            "external_check",
+            "numa_cpu_mapping",
+            "busy_polling",
+            "max_spread_checks",
+            "spread_checks",
+            "maxcompcpuusage",
+            "maxcomprate",
+            "default_path",
+            "server_state_base",
+            "server_state_file",
+            "load_server_state_from_file",
+            "httpclient_resolvers_disabled",
+            "httpclient_resolvers_id",
+            "httpclient_resolvers_prefer",
+            "httpclient_retries",
+            "httpclient_ssl_verify",
+            "httpclient_ssl_ca_file",
+            "httpclient_timeout_connect",
+            "noepoll",
+            "nokqueue",
+            "nopoll",
+            "nosplice",
+            "nogetaddrinfo",
+            "noreuseport",
+            "noevports",
+            "noktls",
+            "no_memory_trimming",
+            "limited_quic",
+            "localpeer",
+            "ssl_load_extra_files",
+            "ssl_load_extra_del_ext",
+            "ssl_mode_async",
+            "ssl_propquery",
+            "ssl_provider",
+            "ssl_provider_path",
+            "issuers_chain_path",
+            "profiling_tasks_on",
+            "profiling_tasks_automatic",
+            "profiling_memory_on",
+            "profiling_memory",
+            "profiling_tasks",
+            "quiet",
+            "debug_counters",
+            "anonkey",
+            "zero_warning",
+            "warn_blocked_traffic_after",
+            "force_cfg_parser_pause",
+            "deviceatlas_json_file",
+            "deviceatlas_log_level",
+            "deviceatlas_separator",
+            "deviceatlas_properties_cookie",
+            "fiftyone_degrees_data_file",
+            "fiftyone_degrees_property_name_list",
+            "fiftyone_degrees_property_separator",
+            "fiftyone_degrees_cache_size",
+            "wurfl_data_file",
+            "wurfl_information_list",
+            "wurfl_information_list_separator",
+            "wurfl_patch_file",
+            "wurfl_cache_size",
+            "wurfl_engine_mode",
+            "wurfl_useragent_priority",
+            "setcap",
+            "set_dumpable",
+            "unix_bind",
+        }
+    )
+
+    def _convert_tune_key(self, key: str) -> str:
+        """Convert tune_* key to HAProxy tune.* format.
+
+        Examples:
+            tune_ssl_bufsize → tune.ssl.bufsize
+            tune_h2_be_glitches_threshold → tune.h2.be.glitches-threshold
+            tune_ssl_ocsp_update_minthour → tune.ssl.ocsp-update.minthour
+            tune_idle_pool_shared → tune.idle-pool.shared
+        """
+        parts = key.split("_")
+        if len(parts) < 3:
+            return key.replace("_", ".")
+
+        # Build result based on key pattern
+        result: str | None = None
+
+        match parts[1]:
+            case "quic":
+                result = self._convert_quic_tune_key(parts)
+            case "idle" if parts[1:3] == ["idle", "pool"]:
+                result = f"tune.idle-pool.{parts[3]}"
+            case "lua" if parts[1:3] == ["lua", "log"]:
+                result = f"tune.lua.log.{parts[3]}"
+            case "stick" | "pattern" if len(parts) == 3:
+                result = f"tune.{'-'.join(parts[1:])}"
+            case "recv" | "runqueue" | "pipesize" | "fail" if len(parts) == 3:
+                result = f"tune.{'-'.join(parts[1:])}"
+            case "epoll" | "renice" if len(parts) == 3:
+                result = f"tune.{parts[1]}.{'-'.join([parts[2]])}"
+            case "takeover" if len(parts) == 5:
+                result = f"tune.{'-'.join(parts[1:])}"
+            case "max" | "disable":
+                result = f"tune.{'-'.join(parts[1:])}"
+            case _:
+                # Handle ocsp-update directives
+                if len(parts) >= 5 and parts[2:4] == ["ocsp", "update"]:
+                    result = f"tune.{parts[1]}.ocsp-update.{parts[4]}"
+                # Handle subcategory patterns (be, fe)
+                elif len(parts) >= 4 and parts[2] in ("be", "fe"):
+                    result = f"tune.{parts[1]}.{parts[2]}.{'-'.join(parts[3:])}"
+                # Standard category.directive format
+                else:
+                    result = f"tune.{parts[1]}.{'-'.join(parts[2:])}"
+
+        return result
+
+    def _convert_quic_tune_key(self, parts: list[str]) -> str:
+        """Convert tune_quic_* keys to HAProxy format."""
+        if len(parts) < 3:
+            return f"tune.quic.{'-'.join(parts[2:])}"
+
+        match parts[2]:
+            case "frontend" | "socket" if len(parts) >= 4:
+                return f"tune.quic.{parts[2]}.{'-'.join(parts[3:])}"
+            case "be" | "fe" if len(parts) >= 4:
+                if len(parts) >= 5 and parts[3] in ("cc", "sec", "stream", "tx"):
+                    return f"tune.quic.{parts[2]}.{parts[3]}.{'-'.join(parts[4:])}"
+                return f"tune.quic.{parts[2]}.{'-'.join(parts[3:])}"
+            case "mem" if len(parts) >= 4:
+                return f"tune.quic.mem.{'-'.join(parts[3:])}"
+            case _:
+                return f"tune.quic.{'-'.join(parts[2:])}"
+
     def global_section(self, items: list[Any]) -> GlobalConfig:
         """Transform global section."""
-        # Process management
-        daemon = True
-        user = None
-        group = None
-        uid = None
-        gid = None
-        chroot = None
-        pidfile = None
-        nbproc = None
-        nbthread = None  # Phase 10
-        thread_groups = None  # Phase 10
-        master_worker = None
-        mworker_max_reloads = None
-        node = None
-        description = None
-        hard_stop_after = None
-        external_check = None
-        numa_cpu_mapping = None  # Phase 10
+        # Initialize config dict with defaults
+        config: dict[str, Any] = {
+            "daemon": True,
+            "maxconn": 2000,
+            "ssl_default_bind_options": [],
+            "ssl_default_server_options": [],
+        }
 
-        # Connection limits
-        maxconn = 2000
-        maxconnrate = None
-        maxsslrate = None
-        maxsessrate = None
-        maxpipes = None
-
-        # Resource limits (Phase 10 Batch 2)
-        fd_hard_limit = None
-        maxzlibmem = None
-        strict_limits = None
-
-        # SSL/TLS paths
-        ca_base = None
-        crt_base = None
-        key_base = None
-
-        # SSL/TLS configuration
-        ssl_dh_param_file = None
-        ssl_default_bind_ciphers = None
-        ssl_default_bind_options = []
-        ssl_default_bind_ciphersuites = None
-        ssl_default_server_ciphers = None
-        ssl_default_server_ciphersuites = None
-        ssl_default_server_options = []
-        ssl_server_verify = None
-        ssl_engine = None
-
-        # SSL/TLS Advanced Configuration (Phase 13 Batch 4)
-        ssl_default_bind_curves = None
-        ssl_default_bind_sigalgs = None
-        ssl_default_bind_client_sigalgs = None
-        ssl_default_server_curves = None
-        ssl_default_server_sigalgs = None
-        ssl_default_server_client_sigalgs = None
-        ssl_security_level = None
-
-        # Logging configuration
-        log_tag = None
-        log_send_hostname = None
-        log_targets = []
-
-        # Environment variables
-        env_vars = {}
-        reset_env_vars = []
-        unset_env_vars = []
-
-        # System configuration (Phase 3)
-        setcap = None
-        set_dumpable = None
-        unix_bind = None
-        cpu_map = {}
-
-        # Performance & Runtime (Phase 4A)
-        busy_polling = None
-        max_spread_checks = None
-        spread_checks = None
-        maxcompcpuusage = None
-        maxcomprate = None
-        default_path = None
-
-        # Server State Management (Phase 10 Batch 3)
-        server_state_base = None
-        server_state_file = None
-        load_server_state_from_file = None
-
-        # HTTP Client Configuration (Phase 4B Part 1)
-        httpclient_resolvers_disabled = None
-        httpclient_resolvers_id = None
-        httpclient_resolvers_prefer = None
-        httpclient_retries = None
-        httpclient_ssl_verify = None
-        httpclient_ssl_ca_file = None
-        httpclient_timeout_connect = None  # Phase 12 Batch 3
-
-        # Platform-Specific Options (Phase 4B Part 1)
-        noepoll = None
-        nokqueue = None
-        nopoll = None
-        nosplice = None
-        nogetaddrinfo = None
-        noreuseport = None
-        noevports = None  # Phase 12 Batch 6
-        noktls = None  # Phase 12 Batch 6
-        no_memory_trimming = None  # Phase 12 Batch 6
-        limited_quic = None
-        localpeer = None
-
-        # SSL Advanced (Phase 4B Part 2)
-        ssl_load_extra_files = None
-        ssl_load_extra_del_ext = None
-        ssl_mode_async = None
-        ssl_propquery = None
-        ssl_provider = None
-        ssl_provider_path = None
-        issuers_chain_path = None
-
-        # Profiling & Debugging (Phase 4B Part 2)
-        profiling_tasks_on = None
-        profiling_tasks_automatic = None
-        profiling_memory_on = None
-        profiling_memory = None  # Phase 12 Batch 6
-        profiling_tasks = None  # Phase 12 Batch 6
-
-        # Debugging & Development (Phase 7)
-        quiet = None
-        debug_counters = None
-        anonkey = None
-        zero_warning = None
-        warn_blocked_traffic_after = None
-        force_cfg_parser_pause = None
-
-        # Device Detection - DeviceAtlas (Phase 4B Part 4)
-        deviceatlas_json_file = None
-        deviceatlas_log_level = None
-        deviceatlas_separator = None
-        deviceatlas_properties_cookie = None
-
-        # Device Detection - 51Degrees (Phase 4B Part 4)
-        fiftyone_degrees_data_file = None
-        fiftyone_degrees_property_name_list = None
-        fiftyone_degrees_property_separator = None
-        fiftyone_degrees_cache_size = None
-
-        # Device Detection - WURFL (Phase 4B Part 4)
-        wurfl_data_file = None
-        wurfl_information_list = None
-        wurfl_information_list_separator = None
-        wurfl_patch_file = None
-        wurfl_cache_size = None
-        wurfl_engine_mode = None
-        wurfl_useragent_priority = None
-
-        # Lua scripts
-        lua_scripts = []
-
-        # Lua global directives (Phase 13 Batch 3)
-        lua_load_files = []
-        lua_load_per_thread_files = []
-        lua_prepend_paths = []
-
-        # Stats
-        stats = None
-        stats_sockets = []
-
-        # Performance tuning
-        tuning = {}
+        # Collection types that need special initialization
+        log_targets: list[LogTarget] = []
+        env_vars: dict[str, str] = {}
+        reset_env_vars: list[str] = []
+        unset_env_vars: list[str] = []
+        cpu_map: dict[str, str] = {}
+        lua_scripts: list[LuaScript] = []
+        lua_load_files: list[tuple[str, list[str]]] = []
+        lua_load_per_thread_files: list[tuple[str, list[str]]] = []
+        lua_prepend_paths: list[tuple[str, str]] = []
+        stats: StatsConfig | None = None
+        stats_sockets: list[StatsSocket] = []
+        tuning: dict[str, Any] = {}
 
         for item in items:
             if isinstance(item, tuple):
                 key, value = item
-                if key == "daemon":
-                    daemon = value
-                elif key == "maxconn":
-                    maxconn = value
-                elif key == "nbproc":
-                    nbproc = value
-                elif key == "nbthread":  # Phase 10
-                    nbthread = value
-                elif key == "thread_groups":  # Phase 10
-                    thread_groups = value
-                elif key == "maxconnrate":
-                    maxconnrate = value
-                elif key == "maxsslrate":
-                    maxsslrate = value
-                elif key == "maxsessrate":
-                    maxsessrate = value
-                elif key == "user":
-                    user = value
-                elif key == "group":
-                    group = value
-                elif key == "chroot":
-                    chroot = value
-                elif key == "pidfile":
-                    pidfile = value
-                elif key == "maxpipes":
-                    maxpipes = value
-                # Phase 10 Batch 2 - Resource limits
-                elif key == "fd_hard_limit":
-                    fd_hard_limit = value
-                elif key == "maxzlibmem":
-                    maxzlibmem = value
-                elif key == "strict_limits":
-                    strict_limits = value
-                elif key == "ca_base":
-                    ca_base = value
-                elif key == "crt_base":
-                    crt_base = value
-                elif key == "key_base":
-                    key_base = value
-                elif key == "log_tag":
-                    log_tag = value
-                elif key == "log_send_hostname":
-                    log_send_hostname = value
-                elif key == "ssl_dh_param_file":
-                    ssl_dh_param_file = value
-                elif key == "ssl_default_bind_ciphers":
-                    ssl_default_bind_ciphers = value
-                elif key == "ssl_default_bind_options":
-                    ssl_default_bind_options = value
-                elif key == "ssl_default_bind_ciphersuites":
-                    ssl_default_bind_ciphersuites = value
-                elif key == "ssl_default_server_ciphers":
-                    ssl_default_server_ciphers = value
-                elif key == "ssl_default_server_ciphersuites":
-                    ssl_default_server_ciphersuites = value
-                elif key == "ssl_default_server_options":
-                    ssl_default_server_options = value
-                elif key == "ssl_server_verify":
-                    ssl_server_verify = value
-                elif key == "ssl_engine":
-                    ssl_engine = value
-                # Phase 13 Batch 4 - SSL Advanced Configuration
-                elif key == "ssl_default_bind_curves":
-                    ssl_default_bind_curves = value
-                elif key == "ssl_default_bind_sigalgs":
-                    ssl_default_bind_sigalgs = value
-                elif key == "ssl_default_bind_client_sigalgs":
-                    ssl_default_bind_client_sigalgs = value
-                elif key == "ssl_default_server_curves":
-                    ssl_default_server_curves = value
-                elif key == "ssl_default_server_sigalgs":
-                    ssl_default_server_sigalgs = value
-                elif key == "ssl_default_server_client_sigalgs":
-                    ssl_default_server_client_sigalgs = value
-                elif key == "ssl_security_level":
-                    ssl_security_level = value
-                elif key == "master_worker":
-                    master_worker = value
-                elif key == "mworker_max_reloads":
-                    mworker_max_reloads = value
-                elif key == "uid":
-                    uid = value
-                elif key == "gid":
-                    gid = value
-                elif key == "node":
-                    node = value
-                elif key == "description":
-                    description = value
-                elif key == "hard_stop_after":
-                    hard_stop_after = value
-                elif key == "external_check":
-                    external_check = value
-                elif key == "numa_cpu_mapping":  # Phase 10
-                    numa_cpu_mapping = value
-                # Phase 4A - Performance & Runtime
-                elif key == "busy_polling":
-                    busy_polling = value
-                elif key == "max_spread_checks":
-                    max_spread_checks = value
-                elif key == "spread_checks":
-                    spread_checks = value
-                elif key == "maxcompcpuusage":
-                    maxcompcpuusage = value
-                elif key == "maxcomprate":
-                    maxcomprate = value
-                elif key == "default_path":
-                    default_path = value
-                # Phase 10 Batch 3 - Server State Management
-                elif key == "server_state_base":
-                    server_state_base = value
-                elif key == "server_state_file":
-                    server_state_file = value
-                elif key == "load_server_state_from_file":
-                    load_server_state_from_file = value
-                # Phase 4B Part 1 - HTTP Client Configuration
-                elif key == "httpclient_resolvers_disabled":
-                    httpclient_resolvers_disabled = value
-                elif key == "httpclient_resolvers_id":
-                    httpclient_resolvers_id = value
-                elif key == "httpclient_resolvers_prefer":
-                    httpclient_resolvers_prefer = value
-                elif key == "httpclient_retries":
-                    httpclient_retries = value
-                elif key == "httpclient_ssl_verify":
-                    httpclient_ssl_verify = value
-                elif key == "httpclient_ssl_ca_file":
-                    httpclient_ssl_ca_file = value
-                elif key == "httpclient_timeout_connect":  # Phase 12 Batch 3
-                    httpclient_timeout_connect = value
-                # Phase 4B Part 1 - Platform-Specific Options
-                elif key == "noepoll":
-                    noepoll = value
-                elif key == "nokqueue":
-                    nokqueue = value
-                elif key == "nopoll":
-                    nopoll = value
-                elif key == "nosplice":
-                    nosplice = value
-                elif key == "nogetaddrinfo":
-                    nogetaddrinfo = value
-                elif key == "noreuseport":
-                    noreuseport = value
-                elif key == "noevports":  # Phase 12 Batch 6
-                    noevports = value
-                elif key == "noktls":  # Phase 12 Batch 6
-                    noktls = value
-                elif key == "no_memory_trimming":  # Phase 12 Batch 6
-                    no_memory_trimming = value
-                elif key == "limited_quic":
-                    limited_quic = value
-                elif key == "localpeer":
-                    localpeer = value
-                # Phase 4B Part 2 - SSL Advanced
-                elif key == "ssl_load_extra_files":
-                    ssl_load_extra_files = value
-                elif key == "ssl_load_extra_del_ext":
-                    ssl_load_extra_del_ext = value
-                elif key == "ssl_mode_async":
-                    ssl_mode_async = value
-                elif key == "ssl_propquery":
-                    ssl_propquery = value
-                elif key == "ssl_provider":
-                    ssl_provider = value
-                elif key == "ssl_provider_path":
-                    ssl_provider_path = value
-                elif key == "issuers_chain_path":
-                    issuers_chain_path = value
-                # Phase 4B Part 2 - Profiling & Debugging
-                elif key == "profiling_tasks_on":
-                    profiling_tasks_on = value
-                elif key == "profiling_tasks_automatic":
-                    profiling_tasks_automatic = value
-                elif key == "profiling_memory_on":
-                    profiling_memory_on = value
-                elif key == "profiling_memory":  # Phase 12 Batch 6
-                    profiling_memory = value
-                elif key == "profiling_tasks":  # Phase 12 Batch 6
-                    profiling_tasks = value
-                # Phase 7 - Debugging & Development
-                elif key == "quiet":
-                    quiet = value
-                elif key == "debug_counters":
-                    debug_counters = value
-                elif key == "anonkey":
-                    anonkey = value
-                elif key == "zero_warning":
-                    zero_warning = value
-                elif key == "warn_blocked_traffic_after":
-                    warn_blocked_traffic_after = value
-                elif key == "force_cfg_parser_pause":
-                    force_cfg_parser_pause = value
-                # Phase 4B Part 4 - Device Detection - DeviceAtlas
-                elif key == "deviceatlas_json_file":
-                    deviceatlas_json_file = value
-                elif key == "deviceatlas_log_level":
-                    deviceatlas_log_level = value
-                elif key == "deviceatlas_separator":
-                    deviceatlas_separator = value
-                elif key == "deviceatlas_properties_cookie":
-                    deviceatlas_properties_cookie = value
-                # Phase 4B Part 4 - Device Detection - 51Degrees
-                elif key == "fiftyone_degrees_data_file":
-                    fiftyone_degrees_data_file = value
-                elif key == "fiftyone_degrees_property_name_list":
-                    fiftyone_degrees_property_name_list = value
-                elif key == "fiftyone_degrees_property_separator":
-                    fiftyone_degrees_property_separator = value
-                elif key == "fiftyone_degrees_cache_size":
-                    fiftyone_degrees_cache_size = value
-                # Phase 4B Part 4 - Device Detection - WURFL
-                elif key == "wurfl_data_file":
-                    wurfl_data_file = value
-                elif key == "wurfl_information_list":
-                    wurfl_information_list = value
-                elif key == "wurfl_information_list_separator":
-                    wurfl_information_list_separator = value
-                elif key == "wurfl_patch_file":
-                    wurfl_patch_file = value
-                elif key == "wurfl_cache_size":
-                    wurfl_cache_size = value
-                elif key == "wurfl_engine_mode":
-                    wurfl_engine_mode = value
-                elif key == "wurfl_useragent_priority":
-                    wurfl_useragent_priority = value
-                elif key == "setcap":
-                    setcap = value
-                elif key == "set_dumpable":
-                    set_dumpable = value
-                elif key == "unix_bind":
-                    unix_bind = value
-                elif key == "cpu_map":
-                    # cpu_map returns tuple (process/thread, cpu_list)
-                    cpu_map[value[0]] = value[1]
-                elif key in {"setenv", "presetenv"}:
-                    env_vars[value[0]] = value[1]
-                elif key == "resetenv":
-                    reset_env_vars.append(value)
-                elif key == "unsetenv":
-                    unset_env_vars.append(value)
-                # Phase 13 Batch 3 - Lua global directives
-                elif key == "lua_load":
-                    lua_load_files.append(value)
-                elif key == "lua_load_per_thread":
-                    lua_load_per_thread_files.append(value)
-                elif key == "lua_prepend_path":
-                    lua_prepend_paths.append(value)
-                elif key in ("nbthread", "maxsslconn", "ulimit_n"):
-                    tuning[key] = value
-                elif key.startswith("tune_"):
-                    # All tune.* directives go into tuning dict
-                    # Convert transformer key to HAProxy format
-                    # e.g., tune_ssl_bufsize → tune.ssl.bufsize
-                    # e.g., tune_h2_be_glitches_threshold → tune.h2.be.glitches-threshold
-                    # e.g., tune_ssl_ocsp_update_minthour → tune.ssl.ocsp-update.minthour
-                    # e.g., tune_idle_pool_shared → tune.idle-pool.shared
-                    parts = key.split("_")
-                    if len(parts) >= 3:
-                        # parts[0] = "tune", parts[1] = category, rest = directive
-
-                        # Special case for QUIC directives
-                        if parts[1] == "quic":
-                            if len(parts) >= 4 and parts[2] in ("frontend", "socket"):
-                                # tune_quic_frontend_conn_tx_buffers_limit → tune.quic.frontend.conn-tx-buffers.limit
-                                # tune_quic_socket_owner → tune.quic.socket.owner
-                                subcategory = parts[2]
-                                directive_parts = parts[3:]
-                                tune_key = f"tune.quic.{subcategory}.{'-'.join(directive_parts)}"
-                            elif len(parts) >= 4 and parts[2] in ("be", "fe"):
-                                # Phase 13 Batch 2: Modern QUIC backend/frontend directives
-                                # tune_quic_be_cc_cubic_min_losses → tune.quic.be.cc.cubic-min-losses
-                                # tune_quic_fe_stream_rxbuf → tune.quic.fe.stream.rxbuf
-                                # tune_quic_be_max_idle_timeout → tune.quic.be.max-idle-timeout
-                                subcategory = parts[2]  # be or fe
-                                if len(parts) >= 5 and parts[3] in ("cc", "sec", "stream", "tx"):
-                                    # Has a sub-subcategory (cc, sec, stream, tx)
-                                    subsubcategory = parts[3]
-                                    directive_parts = parts[4:]
-                                    tune_key = f"tune.quic.{subcategory}.{subsubcategory}.{'-'.join(directive_parts)}"
-                                else:
-                                    # No sub-subcategory (e.g., max-idle-timeout)
-                                    directive_parts = parts[3:]
-                                    tune_key = (
-                                        f"tune.quic.{subcategory}.{'-'.join(directive_parts)}"
-                                    )
-                            elif len(parts) >= 4 and parts[2] == "mem":
-                                # Phase 13 Batch 2: tune_quic_mem_tx_max → tune.quic.mem.tx-max
-                                directive_parts = parts[3:]
-                                tune_key = f"tune.quic.mem.{'-'.join(directive_parts)}"
-                            else:
-                                # tune_quic_retry_threshold → tune.quic.retry-threshold
-                                # tune_quic_max_frame_loss → tune.quic.max-frame-loss
-                                # tune_quic_listen → tune.quic.listen
-                                directive_parts = parts[2:]
-                                tune_key = f"tune.quic.{'-'.join(directive_parts)}"
-                        # Special case for ocsp-update directives
-                        elif len(parts) >= 5 and parts[2:4] == ["ocsp", "update"]:
-                            # tune_ssl_ocsp_update_minthour → tune.ssl.ocsp-update.minthour
-                            category = parts[1]
-                            suffix = parts[4]
-                            tune_key = f"tune.{category}.ocsp-update.{suffix}"
-                        # Special case for idle-pool directives
-                        elif len(parts) == 4 and parts[1:3] == ["idle", "pool"]:
-                            # tune_idle_pool_shared → tune.idle-pool.shared
-                            tune_key = f"tune.idle-pool.{parts[3]}"
-                        # Special case for lua.log directives
-                        elif len(parts) == 4 and parts[1:3] == ["lua", "log"]:
-                            # tune_lua_log_loggers → tune.lua.log.loggers
-                            tune_key = f"tune.lua.log.{parts[3]}"
-                        # Special case for single-level compound directives (e.g., stick-counters, pattern-cache-size)
-                        elif len(parts) == 3 and parts[1] in ("stick", "pattern"):
-                            # tune_stick_counters → tune.stick-counters
-                            # tune_pattern_cache_size → tune.pattern-cache-size (already 3 parts but handled below)
-                            tune_key = f"tune.{'-'.join(parts[1:])}"
-                        # Check if there's a subcategory (be, fe)
-                        elif len(parts) >= 4 and parts[2] in ("be", "fe"):
-                            category = parts[1]
-                            subcategory = parts[2]
-                            directive_parts = parts[3:]
-                            tune_key = f"tune.{category}.{subcategory}.{'-'.join(directive_parts)}"
-                        # Special case for top-level multi-word tune directives (Phase 6 & 12 Batch 6)
-                        elif len(parts) == 3 and parts[1] in (
-                            "recv",
-                            "runqueue",
-                            "pipesize",
-                            "fail",
-                        ):
-                            # tune_recv_enough, tune_runqueue_depth, tune_pipesize, tune_fail_alloc
-                            tune_key = f"tune.{'-'.join(parts[1:])}"
-                        # Special case for categorized directives with sub-params (Phase 12 Batch 6)
-                        elif len(parts) == 3 and parts[1] in ("epoll", "renice"):
-                            # tune_epoll_mask_events → tune.epoll.mask-events
-                            # tune_renice_runtime → tune.renice.runtime
-                            category = parts[1]
-                            directive_parts = [parts[2]]
-                            tune_key = f"tune.{category}.{'-'.join(directive_parts)}"
-                        # Special case for very long multi-word directives (Phase 12 Batch 6)
-                        elif len(parts) == 5 and parts[1] == "takeover":
-                            # tune_takeover_other_tg_connections → tune.takeover-other-tg-connections
-                            tune_key = f"tune.{'-'.join(parts[1:])}"
-                        elif len(parts) >= 3 and parts[1] == "max":
-                            # tune_max_checks_per_thread, tune_max_rules_at_once
-                            tune_key = f"tune.{'-'.join(parts[1:])}"
-                        elif len(parts) >= 3 and parts[1] == "disable":
-                            # tune_disable_fast_forward, tune_disable_zero_copy_forwarding
-                            tune_key = f"tune.{'-'.join(parts[1:])}"
-                        else:
-                            category = parts[1]
-                            directive_parts = parts[2:]
-                            tune_key = f"tune.{category}.{'-'.join(directive_parts)}"
-                    else:
-                        # Fallback: just convert all underscores to dots
-                        tune_key = key.replace("_", ".")
-                    tuning[tune_key] = value
+                # Handle simple key-value assignments
+                if key in self._GLOBAL_SIMPLE_KEYS:
+                    config[key] = value
+                # Handle special cases with match/case
+                else:
+                    match key:
+                        case "cpu_map":
+                            cpu_map[value[0]] = value[1]
+                        case "setenv" | "presetenv":
+                            env_vars[value[0]] = value[1]
+                        case "resetenv":
+                            reset_env_vars.append(value)
+                        case "unsetenv":
+                            unset_env_vars.append(value)
+                        case "lua_load":
+                            lua_load_files.append(value)
+                        case "lua_load_per_thread":
+                            lua_load_per_thread_files.append(value)
+                        case "lua_prepend_path":
+                            lua_prepend_paths.append(value)
+                        case "nbthread" | "maxsslconn" | "ulimit_n":
+                            tuning[key] = value
+                        case _ if key.startswith("tune_"):
+                            # All tune.* directives go into tuning dict
+                            tune_key = self._convert_tune_key(key)
+                            tuning[tune_key] = value
             elif isinstance(item, LogTarget):
                 log_targets.append(item)
             elif isinstance(item, list) and all(isinstance(x, LuaScript) for x in item):
@@ -667,150 +374,22 @@ class DSLTransformer(Transformer):
             elif isinstance(item, StatsSocket):
                 stats_sockets.append(item)
 
+        # Build GlobalConfig using config dict for simple keys and local vars for collections
         return GlobalConfig(
-            # Process management
-            daemon=daemon,
-            user=user,
-            group=group,
-            uid=uid,
-            gid=gid,
-            chroot=chroot,
-            pidfile=pidfile,
-            nbproc=nbproc,
-            nbthread=nbthread,  # Phase 10
-            thread_groups=thread_groups,  # Phase 10
-            master_worker=master_worker,
-            mworker_max_reloads=mworker_max_reloads,
-            node=node,
-            description=description,
-            hard_stop_after=hard_stop_after,
-            external_check=external_check,
-            numa_cpu_mapping=numa_cpu_mapping,  # Phase 10
-            # Connection limits
-            maxconn=maxconn,
-            maxconnrate=maxconnrate,
-            maxsslrate=maxsslrate,
-            maxsessrate=maxsessrate,
-            maxpipes=maxpipes,
-            # Resource limits (Phase 10 Batch 2)
-            fd_hard_limit=fd_hard_limit,
-            maxzlibmem=maxzlibmem,
-            strict_limits=strict_limits,
-            # SSL/TLS paths
-            ca_base=ca_base,
-            crt_base=crt_base,
-            key_base=key_base,
-            # SSL/TLS configuration
-            ssl_dh_param_file=ssl_dh_param_file,
-            ssl_default_bind_ciphers=ssl_default_bind_ciphers,
-            ssl_default_bind_options=ssl_default_bind_options,
-            ssl_default_bind_ciphersuites=ssl_default_bind_ciphersuites,
-            ssl_default_server_ciphers=ssl_default_server_ciphers,
-            ssl_default_server_ciphersuites=ssl_default_server_ciphersuites,
-            ssl_default_server_options=ssl_default_server_options,
-            ssl_server_verify=ssl_server_verify,
-            ssl_engine=ssl_engine,
-            # SSL/TLS Advanced Configuration (Phase 13 Batch 4)
-            ssl_default_bind_curves=ssl_default_bind_curves,
-            ssl_default_bind_sigalgs=ssl_default_bind_sigalgs,
-            ssl_default_bind_client_sigalgs=ssl_default_bind_client_sigalgs,
-            ssl_default_server_curves=ssl_default_server_curves,
-            ssl_default_server_sigalgs=ssl_default_server_sigalgs,
-            ssl_default_server_client_sigalgs=ssl_default_server_client_sigalgs,
-            ssl_security_level=ssl_security_level,
-            # Logging configuration
-            log_tag=log_tag,
-            log_send_hostname=log_send_hostname,
+            # Simple config values from dict (use config[k] since we filter for k in config)
+            **{k: config[k] for k in self._GLOBAL_SIMPLE_KEYS if k in config},
+            # Collection types
             log_targets=log_targets,
-            # Environment variables
             env_vars=env_vars,
             reset_env_vars=reset_env_vars,
             unset_env_vars=unset_env_vars,
-            # System configuration (Phase 3)
-            setcap=setcap,
-            set_dumpable=set_dumpable,
-            unix_bind=unix_bind,
             cpu_map=cpu_map,
-            # Performance & Runtime (Phase 4A)
-            busy_polling=busy_polling,
-            max_spread_checks=max_spread_checks,
-            spread_checks=spread_checks,
-            maxcompcpuusage=maxcompcpuusage,
-            maxcomprate=maxcomprate,
-            default_path=default_path,
-            # Server State Management (Phase 10 Batch 3)
-            server_state_base=server_state_base,
-            server_state_file=server_state_file,
-            load_server_state_from_file=load_server_state_from_file,
-            # HTTP Client Configuration (Phase 4B Part 1)
-            httpclient_resolvers_disabled=httpclient_resolvers_disabled,
-            httpclient_resolvers_id=httpclient_resolvers_id,
-            httpclient_resolvers_prefer=httpclient_resolvers_prefer,
-            httpclient_retries=httpclient_retries,
-            httpclient_ssl_verify=httpclient_ssl_verify,
-            httpclient_ssl_ca_file=httpclient_ssl_ca_file,
-            httpclient_timeout_connect=httpclient_timeout_connect,  # Phase 12 Batch 3
-            # Platform-Specific Options (Phase 4B Part 1)
-            noepoll=noepoll,
-            nokqueue=nokqueue,
-            nopoll=nopoll,
-            nosplice=nosplice,
-            nogetaddrinfo=nogetaddrinfo,
-            noreuseport=noreuseport,
-            noevports=noevports,  # Phase 12 Batch 6
-            noktls=noktls,  # Phase 12 Batch 6
-            no_memory_trimming=no_memory_trimming,  # Phase 12 Batch 6
-            limited_quic=limited_quic,
-            localpeer=localpeer,
-            # SSL Advanced (Phase 4B Part 2)
-            ssl_load_extra_files=ssl_load_extra_files,
-            ssl_load_extra_del_ext=ssl_load_extra_del_ext,
-            ssl_mode_async=ssl_mode_async,
-            ssl_propquery=ssl_propquery,
-            ssl_provider=ssl_provider,
-            ssl_provider_path=ssl_provider_path,
-            issuers_chain_path=issuers_chain_path,
-            # Profiling & Debugging (Phase 4B Part 2)
-            profiling_tasks_on=profiling_tasks_on,
-            profiling_tasks_automatic=profiling_tasks_automatic,
-            profiling_memory_on=profiling_memory_on,
-            profiling_memory=profiling_memory,  # Phase 12 Batch 6
-            profiling_tasks=profiling_tasks,  # Phase 12 Batch 6
-            # Debugging & Development (Phase 7)
-            quiet=quiet,
-            debug_counters=debug_counters,
-            anonkey=anonkey,
-            zero_warning=zero_warning,
-            warn_blocked_traffic_after=warn_blocked_traffic_after,
-            force_cfg_parser_pause=force_cfg_parser_pause,
-            # Device Detection - DeviceAtlas (Phase 4B Part 4)
-            deviceatlas_json_file=deviceatlas_json_file,
-            deviceatlas_log_level=deviceatlas_log_level,
-            deviceatlas_separator=deviceatlas_separator,
-            deviceatlas_properties_cookie=deviceatlas_properties_cookie,
-            # Device Detection - 51Degrees (Phase 4B Part 4)
-            fiftyone_degrees_data_file=fiftyone_degrees_data_file,
-            fiftyone_degrees_property_name_list=fiftyone_degrees_property_name_list,
-            fiftyone_degrees_property_separator=fiftyone_degrees_property_separator,
-            fiftyone_degrees_cache_size=fiftyone_degrees_cache_size,
-            # Device Detection - WURFL (Phase 4B Part 4)
-            wurfl_data_file=wurfl_data_file,
-            wurfl_information_list=wurfl_information_list,
-            wurfl_information_list_separator=wurfl_information_list_separator,
-            wurfl_patch_file=wurfl_patch_file,
-            wurfl_cache_size=wurfl_cache_size,
-            wurfl_engine_mode=wurfl_engine_mode,
-            wurfl_useragent_priority=wurfl_useragent_priority,
-            # Lua scripts
             lua_scripts=lua_scripts,
-            # Lua global directives (Phase 13 Batch 3)
             lua_load_files=lua_load_files,
             lua_load_per_thread_files=lua_load_per_thread_files,
             lua_prepend_paths=lua_prepend_paths,
-            # Stats
             stats=stats,
             stats_sockets=stats_sockets,
-            # Performance tuning
             tuning=tuning,
         )
 
