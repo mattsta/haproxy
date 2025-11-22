@@ -1161,3 +1161,88 @@ config test {
         output = codegen.generate(ir)
 
         assert "http-check expect status 302" in output
+
+    def test_stats_with_refresh(self, parser, codegen):
+        """Test stats configuration with refresh."""
+        dsl_source = """
+config test {
+  frontend web {
+    bind *:80
+    stats {
+      enable: true
+      uri: "/haproxy-stats"
+      auth: "admin:secret"
+      refresh: 10s
+    }
+    default_backend: servers
+  }
+
+  backend servers {
+    servers {
+      server s1 { address: "10.0.1.1", port: 8080 }
+    }
+  }
+}
+"""
+        ir = parser.parse(dsl_source)
+        output = codegen.generate(ir)
+
+        assert "stats enable" in output
+        assert "stats uri /haproxy-stats" in output
+        assert "stats auth admin:secret" in output
+        assert "stats refresh 10s" in output
+
+    def test_server_with_backup_flag(self, parser, codegen):
+        """Test server with backup flag."""
+        dsl_source = """
+config test {
+  backend api {
+    servers {
+      server primary { address: "10.0.1.1", port: 8080, check: true }
+      server backup { address: "10.0.1.2", port: 8080, check: true, backup: true }
+    }
+  }
+}
+"""
+        ir = parser.parse(dsl_source)
+        output = codegen.generate(ir)
+
+        assert "server primary 10.0.1.1:8080 check" in output
+        assert "server backup 10.0.1.2:8080 check" in output
+        assert "backup" in output
+
+    def test_server_with_ssl_options(self, parser, codegen):
+        """Test server with SSL configuration."""
+        dsl_source = """
+config test {
+  backend api {
+    servers {
+      server secure { address: "api.example.com", port: 443, ssl: true, verify: "required" }
+    }
+  }
+}
+"""
+        ir = parser.parse(dsl_source)
+        output = codegen.generate(ir)
+
+        assert "ssl verify required" in output
+
+    def test_compression_configuration(self, parser, codegen):
+        """Test backend compression configuration."""
+        dsl_source = """
+config test {
+  backend api {
+    compression {
+      algo: "gzip"
+      type: ["text/html", "text/plain", "application/json"]
+    }
+    servers {
+      server s1 { address: "10.0.1.1", port: 8080 }
+    }
+  }
+}
+"""
+        ir = parser.parse(dsl_source)
+        output = codegen.generate(ir)
+
+        assert "compression algo gzip" in output
