@@ -1514,69 +1514,70 @@ class DSLTransformer(Transformer):
         for item in items:
             if isinstance(item, tuple):
                 key, value = item
-                if key == "mode":
-                    mode = Mode(value)
-                elif key == "retries":
-                    retries = value
-                elif key == "log":
-                    log = value
-                elif key == "option":
-                    if isinstance(value, list):
-                        options.extend(value)
-                    else:
-                        options.append(value)
-                elif key == "clitcpka_cnt":
-                    clitcpka_cnt = value
-                elif key == "clitcpka_idle":
-                    clitcpka_idle = value
-                elif key == "clitcpka_intvl":
-                    clitcpka_intvl = value
-                elif key == "srvtcpka_cnt":
-                    srvtcpka_cnt = value
-                elif key == "srvtcpka_idle":
-                    srvtcpka_idle = value
-                elif key == "srvtcpka_intvl":
-                    srvtcpka_intvl = value
-                elif key == "persist_rdp_cookie":
-                    persist_rdp_cookie = value  # Empty string means use default "msts"
-                elif key == "rate_limit_sessions":
-                    rate_limit_sessions = value
-                elif key == "errorloc":
-                    code, url = value
-                    errorloc[code] = url
-                elif key == "errorloc302":
-                    code, url = value
-                    errorloc302[code] = url
-                elif key == "errorloc303":
-                    code, url = value
-                    errorloc303[code] = url
-                elif key == "error_log_format":
-                    error_log_format = value
-                elif key == "log_steps":
-                    log_steps = value
-                elif key == "timeout":
-                    for timeout_key, timeout_value in value.items():
-                        match timeout_key:
-                            case "connect":
-                                timeout_connect = timeout_value
-                            case "client":
-                                timeout_client = timeout_value
-                            case "server":
-                                timeout_server = timeout_value
-                            case "check":
-                                timeout_check = timeout_value
-                            case "http_request":
-                                timeout_http_request = timeout_value
-                            case "http_keep_alive":
-                                timeout_http_keep_alive = timeout_value
-                            case "tunnel":
-                                timeout_tunnel = timeout_value
-                            case "client_fin":
-                                timeout_client_fin = timeout_value
-                            case "server_fin":
-                                timeout_server_fin = timeout_value
-                            case "tarpit":
-                                timeout_tarpit = timeout_value
+                match key:
+                    case "mode":
+                        mode = Mode(value)
+                    case "retries":
+                        retries = value
+                    case "log":
+                        log = value
+                    case "option":
+                        if isinstance(value, list):
+                            options.extend(value)
+                        else:
+                            options.append(value)
+                    case "clitcpka_cnt":
+                        clitcpka_cnt = value
+                    case "clitcpka_idle":
+                        clitcpka_idle = value
+                    case "clitcpka_intvl":
+                        clitcpka_intvl = value
+                    case "srvtcpka_cnt":
+                        srvtcpka_cnt = value
+                    case "srvtcpka_idle":
+                        srvtcpka_idle = value
+                    case "srvtcpka_intvl":
+                        srvtcpka_intvl = value
+                    case "persist_rdp_cookie":
+                        persist_rdp_cookie = value  # Empty string means use default "msts"
+                    case "rate_limit_sessions":
+                        rate_limit_sessions = value
+                    case "errorloc":
+                        code, url = value
+                        errorloc[code] = url
+                    case "errorloc302":
+                        code, url = value
+                        errorloc302[code] = url
+                    case "errorloc303":
+                        code, url = value
+                        errorloc303[code] = url
+                    case "error_log_format":
+                        error_log_format = value
+                    case "log_steps":
+                        log_steps = value
+                    case "timeout":
+                        for timeout_key, timeout_value in value.items():
+                            match timeout_key:
+                                case "connect":
+                                    timeout_connect = timeout_value
+                                case "client":
+                                    timeout_client = timeout_value
+                                case "server":
+                                    timeout_server = timeout_value
+                                case "check":
+                                    timeout_check = timeout_value
+                                case "http_request":
+                                    timeout_http_request = timeout_value
+                                case "http_keep_alive":
+                                    timeout_http_keep_alive = timeout_value
+                                case "tunnel":
+                                    timeout_tunnel = timeout_value
+                                case "client_fin":
+                                    timeout_client_fin = timeout_value
+                                case "server_fin":
+                                    timeout_server_fin = timeout_value
+                                case "tarpit":
+                                    timeout_tarpit = timeout_value
             elif isinstance(item, EmailAlert):
                 email_alert = item
             elif isinstance(item, list) and all(isinstance(r, QuicInitialRule) for r in item):
@@ -1790,83 +1791,88 @@ class DSLTransformer(Transformer):
                             default_backend = value
             elif isinstance(prop, tuple):
                 key, value = prop
-                if key == "mode":
-                    mode = Mode(value)
-                elif key == "description":
-                    description = value
-                elif key == "disabled":
-                    disabled = value
-                elif key == "enabled":
-                    enabled = value
-                elif key == "id":
-                    id = value
-                elif key == "guid":
-                    guid = value
-                elif key == "default_backend":
-                    default_backend = value
-                elif key == "option":
-                    if isinstance(value, list):
-                        options.extend(value)
-                    else:
-                        options.append(value)
-                elif key == "timeout_client":
-                    timeout_client = value
-                elif key == "timeout_http_request":
-                    timeout_http_request = value
-                elif key == "timeout_http_keep_alive":
-                    timeout_http_keep_alive = value
-                elif key == "timeout_client_fin":
-                    timeout_client_fin = value
-                elif key == "timeout_tarpit":
-                    timeout_tarpit = value
-                elif key == "monitor_uri":
-                    monitor_uri = value
-                elif key == "monitor_net":
-                    monitor_net.append(value)
-                elif key == "maxconn":
-                    maxconn = value
-                elif key == "backlog":
-                    backlog = value
-                elif key == "fullconn":
-                    fullconn = value
-                elif key == "max_keep_alive_queue":
-                    max_keep_alive_queue = value
-                elif key == "log":
-                    log.append(value)
-                elif key == "log_tag":
-                    log_tag = value
-                elif key == "log_format":
-                    log_format = value
-                elif key == "error_log_format":
-                    error_log_format = value
-                elif key == "log_format_sd":
-                    log_format_sd = value
-                elif key == "log_steps":
-                    log_steps = value
-                elif key == "unique_id_format":
-                    unique_id_format = value
-                elif key == "unique_id_header":
-                    unique_id_header = value
-                elif key == "capture_request_header":
-                    capture_request_headers.append(value)
-                elif key == "capture_response_header":
-                    capture_response_headers.append(value)
-                elif key == "errorloc":
-                    errorloc.update(value)
-                elif key == "errorloc302":
-                    errorloc302.update(value)
-                elif key == "errorloc303":
-                    errorloc303.update(value)
-                elif key == "filters":
-                    filters = value
-                elif key == "clitcpka_cnt":
-                    clitcpka_cnt = value
-                elif key == "clitcpka_idle":
-                    clitcpka_idle = value
-                elif key == "clitcpka_intvl":
-                    clitcpka_intvl = value
-                elif key == "rate_limit_sessions":
-                    rate_limit_sessions = value
+                match key:
+                    # Mode requires conversion
+                    case "mode":
+                        mode = Mode(value)
+                    # Simple scalar assignments
+                    case "description":
+                        description = value
+                    case "disabled":
+                        disabled = value
+                    case "enabled":
+                        enabled = value
+                    case "id":
+                        id = value
+                    case "guid":
+                        guid = value
+                    case "default_backend":
+                        default_backend = value
+                    case "timeout_client":
+                        timeout_client = value
+                    case "timeout_http_request":
+                        timeout_http_request = value
+                    case "timeout_http_keep_alive":
+                        timeout_http_keep_alive = value
+                    case "timeout_client_fin":
+                        timeout_client_fin = value
+                    case "timeout_tarpit":
+                        timeout_tarpit = value
+                    case "monitor_uri":
+                        monitor_uri = value
+                    case "maxconn":
+                        maxconn = value
+                    case "backlog":
+                        backlog = value
+                    case "fullconn":
+                        fullconn = value
+                    case "max_keep_alive_queue":
+                        max_keep_alive_queue = value
+                    case "log_tag":
+                        log_tag = value
+                    case "log_format":
+                        log_format = value
+                    case "error_log_format":
+                        error_log_format = value
+                    case "log_format_sd":
+                        log_format_sd = value
+                    case "log_steps":
+                        log_steps = value
+                    case "unique_id_format":
+                        unique_id_format = value
+                    case "unique_id_header":
+                        unique_id_header = value
+                    case "filters":
+                        filters = value
+                    case "clitcpka_cnt":
+                        clitcpka_cnt = value
+                    case "clitcpka_idle":
+                        clitcpka_idle = value
+                    case "clitcpka_intvl":
+                        clitcpka_intvl = value
+                    case "rate_limit_sessions":
+                        rate_limit_sessions = value
+                    # List operations
+                    case "option":
+                        if isinstance(value, list):
+                            options.extend(value)
+                        else:
+                            options.append(value)
+                    case "monitor_net":
+                        monitor_net.append(value)
+                    case "log":
+                        log.append(value)
+                    case "capture_request_header":
+                        capture_request_headers.append(value)
+                    case "capture_response_header":
+                        capture_response_headers.append(value)
+                    # Dict updates
+                    case "errorloc":
+                        errorloc.update(value)
+                    case "errorloc302":
+                        errorloc302.update(value)
+                    case "errorloc303":
+                        errorloc303.update(value)
 
         return Frontend(
             name=name,
