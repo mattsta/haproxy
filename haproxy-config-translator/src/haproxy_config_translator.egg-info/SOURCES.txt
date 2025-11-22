@@ -29,6 +29,7 @@ src/haproxy_translator/transformers/variable_resolver.py
 src/haproxy_translator/utils/__init__.py
 src/haproxy_translator/utils/errors.py
 src/haproxy_translator/validators/__init__.py
+src/haproxy_translator/validators/security.py
 src/haproxy_translator/validators/semantic.py
 tests/test_advanced_checks.py
 tests/test_advanced_features_coverage.py

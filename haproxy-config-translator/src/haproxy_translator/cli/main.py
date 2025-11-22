@@ -2,6 +2,7 @@
 
 import sys
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 import click
 from rich.console import Console
@@ -13,6 +14,9 @@ from ..codegen.haproxy import HAProxyCodeGenerator
 from ..lua.manager import LuaManager
 from ..parsers import ParserRegistry
 from ..utils.errors import TranslatorError
+
+if TYPE_CHECKING:
+    from ..validators.security import SecurityReport
 
 console = Console()
 
@@ -41,6 +45,7 @@ console = Console()
 )
 @click.option("--list-formats", is_flag=True, help="List available input formats")
 @click.option("-v", "--verbose", is_flag=True, help="Verbose output")
+@click.option("--security-check", is_flag=True, help="Run security validation and show report")
 @click.version_option(version=__version__, prog_name="haproxy-translate")
 def cli(
     config_file: Path,
@@ -52,6 +57,7 @@ def cli(
     lua_dir: Path | None,
     list_formats: bool,
     verbose: bool,
+    security_check: bool,
 ) -> None:
     """
     HAProxy Configuration Translator.
@@ -72,7 +78,7 @@ def cli(
         if watch:
             _watch_mode(config_file, output, format, lua_dir, verbose)
         else:
-            _translate_once(config_file, output, format, validate, debug, lua_dir, verbose)
+            _translate_once(config_file, output, format, validate, debug, lua_dir, verbose, security_check)
 
     except TranslatorError as e:
         console.print(f"[bold red]Error:[/bold red] {e}")
@@ -95,6 +101,7 @@ def _translate_once(
     debug: bool,
     lua_dir: Path | None,
     verbose: bool,
+    security_check: bool = False,
 ) -> None:
     """Translate configuration once."""
     if verbose:
@@ -131,6 +138,19 @@ def _translate_once(
         console.print(f"  Backends: {[b.name for b in ir.backends]}")
         console.print(f"  Variables: {list(ir.variables.keys())}")
         console.print(f"  Templates: {list(ir.templates.keys())}")
+
+    # Run security validation if requested
+    if security_check:
+        from ..validators.security import SecurityValidator
+
+        with console.status("[bold green]Running security checks...", spinner="dots"):
+            security_validator = SecurityValidator(ir)
+            report = security_validator.validate()
+
+        _display_security_report(report)
+
+        if not report.passed:
+            sys.exit(2)  # Exit with code 2 for security issues
 
     if validate:
         console.print("[bold green]✓[/bold green] Configuration is valid")
@@ -236,6 +256,64 @@ def _watch_mode(
         console.print("\n[dim]Stopping watcher...[/dim]")
         observer.stop()
         observer.join()
+
+
+def _display_security_report(report: "SecurityReport") -> None:
+    """Display security validation report."""
+    from rich.table import Table
+
+    from ..validators.security import SecurityLevel
+
+    # Define colors for each level
+    level_colors = {
+        SecurityLevel.CRITICAL: "bold red",
+        SecurityLevel.HIGH: "red",
+        SecurityLevel.MEDIUM: "yellow",
+        SecurityLevel.LOW: "cyan",
+        SecurityLevel.INFO: "dim",
+    }
+
+    if not report.issues:
+        console.print("\n[bold green]Security Check Passed[/bold green]")
+        console.print("[dim]No security issues found.[/dim]\n")
+        return
+
+    # Count issues by level
+    counts: dict[SecurityLevel, int] = {}
+    for issue in report.issues:
+        counts[issue.level] = counts.get(issue.level, 0) + 1
+
+    # Print summary
+    console.print("\n[bold]Security Check Report[/bold]")
+    summary_parts = []
+    for level in [SecurityLevel.CRITICAL, SecurityLevel.HIGH, SecurityLevel.MEDIUM, SecurityLevel.LOW, SecurityLevel.INFO]:
+        if level in counts:
+            color = level_colors[level]
+            summary_parts.append(f"[{color}]{level.value}: {counts[level]}[/{color}]")
+    console.print("  " + " | ".join(summary_parts))
+
+    # Create detailed table
+    table = Table(show_header=True, header_style="bold")
+    table.add_column("Level", width=10)
+    table.add_column("Location", width=30)
+    table.add_column("Issue", width=40)
+    table.add_column("Recommendation", width=40)
+
+    for issue in sorted(report.issues, key=lambda x: list(SecurityLevel).index(x.level)):
+        color = level_colors[issue.level]
+        table.add_row(
+            f"[{color}]{issue.level.value}[/{color}]",
+            issue.location,
+            issue.message,
+            issue.recommendation,
+        )
+
+    console.print(table)
+
+    if report.passed:
+        console.print("\n[bold green]Security Check Passed[/bold green] (warnings only)\n")
+    else:
+        console.print("\n[bold red]Security Check Failed[/bold red] (critical/high issues found)\n")
 
 
 def _list_formats() -> None:

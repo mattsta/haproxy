@@ -111,6 +111,7 @@ ignore = [
 "src/haproxy_translator/cli/main.py" = [
     "PLR0912",  # CLI functions can have many branches
     "PLR0913",  # CLI functions can have many arguments
+    "PLR0915",  # CLI functions can have many statements
     "PLC0415",  # Lazy imports for watchdog (optional dependency) and time
 ]
 "src/haproxy_translator/codegen/haproxy.py" = [
@@ -124,6 +125,9 @@ ignore = [
 ]
 "src/haproxy_translator/lua/manager.py" = [
     "PLC0415",  # Lazy import for re module in sanitize function
+]
+"src/haproxy_translator/validators/security.py" = [
+    "PLC0415",  # Lazy imports for runtime type checking
 ]
 
 [tool.ruff.lint.isort]
