@@ -1246,3 +1246,31 @@ config test {
         output = codegen.generate(ir)
 
         assert "compression algo gzip" in output
+
+    def test_listen_section_with_stats(self, parser, codegen):
+        """Test listen section with stats configuration."""
+        dsl_source = """
+config test {
+  listen stats_page {
+    bind *:8404
+    mode: http
+    stats {
+      enable: true
+      uri: "/stats"
+      realm: "HAProxy Statistics"
+      auth: "admin:password"
+      refresh: 10s
+    }
+  }
+}
+"""
+        ir = parser.parse(dsl_source)
+        output = codegen.generate(ir)
+
+        assert "listen stats_page" in output
+        assert "bind *:8404" in output
+        assert "stats enable" in output
+        assert "stats uri /stats" in output
+        assert "stats realm HAProxy Statistics" in output
+        assert "stats auth admin:password" in output
+        assert "stats refresh 10s" in output

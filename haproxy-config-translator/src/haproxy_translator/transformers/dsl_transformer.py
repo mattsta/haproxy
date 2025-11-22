@@ -4088,6 +4088,7 @@ class DSLTransformer(Transformer):
         ignore_persist_rules = []
         rate_limit_sessions = None
         persist_rdp_cookie = None
+        stats = None
 
         for prop in properties:
             if isinstance(prop, Bind):
@@ -4126,6 +4127,8 @@ class DSLTransformer(Transformer):
                 server_loops.append(prop)
             elif isinstance(prop, HealthCheck):
                 health_check = prop
+            elif isinstance(prop, StatsConfig):
+                stats = prop
             elif isinstance(prop, HttpError):
                 http_errors.append(prop)
             elif isinstance(prop, EmailAlert):
@@ -4244,6 +4247,7 @@ class DSLTransformer(Transformer):
             ignore_persist_rules=ignore_persist_rules,
             rate_limit_sessions=rate_limit_sessions,
             persist_rdp_cookie=persist_rdp_cookie,
+            stats=stats,
             metadata=metadata,
         )
 
@@ -4281,6 +4285,10 @@ class DSLTransformer(Transformer):
 
     def listen_health_check(self, items: list[Any]) -> HealthCheck:
         return cast("HealthCheck", items[0])
+
+    def listen_stats(self, items: list[Any]) -> StatsConfig:
+        """Transform stats block in listen section."""
+        return cast("StatsConfig", items[0])
 
     def listen_timeout_client(self, items: list[Any]) -> tuple[str, str]:
         return ("timeout_client", str(items[0]))

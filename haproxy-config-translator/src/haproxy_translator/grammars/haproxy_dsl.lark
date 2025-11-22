@@ -975,6 +975,7 @@ listen_section: "listen" identifier "{" listen_property* "}"
                 | "option" ":" string_or_array             -> listen_option
                 | servers_block                            -> listen_servers
                 | health_check_block                       -> listen_health_check
+                | stats_block                              -> listen_stats
                 | "timeout_client" ":" duration            -> listen_timeout_client
                 | "timeout_server" ":" duration            -> listen_timeout_server
                 | "timeout_connect" ":" duration           -> listen_timeout_connect

@@ -981,6 +981,7 @@ class Listen(IRNode):
     srvtcpka_idle: str | None = None  # Time before sending server keepalive probes
     srvtcpka_intvl: str | None = None  # Interval between server keepalive probes
     persist_rdp_cookie: str | None = None  # RDP cookie name for persistence (None = default "msts")
+    stats: Optional["StatsConfig"] = None  # Stats configuration for listen section
 
 
 # DSL-specific IR nodes (for advanced features)

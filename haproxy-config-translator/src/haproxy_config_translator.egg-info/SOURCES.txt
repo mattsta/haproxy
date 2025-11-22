@@ -42,6 +42,7 @@ tests/test_declare_capture.py
 tests/test_description.py
 tests/test_disabled_enabled_id.py
 tests/test_dispatch.py
+tests/test_documentation_examples.py
 tests/test_email_alert.py
 tests/test_error_log_format.py
 tests/test_errorfiles.py

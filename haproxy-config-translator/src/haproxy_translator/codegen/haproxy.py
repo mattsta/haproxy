@@ -1277,6 +1277,28 @@ class HAProxyCodeGenerator:
             for line in self._format_ignore_persist_rules(listen.ignore_persist_rules):
                 lines.append(self._indent(line))
 
+        # Stats configuration
+        if listen.stats:
+            stats = listen.stats
+            if stats.enable:
+                lines.append(self._indent("stats enable"))
+            if stats.uri:
+                lines.append(self._indent(f"stats uri {stats.uri}"))
+            if stats.realm:
+                lines.append(self._indent(f"stats realm {stats.realm}"))
+            for auth in stats.auth:
+                lines.append(self._indent(f"stats auth {auth}"))
+            if stats.hide_version:
+                lines.append(self._indent("stats hide-version"))
+            if stats.refresh:
+                lines.append(self._indent(f"stats refresh {stats.refresh}"))
+            if stats.show_legends:
+                lines.append(self._indent("stats show-legends"))
+            if stats.show_desc:
+                lines.append(self._indent(f"stats show-desc {stats.show_desc}"))
+            for admin_rule in stats.admin_rules:
+                lines.append(self._indent(f"stats admin {admin_rule}"))
+
         # Servers
         for server in listen.servers:
             lines.append(self._indent(self._format_server(server)))
