@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "haproxy-config-translator"
-version = "0.4.0"
+version = "0.5.0"
 description = "Modern, powerful configuration translator for HAProxy with pluggable parsers"
 readme = "README.md"
 requires-python = ">=3.14"
@@ -13,7 +13,7 @@ authors = [
     {name = "HAProxy Config Team"}
 ]
 classifiers = [
-    "Development Status :: 3 - Alpha",
+    "Development Status :: 4 - Beta",
     "Intended Audience :: System Administrators",
     "Intended Audience :: Developers",
     "License :: OSI Approved :: MIT License",
@@ -48,9 +48,9 @@ hcl = [
 haproxy-translate = "haproxy_translator.cli.main:cli"
 
 [project.urls]
-Homepage = "https://github.com/haproxy/config-translator"
-Documentation = "https://haproxy-config-translator.readthedocs.io"
-Repository = "https://github.com/haproxy/config-translator"
+Homepage = "https://github.com/mattsta/haproxy-config-translator"
+Documentation = "https://github.com/mattsta/haproxy-config-translator#readme"
+Repository = "https://github.com/mattsta/haproxy-config-translator"
 
 [tool.setuptools.packages.find]
 where = ["src"]

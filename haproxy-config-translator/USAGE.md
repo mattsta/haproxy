@@ -18,31 +18,31 @@ This comprehensive guide covers all aspects of using the HAProxy Configuration T
 
 ### Prerequisites
 
-- Python 3.9 or later
-- `uv` package manager (recommended) or `pip`
+- Python 3.14 or later
+- `uv` package manager
 
 ### Install from Source
 
 ```bash
+# Install uv (if not already installed)
+pip install uv -U
+
 # Clone the repository
-git clone https://github.com/haproxy/config-translator
-cd config-translator/haproxy-config-translator
+git clone https://github.com/mattsta/haproxy-config-translator.git
+cd haproxy-config-translator
 
-# Using uv (recommended)
-uv pip install -e .
-
-# Or using pip
-pip install -e .
+# Sync dependencies
+uv sync
 ```
 
 ### Development Installation
 
 ```bash
 # Install with development dependencies
-uv pip install -e ".[dev]"
+uv sync --dev
 
 # Verify installation
-haproxy-translate --version
+uv run haproxy-translate --version
 ```
 
 ---
@@ -54,25 +54,31 @@ haproxy-translate --version
 **Translate to stdout:**
 
 ```bash
-haproxy-translate config.hap
+uv run haproxy-translate config.hap
 ```
 
 **Translate to file:**
 
 ```bash
-haproxy-translate config.hap -o /etc/haproxy/haproxy.cfg
+uv run haproxy-translate config.hap -o /etc/haproxy/haproxy.cfg
 ```
 
 **Validate only (no output):**
 
 ```bash
-haproxy-translate config.hap --validate
+uv run haproxy-translate config.hap --validate
+```
+
+**Security validation:**
+
+```bash
+uv run haproxy-translate config.hap --security-check
 ```
 
 **Watch mode (auto-regenerate on changes):**
 
 ```bash
-haproxy-translate config.hap -o haproxy.cfg --watch
+uv run haproxy-translate config.hap -o haproxy.cfg --watch
 ```
 
 ### Debugging and Inspection
@@ -80,7 +86,7 @@ haproxy-translate config.hap -o haproxy.cfg --watch
 **Show IR debug information:**
 
 ```bash
-haproxy-translate config.hap --debug
+uv run haproxy-translate config.hap --debug
 ```
 
 Output includes:
@@ -94,7 +100,7 @@ Output includes:
 **Verbose output:**
 
 ```bash
-haproxy-translate config.hap -o haproxy.cfg --verbose
+uv run haproxy-translate config.hap -o haproxy.cfg --verbose
 ```
 
 Shows:
@@ -110,19 +116,19 @@ Shows:
 **Auto-detect format (default):**
 
 ```bash
-haproxy-translate config.hap  # .hap → DSL parser
+uv run haproxy-translate config.hap  # .hap → DSL parser
 ```
 
 **Explicit format:**
 
 ```bash
-haproxy-translate config.txt --format dsl
+uv run haproxy-translate config.txt --format dsl
 ```
 
 **List available formats:**
 
 ```bash
-haproxy-translate --list-formats
+uv run haproxy-translate --list-formats
 ```
 
 ### Lua Script Options
@@ -130,7 +136,7 @@ haproxy-translate --list-formats
 **Custom Lua output directory:**
 
 ```bash
-haproxy-translate config.hap -o haproxy.cfg --lua-dir /etc/haproxy/lua
+uv run haproxy-translate config.hap -o haproxy.cfg --lua-dir /etc/haproxy/lua
 ```
 
 Default behavior:
@@ -1336,15 +1342,15 @@ Changes to `config.hap` will automatically regenerate `haproxy.cfg`.
 
 ## Next Steps
 
-- Review [FEATURES.md](FEATURES.md) for feature parity details
+- Review [FEATURE_PARITY_REPORT.md](FEATURE_PARITY_REPORT.md) for feature coverage details
 - Check [examples/](examples/) for more complex configurations
-- Read [PROJECT_PLAN.md](PROJECT_PLAN.md) for roadmap
-- Contribute at [GitHub](https://github.com/haproxy/config-translator)
+- See [DEVELOPMENT.md](DEVELOPMENT.md) for contribution guidelines
+- Contribute at [GitHub](https://github.com/mattsta/haproxy-config-translator)
 
 ---
 
 **Questions or Issues?**
 
-- Report bugs: https://github.com/haproxy/config-translator/issues
-- Discussions: https://github.com/haproxy/config-translator/discussions
+- Report bugs: https://github.com/mattsta/haproxy-config-translator/issues
+- Discussions: https://github.com/mattsta/haproxy-config-translator/discussions
 - HAProxy docs: https://docs.haproxy.org/

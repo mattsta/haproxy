@@ -110,7 +110,7 @@ let api_host = env("API_HOST", "localhost");
 pip install uv -U
 
 # Clone and install
-git clone https://github.com/your-org/haproxy-config-translator.git
+git clone https://github.com/mattsta/haproxy-config-translator.git
 cd haproxy-config-translator
 uv sync
 ```

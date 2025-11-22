@@ -1,6 +1,6 @@
 # HAProxy Config Translator - Feature Parity Report
 
-**Generated:** 2025-11-22 14:30:47
+**Generated:** 2025-11-22 21:03:43
 **HAProxy Version:** 3.3
 **Documentation Source:** `/home/user/haproxy/doc/configuration.txt`
 
@@ -30,11 +30,11 @@ configuration language and the haproxy-config-translator implementation.
 
 ### Test Coverage
 
-- **Total Test Files:** 109
+- **Total Test Files:** 124
 - **Global Directive Tests:** 10
 - **Proxy Tests:** 0
 - **Bind Option Tests:** 2
-- **Server Option Tests:** 8
+- **Server Option Tests:** 9
 - **Action Tests:** 3
 - **Parser Tests:** 1
 - **Codegen Tests:** 1

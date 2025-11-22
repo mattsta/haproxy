@@ -262,4 +262,4 @@ For more advanced patterns, see:
 
 - Check the [USAGE.md](../USAGE.md) guide
 - Read the [README.md](../README.md) for project overview
-- Report issues at https://github.com/haproxy/config-translator/issues
+- Report issues at https://github.com/mattsta/haproxy-config-translator/issues

@@ -5,15 +5,15 @@ Get up and running with the HAProxy Config Translator in 5 minutes.
 ## Installation
 
 ```bash
+# Install uv (if not already installed)
+pip install uv -U
+
 # Clone the repository
-git clone https://github.com/your-org/haproxy-config-translator.git
+git clone https://github.com/mattsta/haproxy-config-translator.git
 cd haproxy-config-translator
 
-# Install with uv (recommended)
+# Install dependencies
 uv sync
-
-# Or install with pip
-pip install -e .
 ```
 
 ## Your First Configuration
