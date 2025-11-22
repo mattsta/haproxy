@@ -917,3 +917,247 @@ config test {
         finally:
             # Clean up
             del os.environ["HAPROXY_TEST_API_HOST"]
+
+
+class TestCoverageGaps:
+    """Tests specifically for coverage gaps in template_expander.py and other modules."""
+
+    def test_health_check_template_with_post_method(self, parser, codegen):
+        """Test health check template with POST method property."""
+        dsl_source = """
+config test {
+  template custom_health {
+    method: "POST"
+    uri: "/health/deep"
+  }
+
+  backend api {
+    option: ["httpchk"]
+    health-check @custom_health
+    servers {
+      server s1 { address: "10.0.1.1", port: 8080, check: true }
+    }
+  }
+}
+"""
+        ir = parser.parse(dsl_source)
+        output = codegen.generate(ir)
+
+        assert "option httpchk" in output
+        assert "http-check send meth POST uri /health/deep" in output
+
+    def test_health_check_with_custom_uri(self, parser, codegen):
+        """Test health check with custom URI."""
+        dsl_source = """
+config test {
+  backend api {
+    option: ["httpchk"]
+    health-check {
+      method: "GET"
+      uri: "/api/v1/status"
+    }
+    servers {
+      server s1 { address: "10.0.1.1", port: 8080, check: true }
+    }
+  }
+}
+"""
+        ir = parser.parse(dsl_source)
+        output = codegen.generate(ir)
+
+        assert "option httpchk" in output
+        assert "/api/v1/status" in output
+
+    def test_backend_template_with_mode_tcp(self, parser, codegen):
+        """Test backend template with TCP mode (non-default)."""
+        dsl_source = """
+config test {
+  template tcp_backend {
+    mode: tcp
+    balance: leastconn
+    timeout_server: 60s
+    timeout_connect: 10s
+  }
+
+  backend db {
+    @tcp_backend
+    servers {
+      server db1 { address: "10.0.1.1", port: 5432, check: true }
+    }
+  }
+}
+"""
+        ir = parser.parse(dsl_source)
+        output = codegen.generate(ir)
+
+        assert "mode tcp" in output
+        assert "balance leastconn" in output
+
+    def test_backend_template_with_cookie(self, parser, codegen):
+        """Test backend template with cookie configuration."""
+        dsl_source = """
+config test {
+  template sticky_backend {
+    balance: roundrobin
+    cookie: "SERVERID insert indirect nocache"
+  }
+
+  backend web {
+    @sticky_backend
+    servers {
+      server web1 { address: "10.0.1.1", port: 8080, check: true }
+    }
+  }
+}
+"""
+        ir = parser.parse(dsl_source)
+        output = codegen.generate(ir)
+
+        assert "cookie SERVERID insert indirect nocache" in output
+
+    def test_backend_template_with_retries_and_maxconn(self, parser, codegen):
+        """Test backend template with numeric retries and maxconn."""
+        dsl_source = """
+config test {
+  template resilient_backend {
+    balance: roundrobin
+    retries: 5
+    maxconn: 2000
+  }
+
+  backend api {
+    @resilient_backend
+    servers {
+      server api1 { address: "10.0.1.1", port: 8080, check: true }
+    }
+  }
+}
+"""
+        ir = parser.parse(dsl_source)
+        output = codegen.generate(ir)
+
+        assert "retries 5" in output
+
+    def test_backend_template_with_log_tag(self, parser, codegen):
+        """Test backend template with log_tag."""
+        dsl_source = """
+config test {
+  template logging_backend {
+    balance: roundrobin
+    log_tag: "api_backend"
+  }
+
+  backend api {
+    @logging_backend
+    servers {
+      server api1 { address: "10.0.1.1", port: 8080 }
+    }
+  }
+}
+"""
+        ir = parser.parse(dsl_source)
+        output = codegen.generate(ir)
+
+        assert "log-tag api_backend" in output
+
+    def test_acl_template_with_flags(self, parser, codegen):
+        """Test ACL template with flags."""
+        dsl_source = """
+config test {
+  template case_insensitive_path {
+    criterion: "path_beg"
+    flags: ["-i"]
+    values: ["/api", "/admin"]
+  }
+
+  frontend web {
+    bind *:80
+    acl is_api @case_insensitive_path
+    default_backend: servers
+  }
+
+  backend servers {
+    servers {
+      server s1 { address: "10.0.1.1", port: 8080 }
+    }
+  }
+}
+"""
+        ir = parser.parse(dsl_source)
+        output = codegen.generate(ir)
+
+        assert "acl is_api" in output
+
+    def test_backend_explicit_overrides_template(self, parser, codegen):
+        """Test that explicit backend properties override template values."""
+        dsl_source = """
+config test {
+  template default_backend {
+    balance: roundrobin
+    retries: 3
+  }
+
+  backend api {
+    @default_backend
+    balance: leastconn  // Override template
+    retries: 5          // Override template
+    servers {
+      server api1 { address: "10.0.1.1", port: 8080, check: true }
+    }
+  }
+}
+"""
+        ir = parser.parse(dsl_source)
+        output = codegen.generate(ir)
+
+        # Should use explicit values, not template values
+        assert "balance leastconn" in output
+        assert "retries 5" in output
+
+    def test_health_check_with_interval(self, parser, codegen):
+        """Test health check with interval property."""
+        dsl_source = """
+config test {
+  template interval_health {
+    method: "GET"
+    uri: "/ping"
+    interval: 5s
+  }
+
+  backend api {
+    option: ["httpchk"]
+    health-check @interval_health
+    servers {
+      server s1 { address: "10.0.1.1", port: 8080, check: true }
+    }
+  }
+}
+"""
+        ir = parser.parse(dsl_source)
+        output = codegen.generate(ir)
+
+        assert "option httpchk" in output
+
+    def test_health_check_with_expect_status_non_default(self, parser, codegen):
+        """Test health check with non-default expect_status."""
+        dsl_source = """
+config test {
+  template redirect_health {
+    method: "GET"
+    uri: "/health"
+    expect_status: 302
+  }
+
+  backend api {
+    option: ["httpchk"]
+    health-check @redirect_health
+    servers {
+      server s1 { address: "10.0.1.1", port: 8080, check: true }
+    }
+  }
+}
+"""
+        ir = parser.parse(dsl_source)
+        output = codegen.generate(ir)
+
+        assert "http-check expect status 302" in output
