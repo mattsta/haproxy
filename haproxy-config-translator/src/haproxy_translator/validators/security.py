@@ -189,7 +189,7 @@ class SecurityValidator:
 
             # Check HTTP request rules for dangerous patterns
             for rule in frontend.http_request_rules:
-                if rule.action == "set-header" and rule.parameters:
+                if rule.action in ("set-header", "set_header") and rule.parameters:
                     header_name = rule.parameters.get("name", "").lower()
                     if header_name in ("authorization", "x-api-key", "cookie"):
                         self.report.add_issue(
@@ -208,25 +208,22 @@ class SecurityValidator:
 
             # Check server configurations
             for server in backend.servers:
-                # Check for hardcoded credentials in server string
-                server_str = str(server)
-                for pattern, secret_type in self.SECRET_PATTERNS:
-                    if pattern.search(server_str):
-                        self.report.add_issue(
-                            SecurityIssue(
-                                level=SecurityLevel.CRITICAL,
-                                message=f"Possible hardcoded {secret_type} in server configuration",
-                                location=f"{context}.server '{server.name}'",
-                                recommendation="Use environment variables or secrets management",
+                # Check for hardcoded credentials in server options
+                secret_keywords = {"password", "secret", "api_key", "apikey", "token", "auth"}
+                if server.options:
+                    for key in server.options:
+                        if key.lower() in secret_keywords:
+                            self.report.add_issue(
+                                SecurityIssue(
+                                    level=SecurityLevel.CRITICAL,
+                                    message=f"Possible hardcoded {key} in server configuration",
+                                    location=f"{context}.server '{server.name}'",
+                                    recommendation="Use environment variables or secrets management",
+                                )
                             )
-                        )
 
                 # Check SSL options
-                if (
-                    server.options
-                    and server.options.get("ssl")
-                    and not server.options.get("verify")
-                ):
+                if server.ssl and not server.ssl_verify:
                     self.report.add_issue(
                         SecurityIssue(
                             level=SecurityLevel.MEDIUM,
