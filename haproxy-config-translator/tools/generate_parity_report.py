@@ -167,6 +167,9 @@ class DirectiveExtractor:
     def extract_global_directives(self) -> tuple[dict[str, list[str]], list[str]]:
         """Extract all global directives, separating deprecated ones.
 
+        Dynamically finds the global section by searching for section markers
+        rather than using hardcoded line numbers.
+
         Returns:
             Tuple of (active_directives_by_category, deprecated_directives)
         """
@@ -183,22 +186,49 @@ class DirectiveExtractor:
         }
         deprecated: list[str] = []
 
+        # Find the global section dynamically
+        start_idx = None
+        end_idx = None
+
+        for i, line in enumerate(self.lines):
+            # Look for the start of the global keywords summary list
+            if 'keywords are supported in the "global" section' in line:
+                start_idx = i + 1
+            # End at the detailed section "3.1. Process management"
+            elif start_idx and re.match(r"^3\.1\.\s+Process management", line):
+                end_idx = i
+                break
+
+        if start_idx is None:
+            # Fallback: try to find "3. Global parameters"
+            for i, line in enumerate(self.lines):
+                if re.match(r"^3\.\s+Global parameters", line):
+                    start_idx = i
+                elif start_idx and re.match(r"^3\.1\.", line):
+                    end_idx = i
+                    break
+
+        if start_idx is None or end_idx is None:
+            return directives, deprecated
+
         current_category = None
 
-        for line in self.lines[1735:2014]:
-            if "Process management and security" in line:
+        for line in self.lines[start_idx:end_idx]:
+            # Detect category headers (e.g., "* Process management and security")
+            if re.match(r"^\s*\*\s*Process management", line):
                 current_category = "process_management"
                 continue
-            if "Performance tuning" in line:
+            if re.match(r"^\s*\*\s*Performance tuning", line):
                 current_category = "performance_tuning"
                 continue
-            if "Debugging" in line:
+            if re.match(r"^\s*\*\s*Debugging", line):
                 current_category = "debugging"
                 continue
-            if "HTTPClient" in line:
+            if re.match(r"^\s*\*\s*HTTPClient", line):
                 current_category = "httpclient"
                 continue
 
+            # Extract directive names (format: "   - directive-name")
             match = re.match(r"^\s+-\s+([a-zA-Z0-9._-]+)", line)
             if match and current_category:
                 directive = match.group(1)
