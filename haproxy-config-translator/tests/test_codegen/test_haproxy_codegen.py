@@ -830,5 +830,45 @@ class TestHAProxyCodeGenerator:
         assert "/etc/haproxy/lua/script2.lua" in lua_files
 
 
+class TestCodegenCoverageGaps:
+    """Tests specifically targeting uncovered codegen lines."""
+
+    @pytest.fixture
+    def codegen(self):
+        """Create code generator."""
+        return HAProxyCodeGenerator()
+
+    def test_global_nbthread_tuning(self, codegen):
+        """Test nbthread in global tuning section (line 237)."""
+        ir = ConfigIR(
+            name="test",
+            global_config=GlobalConfig(
+                tuning={"nbthread": 4},
+            ),
+        )
+        output = codegen.generate(ir)
+        assert "nbthread 4" in output
+
+    def test_stats_admin_rules(self, codegen):
+        """Test stats admin rules (line 798)."""
+        ir = ConfigIR(
+            name="test",
+            frontends=[
+                Frontend(
+                    name="stats_frontend",
+                    binds=[Bind(address="*:8404")],
+                    mode=Mode.HTTP,
+                    stats_config=StatsConfig(
+                        enable=True,
+                        uri="/stats",
+                        admin_rules=["if TRUE"],
+                    ),
+                ),
+            ],
+        )
+        output = codegen.generate(ir)
+        assert "stats admin if TRUE" in output
+
+
 if __name__ == "__main__":
     pytest.main([__file__, "-v"])
