@@ -152,17 +152,25 @@ bind *:443 ssl { cert: "/path/to/cert.pem" }
 ```
 
 ### Server Definitions
-Servers are defined inside a `servers { }` block:
+Servers support three syntax styles - choose based on complexity:
 
 ```javascript
 backend api {
   servers {
+    // 1. Full syntax - for complex server configs
     server api1 {
       address: "10.0.1.1"
       port: 8080
       check: true
       weight: 10
+      inter: 3s
     }
+
+    // 2. Compact syntax with commas - for moderate configs
+    server api2 { address: "10.0.1.2", port: 8080, check: true, weight: 10 }
+
+    // 3. Inline syntax - for simple servers
+    server api3 address: "10.0.1.3" port: 8080 check: true
   }
 }
 ```
@@ -220,6 +228,8 @@ config api_cluster {
 ### Key Features
 
 #### 1. **Templates** - Define Once, Use Everywhere
+
+**Server Templates** - Standardize server settings:
 ```javascript
 template production_server {
   check: true
@@ -231,6 +241,49 @@ template production_server {
 
 // Apply with @template_name
 server web1 { address: "10.0.1.1", port: 8080, @production_server }
+```
+
+**Backend Templates** - Share backend configurations:
+```javascript
+template api_backend {
+  balance: leastconn
+  option: ["httpchk GET /health", "forwardfor"]
+  retries: 3
+}
+
+backend api_v1 {
+  @api_backend  // Apply backend settings
+  servers {
+    server s1 { address: "10.0.1.1", port: 8080, check: true }
+  }
+}
+```
+
+**Health Check Templates** - Consistent health monitoring:
+```javascript
+template http_health {
+  method: "GET"
+  uri: "/health"
+  expect_status: 200
+}
+
+backend api {
+  health-check @http_health  // Apply health check settings
+  servers { ... }
+}
+```
+
+**ACL Templates** - Reusable security patterns:
+```javascript
+template internal_network {
+  criterion: "src"
+  values: ["10.0.0.0/8", "192.168.0.0/16"]
+}
+
+frontend web {
+  acl is_internal @internal_network  // Apply ACL pattern
+  http-request deny unless is_internal
+}
 ```
 
 #### 2. **Loops** - Generate Servers Dynamically

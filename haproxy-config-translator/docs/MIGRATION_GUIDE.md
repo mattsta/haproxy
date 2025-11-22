@@ -759,6 +759,8 @@ servers {
 ```
 
 ### 5. Use Templates for Repeated Settings
+
+**Server Templates** - For common server options:
 ```javascript
 config my_config {
   template server_defaults {
@@ -770,17 +772,83 @@ config my_config {
 
   backend api {
     servers {
-      server api1 {
-        address: "10.0.1.1"
-        port: 8080
-        @server_defaults
-      }
+      server api1 { address: "10.0.1.1", port: 8080, @server_defaults }
     }
   }
 }
 ```
 
-### 6. Validate Early and Often
+**Backend Templates** - For common backend configurations:
+```javascript
+config my_config {
+  template production_backend {
+    balance: leastconn
+    option: ["httpchk GET /health", "forwardfor"]
+    retries: 3
+  }
+
+  backend api_v1 {
+    @production_backend
+    servers {
+      server s1 { address: "10.0.1.1", port: 8080, check: true }
+    }
+  }
+}
+```
+
+**Health Check Templates** - For standardized health monitoring:
+```javascript
+config my_config {
+  template http_health {
+    method: "GET"
+    uri: "/health"
+    expect_status: 200
+  }
+
+  backend api {
+    option: ["httpchk"]
+    health-check @http_health
+    servers { ... }
+  }
+}
+```
+
+**ACL Templates** - For reusable access control patterns:
+```javascript
+config my_config {
+  template internal_network {
+    criterion: "src"
+    values: ["10.0.0.0/8", "192.168.0.0/16"]
+  }
+
+  frontend web {
+    acl is_internal @internal_network
+    http-request deny unless is_internal
+  }
+}
+```
+
+### 6. Compact Server Syntax
+
+Use comma-separated properties for cleaner configurations:
+
+```javascript
+// Instead of this (verbose):
+server api1 {
+  address: "10.0.1.1"
+  port: 8080
+  check: true
+  weight: 10
+}
+
+// Use this (compact):
+server api1 { address: "10.0.1.1", port: 8080, check: true, weight: 10 }
+
+// Or inline syntax (simplest):
+server api1 address: "10.0.1.1" port: 8080 check: true
+```
+
+### 7. Validate Early and Often
 ```bash
 uv run haproxy-translate config.hap --validate
 ```
