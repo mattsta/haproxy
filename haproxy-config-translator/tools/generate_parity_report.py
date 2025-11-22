@@ -916,20 +916,21 @@ def print_coverage_summary(data: ReportData) -> None:
     print(f"  Overall Coverage:   {overall:.1f}%  -  {status_msg}")
     print("-" * 60)
 
-    # Show missing items summary if any
+    # Show ALL missing items - never truncate
     if g.missing or p.missing:
         print("")
-        print("  Missing Features Summary:")
+        print("  Missing Features:")
         if g.missing:
-            shown = g.missing[:5]
-            print(f"    Global: {', '.join(shown)}")
-            if len(g.missing) > 5:
-                print(f"            ... and {len(g.missing) - 5} more")
+            print(f"    Global Directives ({len(g.missing)}):")
+            for directive in g.missing:
+                print(f"      - {directive}")
         if p.missing:
-            shown = p.missing[:5]
-            print(f"    Proxy:  {', '.join(shown)}")
-            if len(p.missing) > 5:
-                print(f"            ... and {len(p.missing) - 5} more")
+            print(f"    Proxy Keywords ({len(p.missing)}):")
+            for keyword in p.missing:
+                print(f"      - {keyword}")
+    else:
+        print("")
+        print("  No missing features detected!")
 
     print("")
 
