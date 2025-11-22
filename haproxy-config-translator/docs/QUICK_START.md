@@ -169,45 +169,43 @@ backend api {
 
 ## Why Use the DSL?
 
-### 1. **Type Safety**
-Catch errors at translation time, not when HAProxy fails to start.
+The DSL dramatically reduces configuration complexity. Here's a real example:
 
-### 2. **Modern Syntax**
-Clean, readable configuration with structured blocks.
-
-### 3. **Variables & Templating**
-DRY configuration with variables:
-
-```javascript
-config with_vars {
-  let app_port = 8080
-  let check_interval = 3s
-
-  backend api {
-    servers {
-      server api1 {
-        address: "10.0.1.1"
-        port: ${app_port}
-        check: true
-        inter: ${check_interval}
-      }
-    }
-  }
-}
+### Before: Native HAProxy (12 lines of repetition)
+```haproxy
+backend api_servers
+    balance roundrobin
+    server api01 10.0.1.1:8080 check inter 3s fall 3 rise 2 weight 100
+    server api02 10.0.1.2:8080 check inter 3s fall 3 rise 2 weight 100
+    server api03 10.0.1.3:8080 check inter 3s fall 3 rise 2 weight 100
+    server api04 10.0.1.4:8080 check inter 3s fall 3 rise 2 weight 100
+    server api05 10.0.1.5:8080 check inter 3s fall 3 rise 2 weight 100
+    server api06 10.0.1.6:8080 check inter 3s fall 3 rise 2 weight 100
+    server api07 10.0.1.7:8080 check inter 3s fall 3 rise 2 weight 100
+    server api08 10.0.1.8:8080 check inter 3s fall 3 rise 2 weight 100
+    server api09 10.0.1.9:8080 check inter 3s fall 3 rise 2 weight 100
+    server api10 10.0.1.10:8080 check inter 3s fall 3 rise 2 weight 100
 ```
 
-### 4. **Loops for Dynamic Configs**
-Generate servers programmatically:
-
+### After: DSL with Templates + Loops (60% less code)
 ```javascript
-config dynamic {
-  backend nodes {
+config api_cluster {
+  template standard_server {
+    check: true
+    inter: 3s
+    fall: 3
+    rise: 2
+    weight: 100
+  }
+
+  backend api_servers {
+    balance: roundrobin
     servers {
-      for i in [1, 2, 3, 4, 5] {
-        server "node${i}" {
+      for i in [1..10] {
+        server "api${i}" {
           address: "10.0.1.${i}"
           port: 8080
-          check: true
+          @standard_server
         }
       }
     }
@@ -215,29 +213,85 @@ config dynamic {
 }
 ```
 
-### 5. **Templates**
-Reuse common configurations:
+**Change the template once, all 10 servers update. No copy-paste errors possible.**
 
+---
+
+### Key Features
+
+#### 1. **Templates** - Define Once, Use Everywhere
 ```javascript
-config templated {
-  template server_defaults {
-    check: true
-    inter: 3s
-    rise: 2
-    fall: 3
-  }
+template production_server {
+  check: true
+  inter: 3s
+  fall: 3
+  rise: 2
+  maxconn: 500
+}
 
-  backend api {
-    servers {
-      server api1 {
-        address: "10.0.1.1"
-        port: 8080
-        @server_defaults
-      }
-    }
+// Apply with @template_name
+server web1 { address: "10.0.1.1", port: 8080, @production_server }
+```
+
+#### 2. **Loops** - Generate Servers Dynamically
+```javascript
+// Range syntax: [start..end] inclusive
+for i in [1..5] {
+  server "node${i}" {
+    address: "10.0.1.${i}"
+    port: 8080
   }
 }
+
+// With arithmetic: ${10 + i} = 11, 12, 13...
+for i in [1..3] {
+  server "node${i}" { address: "10.0.1.${10 + i}", port: 8080 }
+}
 ```
+
+#### 3. **Variables** - DRY Configuration
+```javascript
+let app_port = 8080
+let check_interval = 3s
+let api_host = "api.internal"
+
+server api1 {
+  address: "${api_host}"
+  port: ${app_port}
+  inter: ${check_interval}
+}
+```
+
+#### 4. **Environment Variables** - CI/CD Ready
+```javascript
+// With defaults for safety
+let server_count = env("SERVER_COUNT", 3)
+let api_host = env("API_HOST", "localhost")
+let timeout = env("TIMEOUT_SECONDS", 30s)
+
+// Deploy different environments from same config
+// PRODUCTION:  SERVER_COUNT=10 API_HOST=api.prod.internal
+// STAGING:     SERVER_COUNT=3  API_HOST=api.staging.internal
+// DEVELOPMENT: (uses defaults)
+```
+
+#### 5. **Multi-Pass Variable Resolution**
+```javascript
+let port = 8080
+let host = "10.0.1.1"
+let endpoint = "${host}:${port}"     // Resolves to "10.0.1.1:8080"
+let full_url = "${endpoint}/api"     // Resolves to "10.0.1.1:8080/api"
+```
+
+---
+
+### Real-World Patterns
+
+See **[PATTERNS.md](PATTERNS.md)** for comprehensive examples:
+- Multi-environment deployments (dev/staging/prod from one config)
+- Microservices routing with templates
+- Blue-green deployments with weight variables
+- Standardized health checks across teams
 
 ## Next Steps
 
