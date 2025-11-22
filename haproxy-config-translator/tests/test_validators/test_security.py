@@ -47,8 +47,7 @@ class TestSecurityValidator:
 
         # Should pass (may have info-level warnings)
         critical_or_high = [
-            i for i in report.issues
-            if i.level in (SecurityLevel.CRITICAL, SecurityLevel.HIGH)
+            i for i in report.issues if i.level in (SecurityLevel.CRITICAL, SecurityLevel.HIGH)
         ]
         assert len(critical_or_high) == 0
 
@@ -77,10 +76,7 @@ class TestSecurityValidator:
         report = validator.validate()
 
         # Should have HIGH level issue for root user
-        root_issues = [
-            i for i in report.issues
-            if "root" in i.message.lower()
-        ]
+        root_issues = [i for i in report.issues if "root" in i.message.lower()]
         assert len(root_issues) >= 1
         assert root_issues[0].level == SecurityLevel.HIGH
 
@@ -109,10 +105,7 @@ class TestSecurityValidator:
         report = validator.validate()
 
         # Should have warning for missing chroot
-        chroot_issues = [
-            i for i in report.issues
-            if "chroot" in i.message.lower()
-        ]
+        chroot_issues = [i for i in report.issues if "chroot" in i.message.lower()]
         assert len(chroot_issues) >= 1
 
     def test_stats_without_auth_critical(self, parser):
@@ -142,8 +135,7 @@ class TestSecurityValidator:
 
         # Should have HIGH issue for stats without auth
         stats_issues = [
-            i for i in report.issues
-            if "stats" in i.message.lower() and "auth" in i.message.lower()
+            i for i in report.issues if "stats" in i.message.lower() and "auth" in i.message.lower()
         ]
         assert len(stats_issues) >= 1
 
@@ -170,8 +162,7 @@ class TestSecurityValidator:
 
         # Should have issue for SSL without certificate
         ssl_issues = [
-            i for i in report.issues
-            if "ssl" in i.message.lower() and "cert" in i.message.lower()
+            i for i in report.issues if "ssl" in i.message.lower() and "cert" in i.message.lower()
         ]
         assert len(ssl_issues) >= 1
 
@@ -198,7 +189,8 @@ class TestSecurityValidator:
 
         # Should have INFO for wildcard bind
         bind_issues = [
-            i for i in report.issues
+            i
+            for i in report.issues
             if "all interfaces" in i.message.lower() or "wildcard" in i.message.lower()
         ]
         assert len(bind_issues) >= 1
@@ -285,8 +277,7 @@ class TestCipherStrengthValidation:
 
         # Should detect RC4 as weak
         cipher_issues = [
-            i for i in report.issues
-            if "rc4" in i.message.lower() or "cipher" in i.message.lower()
+            i for i in report.issues if "rc4" in i.message.lower() or "cipher" in i.message.lower()
         ]
         assert len(cipher_issues) >= 1
 

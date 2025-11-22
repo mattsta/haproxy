@@ -78,7 +78,9 @@ def cli(
         if watch:
             _watch_mode(config_file, output, format, lua_dir, verbose)
         else:
-            _translate_once(config_file, output, format, validate, debug, lua_dir, verbose, security_check)
+            _translate_once(
+                config_file, output, format, validate, debug, lua_dir, verbose, security_check
+            )
 
     except TranslatorError as e:
         console.print(f"[bold red]Error:[/bold red] {e}")
@@ -258,7 +260,7 @@ def _watch_mode(
         observer.join()
 
 
-def _display_security_report(report: "SecurityReport") -> None:
+def _display_security_report(report: SecurityReport) -> None:
     """Display security validation report."""
     from rich.table import Table
 
@@ -286,7 +288,13 @@ def _display_security_report(report: "SecurityReport") -> None:
     # Print summary
     console.print("\n[bold]Security Check Report[/bold]")
     summary_parts = []
-    for level in [SecurityLevel.CRITICAL, SecurityLevel.HIGH, SecurityLevel.MEDIUM, SecurityLevel.LOW, SecurityLevel.INFO]:
+    for level in [
+        SecurityLevel.CRITICAL,
+        SecurityLevel.HIGH,
+        SecurityLevel.MEDIUM,
+        SecurityLevel.LOW,
+        SecurityLevel.INFO,
+    ]:
         if level in counts:
             color = level_colors[level]
             summary_parts.append(f"[{color}]{level.value}: {counts[level]}[/{color}]")

@@ -73,23 +73,27 @@ class SecurityValidator:
     PATH_TRAVERSAL_PATTERN = re.compile(r"\.\./|\.\.\\")
 
     # Known insecure SSL options
-    INSECURE_SSL_OPTIONS = frozenset({
-        "no-sslv3",  # This is actually good, but if missing it's bad
-        "force-sslv3",
-        "force-tlsv10",
-        "force-tlsv11",
-    })
+    INSECURE_SSL_OPTIONS = frozenset(
+        {
+            "no-sslv3",  # This is actually good, but if missing it's bad
+            "force-sslv3",
+            "force-tlsv10",
+            "force-tlsv11",
+        }
+    )
 
     # Weak ciphers
-    WEAK_CIPHERS = frozenset({
-        "RC4",
-        "DES",
-        "3DES",
-        "MD5",
-        "NULL",
-        "EXPORT",
-        "ANON",
-    })
+    WEAK_CIPHERS = frozenset(
+        {
+            "RC4",
+            "DES",
+            "3DES",
+            "MD5",
+            "NULL",
+            "EXPORT",
+            "ANON",
+        }
+    )
 
     def __init__(self, config: ConfigIR):
         self.config = config
@@ -156,8 +160,11 @@ class SecurityValidator:
         # Check stats socket security
         for socket in global_config.stats_sockets:
             socket_str = str(socket).lower()
-            if ("admin" in socket_str and "level admin" in socket_str
-                    and "mode 600" not in socket_str):
+            if (
+                "admin" in socket_str
+                and "level admin" in socket_str
+                and "mode 600" not in socket_str
+            ):
                 self.report.add_issue(
                     SecurityIssue(
                         level=SecurityLevel.HIGH,
@@ -215,7 +222,11 @@ class SecurityValidator:
                         )
 
                 # Check SSL options
-                if server.options and server.options.get("ssl") and not server.options.get("verify"):
+                if (
+                    server.options
+                    and server.options.get("ssl")
+                    and not server.options.get("verify")
+                ):
                     self.report.add_issue(
                         SecurityIssue(
                             level=SecurityLevel.MEDIUM,

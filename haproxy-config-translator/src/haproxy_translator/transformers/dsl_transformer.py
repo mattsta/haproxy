@@ -1367,9 +1367,16 @@ class DSLTransformer(Transformer):
 
         # Keys that map directly to ResolversSection fields
         resolver_keys = {
-            "accepted_payload_size", "hold_nx", "hold_obsolete", "hold_other",
-            "hold_refused", "hold_timeout", "hold_valid", "resolve_retries",
-            "timeout_resolve", "timeout_retry",
+            "accepted_payload_size",
+            "hold_nx",
+            "hold_obsolete",
+            "hold_other",
+            "hold_refused",
+            "hold_timeout",
+            "hold_valid",
+            "resolve_retries",
+            "timeout_resolve",
+            "timeout_retry",
         }
         config: dict[str, Any] = {}
 
@@ -3163,6 +3170,7 @@ class DSLTransformer(Transformer):
                         balance = BalanceAlgorithm(value)
                     case "load_server_state_from":
                         from ..ir.nodes import LoadServerStateFrom
+
                         load_server_state_from = LoadServerStateFrom(value)
                     # Simple scalar assignments
                     case "description":

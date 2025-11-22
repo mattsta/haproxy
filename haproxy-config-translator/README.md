@@ -7,7 +7,7 @@ A modern, powerful DSL for HAProxy configuration with **templates**, **loops**, 
 | Metric | Value |
 |--------|-------|
 | **HAProxy Version** | 3.3 |
-| **Tests** | 1,228 passing |
+| **Tests** | 1,430 passing |
 | **Global Directives** | 95.9% coverage (158/165) |
 | **Proxy Keywords** | 100% coverage (78/78) |
 | **Production Ready** | Yes |
@@ -101,13 +101,13 @@ let api_host = env("API_HOST", "localhost")
 ### Installation
 
 ```bash
-# Using uv (recommended)
+# Install uv (if not already installed)
+pip install uv -U
+
+# Clone and install
 git clone https://github.com/your-org/haproxy-config-translator.git
 cd haproxy-config-translator
 uv sync
-
-# Using pip
-pip install -e .
 ```
 
 ### Basic Usage
@@ -118,6 +118,9 @@ uv run haproxy-translate config.hap -o haproxy.cfg
 
 # Validate configuration
 uv run haproxy-translate config.hap --validate
+
+# Run security validation
+uv run haproxy-translate config.hap --security-check
 
 # With environment variables
 SERVER_COUNT=10 API_HOST=api.prod.internal \
@@ -164,6 +167,34 @@ config my_loadbalancer {
     }
   }
 }
+```
+
+## Security Validation
+
+Run security checks on your configuration to detect common issues:
+
+```bash
+uv run haproxy-translate config.hap --security-check
+```
+
+The security validator checks for:
+- **Hardcoded credentials** - Passwords, API keys, tokens in configuration
+- **Unsafe user settings** - Running as root, missing chroot
+- **SSL/TLS issues** - Weak ciphers, missing certificates, insecure options
+- **Authentication gaps** - Stats pages without auth, admin access exposed
+- **Resource limits** - Missing timeouts, extreme connection limits
+
+Example output:
+```
+Security Check Report
+  critical: 1 | high: 2 | medium: 3 | info: 1
+
+┌──────────┬─────────────────┬──────────────────────────┬────────────────────────┐
+│ Level    │ Location        │ Issue                    │ Recommendation         │
+├──────────┼─────────────────┼──────────────────────────┼────────────────────────┤
+│ high     │ global          │ HAProxy running as root  │ Run as non-privileged  │
+│ high     │ frontend.stats  │ Stats without auth       │ Add auth credentials   │
+└──────────┴─────────────────┴──────────────────────────┴────────────────────────┘
 ```
 
 ## Documentation

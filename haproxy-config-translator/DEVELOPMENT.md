@@ -3,14 +3,28 @@
 ## Setup
 
 ```bash
-# Install uv
+# Install uv (if not already installed)
 pip install uv -U
 
-# Sync dependencies
-uv sync -U
+# Sync dependencies (including dev tools)
+uv sync --dev
 
-# Install with dev dependencies
-uv sync --dev -U
+# Install pre-commit hooks (recommended)
+uv run pre-commit install
+uv run pre-commit install --hook-type pre-push
+```
+
+## Quick Commands (via Makefile)
+
+```bash
+make help        # Show all available commands
+make test        # Run tests with parallel execution
+make lint        # Run ruff linter
+make format      # Format code with ruff
+make typecheck   # Run mypy type checker
+make check       # Run all quality checks (lint + typecheck)
+make test-cov    # Run tests with coverage report
+make clean       # Remove build artifacts and caches
 ```
 
 ## Development Workflow
