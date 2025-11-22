@@ -1274,3 +1274,32 @@ config test {
         assert "stats realm HAProxy Statistics" in output
         assert "stats auth admin:password" in output
         assert "stats refresh 10s" in output
+
+    def test_listen_section_with_full_stats(self, parser, codegen):
+        """Test listen section with all stats options."""
+        dsl_source = """
+config test {
+  listen stats_full {
+    bind *:8405
+    mode: http
+    stats {
+      enable: true
+      uri: "/haproxy"
+      realm: "Statistics"
+      auth: "admin:secret"
+      refresh: 5s
+      hide-version: true
+      show-legends: true
+      show-desc: "Production Stats"
+      admin if authenticated
+    }
+  }
+}
+"""
+        ir = parser.parse(dsl_source)
+        output = codegen.generate(ir)
+
+        assert "stats hide-version" in output
+        assert "stats show-legends" in output
+        assert "stats show-desc Production Stats" in output
+        assert "stats admin if authenticated" in output
