@@ -1273,23 +1273,18 @@ class DSLTransformer(Transformer):
         for item in items:
             if isinstance(item, tuple):
                 key, value = item
-                if key == "enable":
-                    enable = value
-                elif key == "uri":
-                    uri = value
-                elif key == "auth":
-                    # Convert single auth string to list for compatibility with new StatsConfig
-                    auth_list = [value] if value else []
-                elif key == "refresh":
-                    refresh = value
+                match key:
+                    case "enable":
+                        enable = value
+                    case "uri":
+                        uri = value
+                    case "auth":
+                        # Convert single auth string to list for compatibility with new StatsConfig
+                        auth_list = [value] if value else []
+                    case "refresh":
+                        refresh = value
 
-        # Use the comprehensive StatsConfig with basic values
-        return StatsConfig(
-            enable=enable,
-            uri=uri,
-            auth=auth_list,
-            refresh=refresh,
-        )
+        return StatsConfig(enable=enable, uri=uri, auth=auth_list, refresh=refresh)
 
     def stats_enable(self, items: list[Any]) -> tuple[str, bool]:
         """Transform stats enable (works for both global and proxy stats)."""
@@ -1310,35 +1305,17 @@ class DSLTransformer(Transformer):
     def stats_socket_item(self, items: list[Any]) -> StatsSocket:
         """Build StatsSocket from path and optional parameters block."""
         path = str(items[0])
-        level = "operator"  # Default level
-        mode = None
-        user = None
-        group = None
-        process = None
+        config: dict[str, Any] = {"level": "operator"}  # Default level
+        socket_keys = {"level", "mode", "user", "group", "process"}
 
         # Process optional parameters (items after the path are tuples from the param block)
         for item in items[1:]:
             if isinstance(item, tuple):
                 key, value = item
-                if key == "level":
-                    level = value
-                elif key == "mode":
-                    mode = value
-                elif key == "user":
-                    user = value
-                elif key == "group":
-                    group = value
-                elif key == "process":
-                    process = value
+                if key in socket_keys:
+                    config[key] = value
 
-        return StatsSocket(
-            path=path,
-            level=level,
-            mode=mode,
-            user=user,
-            group=group,
-            process=process,
-        )
+        return StatsSocket(path=path, **{k: config[k] for k in socket_keys if k in config})
 
     def stats_socket_level(self, items: list[Any]) -> tuple[str, str]:
         return ("level", str(items[0]))
@@ -1386,57 +1363,28 @@ class DSLTransformer(Transformer):
     def resolvers_section(self, items: list[Any]) -> ResolversSection:
         """Transform resolvers section for DNS resolution."""
         name = str(items[0])
-        nameservers = []
-        accepted_payload_size = None
-        hold_nx = None
-        hold_obsolete = None
-        hold_other = None
-        hold_refused = None
-        hold_timeout = None
-        hold_valid = None
-        resolve_retries = None
-        timeout_resolve = None
-        timeout_retry = None
+        nameservers: list[Nameserver] = []
+
+        # Keys that map directly to ResolversSection fields
+        resolver_keys = {
+            "accepted_payload_size", "hold_nx", "hold_obsolete", "hold_other",
+            "hold_refused", "hold_timeout", "hold_valid", "resolve_retries",
+            "timeout_resolve", "timeout_retry",
+        }
+        config: dict[str, Any] = {}
 
         for item in items[1:]:
             if isinstance(item, Nameserver):
                 nameservers.append(item)
             elif isinstance(item, tuple):
                 key, value = item
-                if key == "accepted_payload_size":
-                    accepted_payload_size = value
-                elif key == "hold_nx":
-                    hold_nx = value
-                elif key == "hold_obsolete":
-                    hold_obsolete = value
-                elif key == "hold_other":
-                    hold_other = value
-                elif key == "hold_refused":
-                    hold_refused = value
-                elif key == "hold_timeout":
-                    hold_timeout = value
-                elif key == "hold_valid":
-                    hold_valid = value
-                elif key == "resolve_retries":
-                    resolve_retries = value
-                elif key == "timeout_resolve":
-                    timeout_resolve = value
-                elif key == "timeout_retry":
-                    timeout_retry = value
+                if key in resolver_keys:
+                    config[key] = value
 
         return ResolversSection(
             name=name,
             nameservers=nameservers,
-            accepted_payload_size=accepted_payload_size,
-            hold_nx=hold_nx,
-            hold_obsolete=hold_obsolete,
-            hold_other=hold_other,
-            hold_refused=hold_refused,
-            hold_timeout=hold_timeout,
-            hold_valid=hold_valid,
-            resolve_retries=resolve_retries,
-            timeout_resolve=timeout_resolve,
-            timeout_retry=timeout_retry,
+            **{k: config[k] for k in resolver_keys if k in config},
         )
 
     def nameserver_definition(self, items: list[Any]) -> Nameserver:
@@ -1608,26 +1556,27 @@ class DSLTransformer(Transformer):
                     log_steps = value
                 elif key == "timeout":
                     for timeout_key, timeout_value in value.items():
-                        if timeout_key == "connect":
-                            timeout_connect = timeout_value
-                        elif timeout_key == "client":
-                            timeout_client = timeout_value
-                        elif timeout_key == "server":
-                            timeout_server = timeout_value
-                        elif timeout_key == "check":
-                            timeout_check = timeout_value
-                        elif timeout_key == "http_request":
-                            timeout_http_request = timeout_value
-                        elif timeout_key == "http_keep_alive":
-                            timeout_http_keep_alive = timeout_value
-                        elif timeout_key == "tunnel":
-                            timeout_tunnel = timeout_value
-                        elif timeout_key == "client_fin":
-                            timeout_client_fin = timeout_value
-                        elif timeout_key == "server_fin":
-                            timeout_server_fin = timeout_value
-                        elif timeout_key == "tarpit":
-                            timeout_tarpit = timeout_value
+                        match timeout_key:
+                            case "connect":
+                                timeout_connect = timeout_value
+                            case "client":
+                                timeout_client = timeout_value
+                            case "server":
+                                timeout_server = timeout_value
+                            case "check":
+                                timeout_check = timeout_value
+                            case "http_request":
+                                timeout_http_request = timeout_value
+                            case "http_keep_alive":
+                                timeout_http_keep_alive = timeout_value
+                            case "tunnel":
+                                timeout_tunnel = timeout_value
+                            case "client_fin":
+                                timeout_client_fin = timeout_value
+                            case "server_fin":
+                                timeout_server_fin = timeout_value
+                            case "tarpit":
+                                timeout_tarpit = timeout_value
             elif isinstance(item, EmailAlert):
                 email_alert = item
             elif isinstance(item, list) and all(isinstance(r, QuicInitialRule) for r in item):
