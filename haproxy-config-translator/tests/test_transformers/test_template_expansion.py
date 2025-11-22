@@ -298,5 +298,149 @@ class TestTemplateExpansion:
             assert server.rise == 5
 
 
+class TestHealthCheckTemplateExpansion:
+    """Test health check template expansion with advanced properties."""
+
+    @pytest.fixture
+    def parser(self):
+        """Create a DSL parser."""
+        return DSLParser()
+
+    def test_health_check_with_expect_string(self, parser):
+        """Test health check template with expect_string property."""
+        source = """
+        config test {
+            template health_with_string {
+                method: "GET"
+                uri: "/health"
+                expect_string: "OK"
+            }
+
+            backend api {
+                option: ["httpchk"]
+                health-check @health_with_string
+                servers {
+                    server s1 { address: "10.0.1.1", port: 8080, check: true }
+                }
+            }
+        }
+        """
+        ir = parser.parse(source)
+        expander = TemplateExpander(ir)
+        ir = expander.expand()
+
+        assert ir.backends[0].health_check is not None
+        assert ir.backends[0].health_check.expect_string == "OK"
+
+    def test_health_check_with_expect_rstatus(self, parser):
+        """Test health check template with expect_rstatus (regex status)."""
+        source = """
+        config test {
+            template health_regex {
+                method: "GET"
+                uri: "/status"
+                expect_rstatus: "^[23][0-9]{2}$"
+            }
+
+            backend api {
+                option: ["httpchk"]
+                health-check @health_regex
+                servers {
+                    server s1 { address: "10.0.1.1", port: 8080, check: true }
+                }
+            }
+        }
+        """
+        ir = parser.parse(source)
+        expander = TemplateExpander(ir)
+        ir = expander.expand()
+
+        assert ir.backends[0].health_check is not None
+        assert ir.backends[0].health_check.expect_rstatus == "^[23][0-9]{2}$"
+
+    def test_health_check_with_expect_rstring(self, parser):
+        """Test health check template with expect_rstring (regex string)."""
+        source = """
+        config test {
+            template health_rstring {
+                method: "GET"
+                uri: "/health"
+                expect_rstring: "status.*healthy"
+            }
+
+            backend api {
+                option: ["httpchk"]
+                health-check @health_rstring
+                servers {
+                    server s1 { address: "10.0.1.1", port: 8080, check: true }
+                }
+            }
+        }
+        """
+        ir = parser.parse(source)
+        expander = TemplateExpander(ir)
+        ir = expander.expand()
+
+        assert ir.backends[0].health_check is not None
+        assert ir.backends[0].health_check.expect_rstring == "status.*healthy"
+
+    def test_health_check_with_expect_negate(self, parser):
+        """Test health check template with expect_negate flag."""
+        source = """
+        config test {
+            template health_negate {
+                method: "GET"
+                uri: "/health"
+                expect_status: 500
+                expect_negate: true
+            }
+
+            backend api {
+                option: ["httpchk"]
+                health-check @health_negate
+                servers {
+                    server s1 { address: "10.0.1.1", port: 8080, check: true }
+                }
+            }
+        }
+        """
+        ir = parser.parse(source)
+        expander = TemplateExpander(ir)
+        ir = expander.expand()
+
+        assert ir.backends[0].health_check is not None
+        assert ir.backends[0].health_check.expect_negate is True
+
+    def test_health_check_with_headers(self, parser):
+        """Test health check template with custom headers."""
+        source = """
+        config test {
+            template health_headers {
+                method: "GET"
+                uri: "/health"
+                headers: {
+                    "X-Check": "true",
+                    "Accept": "application/json"
+                }
+            }
+
+            backend api {
+                option: ["httpchk"]
+                health-check @health_headers
+                servers {
+                    server s1 { address: "10.0.1.1", port: 8080, check: true }
+                }
+            }
+        }
+        """
+        ir = parser.parse(source)
+        expander = TemplateExpander(ir)
+        ir = expander.expand()
+
+        assert ir.backends[0].health_check is not None
+        assert "X-Check" in ir.backends[0].health_check.headers
+        assert ir.backends[0].health_check.headers["X-Check"] == "true"
+
+
 if __name__ == "__main__":
     pytest.main([__file__, "-v"])
