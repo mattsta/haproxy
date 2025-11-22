@@ -151,6 +151,7 @@ class ReportData:
     global_coverage: CoverageResult
     proxy_coverage: CoverageResult
     doc_path: str
+    deprecated_global: list[str] | None = None
     haproxy_version: str = "3.3"
 
 
@@ -163,8 +164,12 @@ class DirectiveExtractor:
             self.content = f.read()
             self.lines = self.content.split("\n")
 
-    def extract_global_directives(self) -> dict[str, list[str]]:
-        """Extract all global directives."""
+    def extract_global_directives(self) -> tuple[dict[str, list[str]], list[str]]:
+        """Extract all global directives, separating deprecated ones.
+
+        Returns:
+            Tuple of (active_directives_by_category, deprecated_directives)
+        """
         directives: dict[str, list[str]] = {
             "process_management": [],
             "performance_tuning": [],
@@ -176,6 +181,7 @@ class DirectiveExtractor:
             "device_detection": [],
             "other": [],
         }
+        deprecated: list[str] = []
 
         current_category = None
 
@@ -196,7 +202,11 @@ class DirectiveExtractor:
             match = re.match(r"^\s+-\s+([a-zA-Z0-9._-]+)", line)
             if match and current_category:
                 directive = match.group(1)
-                if "ssl" in directive or "crt" in directive or "ca-" in directive:
+                is_deprecated = "(deprecated)" in line.lower()
+
+                if is_deprecated:
+                    deprecated.append(directive)
+                elif "ssl" in directive or "crt" in directive or "ca-" in directive:
                     directives["ssl_tls"].append(directive)
                 elif "lua" in directive:
                     directives["lua"].append(directive)
@@ -211,7 +221,7 @@ class DirectiveExtractor:
                 else:
                     directives[current_category].append(directive)
 
-        return directives
+        return directives, deprecated
 
     def extract_proxy_keywords(self) -> list[str]:
         """Extract proxy keywords with their applicability."""
@@ -877,8 +887,12 @@ def print_coverage_summary(data: ReportData) -> None:
 
     # Global directives
     g = data.global_coverage
+    dep_count = len(data.deprecated_global) if data.deprecated_global else 0
+    total_with_dep = g.total + dep_count
     print(f"  Global Directives:  {g.covered:3d} / {g.total:3d}  {format_status(g.coverage_pct)}")
     print(f"                      {format_progress_bar(g.coverage_pct)}")
+    if dep_count > 0:
+        print(f"                      + {dep_count} deprecated (skipped)")
     if g.missing:
         print(f"                      Missing: {len(g.missing)} directives")
     print("")
@@ -917,10 +931,11 @@ def print_coverage_summary(data: ReportData) -> None:
     print("-" * 60)
 
     # Show ALL missing items - never truncate
-    if g.missing or p.missing:
+    dep_global = data.deprecated_global or []
+    if g.missing or p.missing or dep_global:
         print("")
-        print("  Missing Features:")
         if g.missing:
+            print("  Missing Features:")
             print(f"    Global Directives ({len(g.missing)}):")
             for directive in g.missing:
                 print(f"      - {directive}")
@@ -928,6 +943,11 @@ def print_coverage_summary(data: ReportData) -> None:
             print(f"    Proxy Keywords ({len(p.missing)}):")
             for keyword in p.missing:
                 print(f"      - {keyword}")
+        if dep_global:
+            print("")
+            print(f"  Deprecated in HAProxy 3.3 ({len(dep_global)}) - intentionally not implemented:")
+            for directive in dep_global:
+                print(f"      - {directive}")
     else:
         print("")
         print("  No missing features detected!")
@@ -946,8 +966,9 @@ def collect_report_data(
 
     # Extract from documentation
     extractor = DirectiveExtractor(doc_path)
+    global_directives, deprecated_global = extractor.extract_global_directives()
     doc_data = {
-        "global": extractor.extract_global_directives(),
+        "global": global_directives,
         "proxy": extractor.extract_proxy_keywords(),
         "actions": extractor.extract_actions(),
         "bind": extractor.extract_bind_options(),
@@ -959,7 +980,7 @@ def collect_report_data(
     impl_data = analyzer.extract_grammar_directives()
     test_data = analyzer.count_test_coverage()
 
-    # Calculate coverage
+    # Calculate coverage (excluding deprecated from "missing")
     all_global = [d for cat in doc_data["global"].values() for d in cat]
     global_coverage = calculate_coverage(all_global, impl_data["global"])
 
@@ -975,6 +996,7 @@ def collect_report_data(
         global_coverage=global_coverage,
         proxy_coverage=proxy_coverage,
         doc_path=str(doc_path),
+        deprecated_global=deprecated_global,
     )
 
     # Print live coverage summary
