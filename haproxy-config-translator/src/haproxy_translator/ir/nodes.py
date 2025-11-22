@@ -539,6 +539,54 @@ class GlobalConfig(IRNode):
     stats: StatsConfig | None = None
     stats_sockets: list[StatsSocket] = field(default_factory=list)
 
+    # Phase 14 - Remaining Global Directives (30 directives)
+    # Security & Process Management
+    cluster_secret: str | None = None
+    expose_deprecated_directives: bool | None = None
+    expose_experimental_directives: bool | None = None
+    insecure_fork_wanted: bool | None = None
+    insecure_setuid_wanted: bool | None = None
+    harden_reject_privileged_ports_quic: bool | None = None
+    harden_reject_privileged_ports_tcp: bool | None = None
+    pp2_never_send_local: bool | None = None
+    prealloc_fd: bool | None = None
+    ssl_skip_self_issued_ca: bool | None = None
+    grace: str | None = None
+    stats_file: str | None = None
+
+    # CPU Management
+    cpu_policy: str | None = None
+    cpu_set: str | None = None
+
+    # DNS
+    dns_accept_family: str | None = None
+
+    # HTTP/1 Protocol Options
+    h1_accept_payload_with_any_method: bool | None = None
+    h1_case_adjust: str | None = None
+    h1_case_adjust_file: str | None = None
+    h1_do_not_close_on_insecure_transfer_encoding: bool | None = None
+
+    # HTTP/2 Protocol Options
+    h2_workaround_bogus_websocket_clients: bool | None = None
+
+    # OCSP Update
+    ocsp_update_disable: bool | None = None
+    ocsp_update_httpproxy: str | None = None
+    ocsp_update_maxdelay: int | None = None
+    ocsp_update_mindelay: int | None = None
+    ocsp_update_mode: str | None = None
+
+    # 51Degrees Additional Options
+    fiftyone_degrees_allow_unmatched: bool | None = None
+    fiftyone_degrees_difference: int | None = None
+    fiftyone_degrees_drift: int | None = None
+    fiftyone_degrees_use_performance_graph: bool | None = None
+    fiftyone_degrees_use_predictive_graph: bool | None = None
+
+    # Variables
+    set_vars: dict[str, str] = field(default_factory=dict)  # var_name -> value
+
     # Performance tuning (tune.* directives stored here)
     tuning: dict[str, Any] = field(default_factory=dict)
 

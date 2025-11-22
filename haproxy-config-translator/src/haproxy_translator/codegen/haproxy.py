@@ -611,6 +611,117 @@ class HAProxyCodeGenerator:
         if global_config.ssl_security_level is not None:
             lines.append(self._indent(f"ssl-security-level {global_config.ssl_security_level}"))
 
+        # Phase 14 - Remaining Global Directives (30 directives)
+        # Security & Process Management
+        if global_config.cluster_secret:
+            lines.append(self._indent(f"cluster-secret {global_config.cluster_secret}"))
+
+        if global_config.expose_deprecated_directives:
+            lines.append(self._indent("expose-deprecated-directives"))
+
+        if global_config.expose_experimental_directives:
+            lines.append(self._indent("expose-experimental-directives"))
+
+        if global_config.insecure_fork_wanted:
+            lines.append(self._indent("insecure-fork-wanted"))
+
+        if global_config.insecure_setuid_wanted:
+            lines.append(self._indent("insecure-setuid-wanted"))
+
+        if global_config.harden_reject_privileged_ports_quic is not None:
+            value = "on" if global_config.harden_reject_privileged_ports_quic else "off"
+            lines.append(self._indent(f"harden.reject-privileged-ports.quic {value}"))
+
+        if global_config.harden_reject_privileged_ports_tcp is not None:
+            value = "on" if global_config.harden_reject_privileged_ports_tcp else "off"
+            lines.append(self._indent(f"harden.reject-privileged-ports.tcp {value}"))
+
+        if global_config.pp2_never_send_local:
+            lines.append(self._indent("pp2-never-send-local"))
+
+        if global_config.prealloc_fd:
+            lines.append(self._indent("prealloc-fd"))
+
+        if global_config.ssl_skip_self_issued_ca:
+            lines.append(self._indent("ssl-skip-self-issued-ca"))
+
+        if global_config.grace:
+            lines.append(self._indent(f"grace {global_config.grace}"))
+
+        if global_config.stats_file:
+            lines.append(self._indent(f"stats-file {global_config.stats_file}"))
+
+        # CPU Management
+        if global_config.cpu_policy:
+            lines.append(self._indent(f"cpu-policy {global_config.cpu_policy}"))
+
+        if global_config.cpu_set:
+            lines.append(self._indent(f"cpu-set {global_config.cpu_set}"))
+
+        # DNS
+        if global_config.dns_accept_family:
+            lines.append(self._indent(f"dns-accept-family {global_config.dns_accept_family}"))
+
+        # HTTP/1 Protocol Options
+        if global_config.h1_accept_payload_with_any_method:
+            lines.append(self._indent("h1-accept-payload-with-any-method"))
+
+        if global_config.h1_case_adjust:
+            lines.append(self._indent(f"h1-case-adjust {global_config.h1_case_adjust}"))
+
+        if global_config.h1_case_adjust_file:
+            lines.append(self._indent(f"h1-case-adjust-file {global_config.h1_case_adjust_file}"))
+
+        if global_config.h1_do_not_close_on_insecure_transfer_encoding:
+            lines.append(self._indent("h1-do-not-close-on-insecure-transfer-encoding"))
+
+        # HTTP/2 Protocol Options
+        if global_config.h2_workaround_bogus_websocket_clients:
+            lines.append(self._indent("h2-workaround-bogus-websocket-clients"))
+
+        # OCSP Update
+        if global_config.ocsp_update_disable:
+            lines.append(self._indent("ocsp-update.disable"))
+
+        if global_config.ocsp_update_httpproxy:
+            lines.append(
+                self._indent(f"ocsp-update.httpproxy {global_config.ocsp_update_httpproxy}")
+            )
+
+        if global_config.ocsp_update_maxdelay is not None:
+            lines.append(self._indent(f"ocsp-update.maxdelay {global_config.ocsp_update_maxdelay}"))
+
+        if global_config.ocsp_update_mindelay is not None:
+            lines.append(self._indent(f"ocsp-update.mindelay {global_config.ocsp_update_mindelay}"))
+
+        if global_config.ocsp_update_mode:
+            lines.append(self._indent(f"ocsp-update.mode {global_config.ocsp_update_mode}"))
+
+        # 51Degrees Additional Options
+        if global_config.fiftyone_degrees_allow_unmatched is not None:
+            value = "on" if global_config.fiftyone_degrees_allow_unmatched else "off"
+            lines.append(self._indent(f"51degrees-allow-unmatched {value}"))
+
+        if global_config.fiftyone_degrees_difference is not None:
+            lines.append(
+                self._indent(f"51degrees-difference {global_config.fiftyone_degrees_difference}")
+            )
+
+        if global_config.fiftyone_degrees_drift is not None:
+            lines.append(self._indent(f"51degrees-drift {global_config.fiftyone_degrees_drift}"))
+
+        if global_config.fiftyone_degrees_use_performance_graph is not None:
+            value = "on" if global_config.fiftyone_degrees_use_performance_graph else "off"
+            lines.append(self._indent(f"51degrees-use-performance-graph {value}"))
+
+        if global_config.fiftyone_degrees_use_predictive_graph is not None:
+            value = "on" if global_config.fiftyone_degrees_use_predictive_graph else "off"
+            lines.append(self._indent(f"51degrees-use-predictive-graph {value}"))
+
+        # Variables
+        for var_name, var_value in global_config.set_vars.items():
+            lines.append(self._indent(f"set-var {var_name} {var_value}"))
+
         # Lua scripts
         for script in global_config.lua_scripts:
             if script.source_type == "file":

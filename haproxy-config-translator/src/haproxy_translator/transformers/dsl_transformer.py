@@ -246,6 +246,44 @@ class DSLTransformer(Transformer):
             "setcap",
             "set_dumpable",
             "unix_bind",
+            # Phase 14 - Remaining Global Directives (30 directives)
+            # Security & Process Management
+            "cluster_secret",
+            "expose_deprecated_directives",
+            "expose_experimental_directives",
+            "insecure_fork_wanted",
+            "insecure_setuid_wanted",
+            "harden_reject_privileged_ports_quic",
+            "harden_reject_privileged_ports_tcp",
+            "pp2_never_send_local",
+            "prealloc_fd",
+            "ssl_skip_self_issued_ca",
+            "grace",
+            "stats_file",
+            # CPU Management
+            "cpu_policy",
+            "cpu_set",
+            # DNS
+            "dns_accept_family",
+            # HTTP/1 Protocol Options
+            "h1_accept_payload_with_any_method",
+            "h1_case_adjust",
+            "h1_case_adjust_file",
+            "h1_do_not_close_on_insecure_transfer_encoding",
+            # HTTP/2 Protocol Options
+            "h2_workaround_bogus_websocket_clients",
+            # OCSP Update
+            "ocsp_update_disable",
+            "ocsp_update_httpproxy",
+            "ocsp_update_maxdelay",
+            "ocsp_update_mindelay",
+            "ocsp_update_mode",
+            # 51Degrees Additional Options
+            "fiftyone_degrees_allow_unmatched",
+            "fiftyone_degrees_difference",
+            "fiftyone_degrees_drift",
+            "fiftyone_degrees_use_performance_graph",
+            "fiftyone_degrees_use_predictive_graph",
         }
     )
 
@@ -335,6 +373,7 @@ class DSLTransformer(Transformer):
         stats: StatsConfig | None = None
         stats_sockets: list[StatsSocket] = []
         tuning: dict[str, Any] = {}
+        set_vars: dict[str, str] = {}
 
         for item in items:
             if isinstance(item, tuple):
@@ -361,6 +400,9 @@ class DSLTransformer(Transformer):
                             lua_prepend_paths.append(value)
                         case "nbthread" | "maxsslconn" | "ulimit_n":
                             tuning[key] = value
+                        case "set_var":
+                            # set-var goes into set_vars dict
+                            set_vars[value[0]] = value[1]
                         case _ if key.startswith("tune_"):
                             # All tune.* directives go into tuning dict
                             tune_key = self._convert_tune_key(key)
@@ -391,6 +433,7 @@ class DSLTransformer(Transformer):
             stats=stats,
             stats_sockets=stats_sockets,
             tuning=tuning,
+            set_vars=set_vars,
         )
 
     def global_daemon(self, items: list[Any]) -> tuple[str, bool]:
@@ -1316,7 +1359,9 @@ class DSLTransformer(Transformer):
     def global_h1_case_adjust_file(self, items: list[Any]) -> tuple[str, str]:
         return ("h1_case_adjust_file", items[0])
 
-    def global_h1_do_not_close_on_insecure_transfer_encoding(self, items: list[Any]) -> tuple[str, bool]:
+    def global_h1_do_not_close_on_insecure_transfer_encoding(
+        self, items: list[Any]
+    ) -> tuple[str, bool]:
         return ("h1_do_not_close_on_insecure_transfer_encoding", items[0])
 
     # HTTP/2 Protocol Options
@@ -1341,19 +1386,19 @@ class DSLTransformer(Transformer):
 
     # 51Degrees Additional Options
     def global_51degrees_allow_unmatched(self, items: list[Any]) -> tuple[str, bool]:
-        return ("51degrees_allow_unmatched", items[0])
+        return ("fiftyone_degrees_allow_unmatched", items[0])
 
     def global_51degrees_difference(self, items: list[Any]) -> tuple[str, int]:
-        return ("51degrees_difference", items[0])
+        return ("fiftyone_degrees_difference", items[0])
 
     def global_51degrees_drift(self, items: list[Any]) -> tuple[str, int]:
-        return ("51degrees_drift", items[0])
+        return ("fiftyone_degrees_drift", items[0])
 
     def global_51degrees_use_performance_graph(self, items: list[Any]) -> tuple[str, bool]:
-        return ("51degrees_use_performance_graph", items[0])
+        return ("fiftyone_degrees_use_performance_graph", items[0])
 
     def global_51degrees_use_predictive_graph(self, items: list[Any]) -> tuple[str, bool]:
-        return ("51degrees_use_predictive_graph", items[0])
+        return ("fiftyone_degrees_use_predictive_graph", items[0])
 
     # Variables
     def global_set_var(self, items: list[Any]) -> tuple[str, tuple[str, str]]:
