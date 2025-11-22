@@ -591,8 +591,12 @@ backend api
 config my_config {
   backend api {
     http-response {
-      set-header "X-Frame-Options" "DENY"
-      del-header "Server"
+      set_header name: "X-Frame-Options" value: "DENY"
+      del_header name: "Server"
+    }
+
+    servers {
+      server api1 { address: "10.0.1.1", port: 8080 }
     }
   }
 }

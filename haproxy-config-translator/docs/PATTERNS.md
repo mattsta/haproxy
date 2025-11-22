@@ -271,10 +271,8 @@ Maintain two identical backend pools (blue/green) and switch between them with z
 ### DSL Solution
 ```javascript
 config blue_green {
-  // Control which environment is active
-  let active_env = env("ACTIVE_ENV", "blue")
-  let blue_weight = env("BLUE_WEIGHT", 100)
-  let green_weight = env("GREEN_WEIGHT", 0)
+  // Control which environment is active via weights
+  // Deploy with different weight values for blue-green switching
 
   template production_server {
     check: true
@@ -295,22 +293,22 @@ config blue_green {
     option: ["httpchk GET /health"]
 
     servers {
-      // Blue environment servers
+      // Blue environment servers (weight 100 = active)
       for i in [1..5] {
         server "blue${i}" {
           address: "10.0.1.${i}"
           port: 8080
-          weight: ${blue_weight}
+          weight: 100
           @production_server
         }
       }
 
-      // Green environment servers
+      // Green environment servers (weight 0 = inactive)
       for i in [1..5] {
         server "green${i}" {
           address: "10.0.2.${i}"
           port: 8080
-          weight: ${green_weight}
+          weight: 0
           @production_server
         }
       }
@@ -321,14 +319,12 @@ config blue_green {
 
 ### Deployment Commands
 ```bash
-# Normal operation - blue active
-BLUE_WEIGHT=100 GREEN_WEIGHT=0 uv run haproxy-translate config.hap -o haproxy.cfg
-
-# Canary - 90% blue, 10% green
-BLUE_WEIGHT=90 GREEN_WEIGHT=10 uv run haproxy-translate config.hap -o haproxy.cfg
-
-# Switch to green
-BLUE_WEIGHT=0 GREEN_WEIGHT=100 uv run haproxy-translate config.hap -o haproxy.cfg
+# For blue-green switching, modify the weight values in the config:
+# - Active environment: weight: 100
+# - Inactive environment: weight: 0
+# - Canary deployment: weight: 90 (blue), weight: 10 (green)
+# Then regenerate:
+uv run haproxy-translate config.hap -o haproxy.cfg
 ```
 
 ### Key Benefits
