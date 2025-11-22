@@ -55,10 +55,11 @@ class DSLParser(ConfigParser):
         Pipeline:
         1. Parse source to AST
         2. Transform AST to IR
-        3. Expand templates
+        3. Expand templates (first pass - non-loop servers)
         4. Resolve variables
         5. Unroll loops
-        6. Validate semantics
+        6. Expand templates (second pass - loop-generated servers)
+        7. Validate semantics
         """
         try:
             # Step 1: Parse with Lark
@@ -68,7 +69,7 @@ class DSLParser(ConfigParser):
             transformer = DSLTransformer(filepath=str(filepath) if filepath else "<input>")
             ir = cast("ConfigIR", transformer.transform(parse_tree))
 
-            # Step 3: Expand templates
+            # Step 3: Expand templates (first pass - for non-loop servers)
             template_expander = TemplateExpander(ir)
             ir = template_expander.expand()
 
@@ -80,7 +81,11 @@ class DSLParser(ConfigParser):
             loop_unroller = LoopUnroller(ir)
             ir = loop_unroller.unroll()
 
-            # Step 6: Validate semantics
+            # Step 6: Expand templates (second pass - for loop-generated servers)
+            template_expander2 = TemplateExpander(ir)
+            ir = template_expander2.expand()
+
+            # Step 7: Validate semantics
             validator = SemanticValidator(ir)
             return validator.validate()
 

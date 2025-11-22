@@ -5064,6 +5064,14 @@ class DSLTransformer(Transformer):
     def number(self, items: list[Any]) -> int | float:
         return cast("int | float", items[0])
 
+    def number_or_var(self, items: list[Any]) -> int | float | str:
+        """Handle number_or_var rule - returns number or variable reference string."""
+        return items[0]
+
+    def VAR_REF(self, token: Token) -> str:
+        """Handle VAR_REF token - returns the variable reference as a string."""
+        return str(token)
+
     def INT(self, token: Token) -> int:
         return int(token)
 

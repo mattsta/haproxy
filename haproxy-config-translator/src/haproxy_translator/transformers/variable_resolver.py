@@ -132,7 +132,16 @@ class VariableResolver:
         if global_config.lua_scripts:
             resolved_lua_scripts = [self._resolve_lua_script(script) for script in global_config.lua_scripts]
 
-        return replace(global_config, lua_scripts=resolved_lua_scripts)
+        # Resolve maxconn if it's a variable reference
+        resolved_maxconn = global_config.maxconn
+        if isinstance(global_config.maxconn, str):
+            resolved_maxconn_str = self._resolve_value(global_config.maxconn)
+            try:
+                resolved_maxconn = int(resolved_maxconn_str)
+            except (ValueError, TypeError):
+                resolved_maxconn = global_config.maxconn
+
+        return replace(global_config, lua_scripts=resolved_lua_scripts, maxconn=resolved_maxconn)
 
     def _resolve_defaults(self, defaults: DefaultsConfig) -> DefaultsConfig:
         """Resolve variables in defaults config."""

@@ -27,7 +27,7 @@ config: "config" identifier "{" statement* "}"
 global_section: "global" "{" global_property* "}"
 
 ?global_property: "daemon" ":" boolean                 -> global_daemon
-                | "maxconn" ":" number                 -> global_maxconn
+                | "maxconn" ":" number_or_var          -> global_maxconn
                 | "nbthread" ":" number                -> global_nbthread
                 | "thread-groups" ":" number           -> global_thread_groups
                 | "nbproc" ":" number                  -> global_nbproc
@@ -1162,6 +1162,9 @@ INTERPOLATED_STRING: /"[^"]*\$\{[^}]+\}[^"]*"/  // String with ${var}
 VAR_REF: /\$\{[a-zA-Z_][a-zA-Z0-9_]*\}/  // Bare ${var} reference
 
 number: INT | FLOAT
+
+// Number that can also be a variable reference (for let variable support)
+number_or_var: INT | FLOAT | VAR_REF
 
 ?number_or_string: number | string
 

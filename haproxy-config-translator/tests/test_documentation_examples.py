@@ -118,9 +118,17 @@ config test {
         assert "server api3 10.0.1.3:8080 check" in output
 
     def test_template_with_loop(self, parser, codegen):
-        """Test loops without template spread (templates inside loops need future work)."""
+        """Test the template + loop example from 'Why Use the DSL?'."""
         dsl_source = """
 config api_cluster {
+  template standard_server {
+    check: true
+    inter: 3s
+    fall: 3
+    rise: 2
+    weight: 100
+  }
+
   backend api_servers {
     balance: roundrobin
     servers {
@@ -128,6 +136,7 @@ config api_cluster {
         server "api${i}" {
           address: "10.0.1.${i}"
           port: 8080
+          @standard_server
         }
       }
     }
@@ -137,9 +146,9 @@ config api_cluster {
         ir = parser.parse(dsl_source)
         output = codegen.generate(ir)
 
-        # Should generate 10 servers
+        # Should generate 10 servers with template properties
         for i in range(1, 11):
-            assert f"server api{i} 10.0.1.{i}:8080" in output
+            assert f"server api{i} 10.0.1.{i}:8080 check inter 3s" in output
 
     def test_server_template_example(self, parser, codegen):
         """Test server template example."""
@@ -291,9 +300,18 @@ class TestPatternsExamples:
     """Tests for PATTERNS.md examples."""
 
     def test_server_pool_generation(self, parser, codegen):
-        """Test server pool generation pattern with loops."""
+        """Test server pool generation pattern with templates and loops."""
         dsl_source = """
 config api_cluster {
+  template standard_server {
+    check: true
+    inter: 3s
+    fall: 3
+    rise: 2
+    weight: 100
+    maxconn: 500
+  }
+
   backend api_servers {
     balance: roundrobin
     option: ["httpchk GET /health"]
@@ -303,7 +321,7 @@ config api_cluster {
         server "api${i}" {
           address: "10.0.1.${i}"
           port: 8080
-          check: true
+          @standard_server
         }
       }
     }
@@ -313,17 +331,19 @@ config api_cluster {
         ir = parser.parse(dsl_source)
         output = codegen.generate(ir)
 
-        # Should have 10 servers
-        assert output.count("server api") == 10
+        # Should have 10 servers with template properties
+        assert output.count("check inter 3s") == 10
         assert "option httpchk GET /health" in output
 
     def test_multi_environment_config(self, parser, codegen):
-        """Test multi-environment config pattern."""
+        """Test multi-environment config pattern with variable in maxconn."""
         dsl_source = """
 config multi_env {
+  let maxconn_val = 1000
+
   global {
     daemon: true
-    maxconn: 1000
+    maxconn: ${maxconn_val}
     log "/dev/log" local0 info
   }
 
@@ -360,7 +380,7 @@ config multi_env {
         ir = parser.parse(dsl_source)
         output = codegen.generate(ir)
 
-        # Config values should be in output
+        # Variable resolved maxconn should be in output
         assert "maxconn 1000" in output
         assert "timeout client 30s" in output
         assert "server api1 api.internal:8080 check" in output
@@ -667,6 +687,14 @@ config production {
     retries: 3
   }
 
+  template prod_server {
+    check: true
+    inter: 3s
+    fall: 3
+    rise: 2
+    maxconn: 500
+  }
+
   template http_health {
     method: "GET"
     uri: "/health"
@@ -694,7 +722,7 @@ config production {
         server "api${i}" {
           address: "10.0.1.${i}"
           port: 8080
-          check: true
+          @prod_server
         }
       }
     }
@@ -719,8 +747,9 @@ config production {
         # ACL template
         assert "acl is_api path_beg /api/" in output
 
-        # Servers generated from loop
-        assert output.count("server api") == 5
+        # Server template properties on all 5 servers
+        assert output.count("check inter 3s") == 5
+        assert output.count("maxconn 500") == 5
 
     def test_backend_templates_section(self, parser, codegen):
         """Test backend templates section example."""
@@ -793,13 +822,18 @@ config test {
         assert "example.com" in output
 
     def test_combined_loop_and_template(self, parser, codegen):
-        """Test loops with inline server properties."""
+        """Test complex combination of loops and templates."""
         dsl_source = """
 config test {
+  template prod {
+    check: true
+    inter: 3s
+  }
+
   backend api {
     servers {
       for i in [1..3] {
-        server "api${i}" { address: "10.0.1.${i}", port: 8080, check: true }
+        server "api${i}" { address: "10.0.1.${i}", port: 8080, @prod }
       }
     }
   }
@@ -809,7 +843,7 @@ config test {
         output = codegen.generate(ir)
 
         for i in range(1, 4):
-            assert f"server api{i} 10.0.1.{i}:8080 check" in output
+            assert f"server api{i} 10.0.1.{i}:8080 check inter 3s" in output
 
     def test_nested_variable_resolution(self, parser, codegen):
         """Test nested variable resolution."""
@@ -833,3 +867,53 @@ config test {
         output = codegen.generate(ir)
 
         assert "server api1 10.0.1.1:8080" in output
+
+    def test_env_function_with_default(self, parser, codegen):
+        """Test env() function with default value."""
+        import os
+
+        # Test with unset variable (uses default)
+        dsl_source = """
+config test {
+  let api_host = env("HAPROXY_TEST_UNSET_VAR", "default.host.com")
+
+  backend api {
+    servers {
+      server api1 { address: "${api_host}", port: 8080 }
+    }
+  }
+}
+"""
+        ir = parser.parse(dsl_source)
+        output = codegen.generate(ir)
+
+        # Should use default value
+        assert "server api1 default.host.com:8080" in output
+
+    def test_env_function_with_set_variable(self, parser, codegen):
+        """Test env() function with set environment variable."""
+        import os
+
+        # Set the environment variable
+        os.environ["HAPROXY_TEST_API_HOST"] = "env.host.com"
+
+        try:
+            dsl_source = """
+config test {
+  let api_host = env("HAPROXY_TEST_API_HOST", "default.host.com")
+
+  backend api {
+    servers {
+      server api1 { address: "${api_host}", port: 8080 }
+    }
+  }
+}
+"""
+            ir = parser.parse(dsl_source)
+            output = codegen.generate(ir)
+
+            # Should use environment variable value
+            assert "server api1 env.host.com:8080" in output
+        finally:
+            # Clean up
+            del os.environ["HAPROXY_TEST_API_HOST"]
