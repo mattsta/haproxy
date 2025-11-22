@@ -147,14 +147,14 @@ config multi_env {
 # Production: 10 servers, longer timeouts
 DEPLOY_ENV=production SERVER_COUNT=10 API_HOST=api.prod.internal \
   TIMEOUT_CLIENT=60s TIMEOUT_SERVER=60s MAXCONN=50000 \
-  uv run haproxy-translate config.hap -o haproxy.cfg
+  uv run haconf config.hap -o haproxy.cfg
 
 # Staging: 3 servers
 DEPLOY_ENV=staging SERVER_COUNT=3 API_HOST=api.staging.internal \
-  uv run haproxy-translate config.hap -o haproxy.cfg
+  uv run haconf config.hap -o haproxy.cfg
 
 # Development: defaults (2 servers, localhost)
-uv run haproxy-translate config.hap -o haproxy.cfg
+uv run haconf config.hap -o haproxy.cfg
 ```
 
 ### Key Benefits
@@ -338,7 +338,7 @@ config blue_green {
 ```bash
 # Normal operation - blue active (blue_weight=100, green_weight=0)
 # Edit the let statements in config.hap and regenerate:
-uv run haproxy-translate config.hap -o haproxy.cfg
+uv run haconf config.hap -o haproxy.cfg
 
 # Canary deployment - 90% blue, 10% green:
 # let blue_weight = 90

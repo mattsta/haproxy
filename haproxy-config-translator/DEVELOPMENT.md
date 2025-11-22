@@ -78,16 +78,16 @@ uv run pytest -vv
 
 ```bash
 # Run translator
-uv run haproxy-translate config.hap -o haproxy.cfg
+uv run haconf config.hap -o haproxy.cfg
 
 # Validate only
-uv run haproxy-translate config.hap --validate
+uv run haconf config.hap --validate
 
 # Watch mode
-uv run haproxy-translate config.hap -o haproxy.cfg --watch
+uv run haconf config.hap -o haproxy.cfg --watch
 
 # Debug mode
-uv run haproxy-translate config.hap --debug
+uv run haconf config.hap --debug
 ```
 
 ### Complete Quality Check
@@ -103,7 +103,7 @@ uv run pytest --cov
 ## Project Structure
 
 ```
-haproxy-config-translator/
+haproxy-translate/
 ├── src/haproxy_translator/
 │   ├── parsers/          # Pluggable parser system
 │   ├── ir/               # Intermediate representation

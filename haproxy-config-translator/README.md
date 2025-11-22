@@ -110,8 +110,8 @@ let api_host = env("API_HOST", "localhost");
 pip install uv -U
 
 # Clone and install
-git clone https://github.com/mattsta/haproxy-config-translator.git
-cd haproxy-config-translator
+git clone https://github.com/mattsta/haproxy-translate.git
+cd haproxy-translate
 uv sync
 ```
 
@@ -119,17 +119,17 @@ uv sync
 
 ```bash
 # Translate DSL config to HAProxy format
-uv run haproxy-translate config.hap -o haproxy.cfg
+uv run haconf config.hap -o haproxy.cfg
 
 # Validate configuration
-uv run haproxy-translate config.hap --validate
+uv run haconf config.hap --validate
 
 # Run security validation
-uv run haproxy-translate config.hap --security-check
+uv run haconf config.hap --security-check
 
 # With environment variables
 SERVER_COUNT=10 API_HOST=api.prod.internal \
-  uv run haproxy-translate config.hap -o haproxy.cfg
+  uv run haconf config.hap -o haproxy.cfg
 ```
 
 ### Example Configuration
@@ -179,7 +179,7 @@ config my_loadbalancer {
 Run security checks on your configuration to detect common issues:
 
 ```bash
-uv run haproxy-translate config.hap --security-check
+uv run haconf config.hap --security-check
 ```
 
 The security validator checks for:

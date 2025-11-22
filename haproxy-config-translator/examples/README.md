@@ -18,7 +18,7 @@ This directory contains example configurations demonstrating various features of
 **Generate:**
 
 ```bash
-haproxy-translate examples/01-simple-loadbalancer.hap -o haproxy.cfg
+haconf examples/01-simple-loadbalancer.hap -o haproxy.cfg
 ```
 
 ---
@@ -42,7 +42,7 @@ haproxy-translate examples/01-simple-loadbalancer.hap -o haproxy.cfg
 ```bash
 # Set SSL certificate path
 export SSL_CERT_PATH=/etc/haproxy/certs/mysite.pem
-haproxy-translate examples/02-ssl-termination.hap -o haproxy.cfg
+haconf examples/02-ssl-termination.hap -o haproxy.cfg
 ```
 
 ---
@@ -66,7 +66,7 @@ haproxy-translate examples/02-ssl-termination.hap -o haproxy.cfg
 **Generate:**
 
 ```bash
-haproxy-translate examples/03-acl-routing.hap -o haproxy.cfg
+haconf examples/03-acl-routing.hap -o haproxy.cfg
 ```
 
 ---
@@ -92,7 +92,7 @@ export NUM_SERVERS=20
 export BASE_IP=10.0.1
 export BACKEND_PORT=8080
 export MAX_CONN=8192
-haproxy-translate examples/04-dynamic-scaling.hap -o haproxy.cfg
+haconf examples/04-dynamic-scaling.hap -o haproxy.cfg
 ```
 
 ---
@@ -114,15 +114,15 @@ haproxy-translate examples/04-dynamic-scaling.hap -o haproxy.cfg
 ```bash
 # Production
 export ENVIRONMENT=production
-haproxy-translate examples/05-multi-environment.hap -o haproxy-prod.cfg
+haconf examples/05-multi-environment.hap -o haproxy-prod.cfg
 
 # Staging
 export ENVIRONMENT=staging
-haproxy-translate examples/05-multi-environment.hap -o haproxy-staging.cfg
+haconf examples/05-multi-environment.hap -o haproxy-staging.cfg
 
 # Development
 export ENVIRONMENT=development
-haproxy-translate examples/05-multi-environment.hap -o haproxy-dev.cfg
+haconf examples/05-multi-environment.hap -o haproxy-dev.cfg
 ```
 
 ---
@@ -134,7 +134,7 @@ haproxy-translate examples/05-multi-environment.hap -o haproxy-dev.cfg
 Before generating, always validate:
 
 ```bash
-haproxy-translate examples/01-simple-loadbalancer.hap --validate
+haconf examples/01-simple-loadbalancer.hap --validate
 ```
 
 ### Generate with Debug Info
@@ -142,7 +142,7 @@ haproxy-translate examples/01-simple-loadbalancer.hap --validate
 See what transformations are applied:
 
 ```bash
-haproxy-translate examples/04-dynamic-scaling.hap --debug
+haconf examples/04-dynamic-scaling.hap --debug
 ```
 
 ### Watch Mode
@@ -150,7 +150,7 @@ haproxy-translate examples/04-dynamic-scaling.hap --debug
 Auto-regenerate on changes (useful during development):
 
 ```bash
-haproxy-translate examples/03-acl-routing.hap -o haproxy.cfg --watch --verbose
+haconf examples/03-acl-routing.hap -o haproxy.cfg --watch --verbose
 ```
 
 ### Verify with HAProxy
@@ -158,7 +158,7 @@ haproxy-translate examples/03-acl-routing.hap -o haproxy.cfg --watch --verbose
 Always validate generated config with HAProxy:
 
 ```bash
-haproxy-translate examples/02-ssl-termination.hap -o haproxy.cfg
+haconf examples/02-ssl-termination.hap -o haproxy.cfg
 haproxy -c -f haproxy.cfg
 ```
 
@@ -177,7 +177,7 @@ export MAX_CONN=4096
 export SSL_CERT_PATH=/etc/haproxy/certs/site.pem
 
 # Generate configuration
-haproxy-translate examples/04-dynamic-scaling.hap -o haproxy.cfg
+haconf examples/04-dynamic-scaling.hap -o haproxy.cfg
 ```
 
 ### Template Reuse
@@ -225,7 +225,7 @@ servers {
 1. **Always validate** before deploying:
 
    ```bash
-   haproxy-translate config.hap --validate
+   haconf config.hap --validate
    ```
 
 2. **Use environment variables** for secrets and environment-specific values
@@ -262,4 +262,4 @@ For more advanced patterns, see:
 
 - Check the [USAGE.md](../USAGE.md) guide
 - Read the [README.md](../README.md) for project overview
-- Report issues at https://github.com/mattsta/haproxy-config-translator/issues
+- Report issues at https://github.com/mattsta/haproxy-translate/issues

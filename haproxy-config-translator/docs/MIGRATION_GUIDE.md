@@ -865,7 +865,7 @@ server api1 address: "10.0.1.1" port: 8080 check: true
 ### 7. Validate Early and Often
 
 ```bash
-uv run haproxy-translate config.hap --validate
+uv run haconf config.hap --validate
 ```
 
 ---

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Generate comprehensive feature parity report comparing HAProxy documentation
-with the haproxy-config-translator implementation.
+with the haproxy-translate implementation.
 """
 
 import re
@@ -322,7 +322,7 @@ class DirectiveExtractor:
 
 
 class ImplementationAnalyzer:
-    """Analyze the haproxy-config-translator implementation."""
+    """Analyze the haproxy-translate implementation."""
 
     def __init__(self, base_path):
         self.base_path = Path(base_path)
@@ -590,7 +590,7 @@ def generate_report(output_path, doc_data, impl_data, test_data):
     report.append(
         "This report provides a comprehensive analysis of feature parity between the official HAProxy 3.3"
     )
-    report.append("configuration language and the haproxy-config-translator implementation.")
+    report.append("configuration language and the haproxy-translate implementation.")
     report.append("")
 
     # Coverage Statistics
@@ -726,7 +726,7 @@ def generate_report(output_path, doc_data, impl_data, test_data):
     # Implementation Strengths
     report.append("## Implementation Strengths")
     report.append("")
-    report.append("The haproxy-config-translator excels in several areas:")
+    report.append("The haproxy-translate excels in several areas:")
     report.append("")
     report.append("### ✅ Well-Implemented Features")
     report.append("")
@@ -856,7 +856,7 @@ def generate_report(output_path, doc_data, impl_data, test_data):
     report.append("## Conclusion")
     report.append("")
     report.append(
-        f"The haproxy-config-translator currently implements **{global_cov['covered']}** out of "
+        f"The haproxy-translate currently implements **{global_cov['covered']}** out of "
     )
     report.append(
         f"**{global_cov['total']}** global directives ({global_cov['coverage_pct']:.1f}% coverage), "
@@ -926,8 +926,8 @@ def main():
 
     # Paths
     doc_path = "/home/user/haproxy/doc/configuration.txt"
-    base_path = "/home/user/haproxy/haproxy-config-translator"
-    output_path = "/home/user/haproxy/haproxy-config-translator/FEATURE_PARITY_REPORT.md"
+    base_path = "/home/user/haproxy/haproxy-translate"
+    output_path = "/home/user/haproxy/haproxy-translate/FEATURE_PARITY_REPORT.md"
 
     # Extract documentation data
     print("📖 Extracting from HAProxy documentation...")

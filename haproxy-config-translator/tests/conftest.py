@@ -1,4 +1,4 @@
-"""Pytest fixtures for haproxy-config-translator tests."""
+"""Pytest fixtures for haproxy-translate tests."""
 
 import pytest
 

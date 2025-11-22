@@ -53,7 +53,7 @@ class TestCLI:
         """Test version flag."""
         result = runner.invoke(cli, ["--version"])
         assert result.exit_code == 0
-        assert "haproxy-translate" in result.output
+        assert "haconf" in result.output
 
     def test_list_formats(self, runner, sample_config):
         """Test listing available formats."""

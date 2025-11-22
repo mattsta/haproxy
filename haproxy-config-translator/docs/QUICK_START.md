@@ -1,6 +1,6 @@
-# HAProxy Config Translator - Quick Start Guide
+# haproxy-translate - Quick Start Guide
 
-Get up and running with the HAProxy Config Translator in 5 minutes.
+Get up and running with haproxy-translate in 5 minutes.
 
 ## Installation
 
@@ -9,8 +9,8 @@ Get up and running with the HAProxy Config Translator in 5 minutes.
 pip install uv -U
 
 # Clone the repository
-git clone https://github.com/mattsta/haproxy-config-translator.git
-cd haproxy-config-translator
+git clone https://github.com/mattsta/haproxy-translate.git
+cd haproxy-translate
 
 # Install dependencies
 uv sync
@@ -73,13 +73,13 @@ config my_loadbalancer {
 
 ```bash
 # Translate to native HAProxy config
-uv run haproxy-translate my-config.hap -o haproxy.cfg
+uv run haconf my-config.hap -o haproxy.cfg
 
 # Or output to stdout
-uv run haproxy-translate my-config.hap
+uv run haconf my-config.hap
 
 # Validate without generating
-uv run haproxy-translate my-config.hap --validate
+uv run haconf my-config.hap --validate
 ```
 
 ## Output
@@ -371,21 +371,21 @@ See **[PATTERNS.md](PATTERNS.md)** for comprehensive examples:
 
 ```bash
 # Translate a config file
-uv run haproxy-translate config.hap -o output.cfg
+uv run haconf config.hap -o output.cfg
 
 # Validate only (no output)
-uv run haproxy-translate config.hap --validate
+uv run haconf config.hap --validate
 
 # Show verbose output
-uv run haproxy-translate config.hap -v
+uv run haconf config.hap -v
 ```
 
 ## Getting Help
 
 ```bash
 # Show help
-uv run haproxy-translate --help
+uv run haconf --help
 
 # Show version
-uv run haproxy-translate --version
+uv run haconf --version
 ```

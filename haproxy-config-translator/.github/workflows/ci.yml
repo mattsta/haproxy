@@ -144,4 +144,4 @@ jobs:
 
       - name: Test CLI installation
         run: |
-          uv run haproxy-translate --help
+          uv run haconf --help

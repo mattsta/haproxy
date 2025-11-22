@@ -3,9 +3,9 @@ requires = ["setuptools>=65.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "haproxy-config-translator"
+name = "haproxy-translate"
 version = "0.5.0"
-description = "Modern, powerful configuration translator for HAProxy with pluggable parsers"
+description = "Modern, powerful DSL and configuration translator for HAProxy"
 readme = "README.md"
 requires-python = ">=3.14"
 license = {text = "MIT"}
@@ -45,12 +45,12 @@ hcl = [
 ]
 
 [project.scripts]
-haproxy-translate = "haproxy_translator.cli.main:cli"
+haconf = "haproxy_translator.cli.main:cli"
 
 [project.urls]
-Homepage = "https://github.com/mattsta/haproxy-config-translator"
-Documentation = "https://github.com/mattsta/haproxy-config-translator#readme"
-Repository = "https://github.com/mattsta/haproxy-config-translator"
+Homepage = "https://github.com/mattsta/haproxy-translate"
+Documentation = "https://github.com/mattsta/haproxy-translate#readme"
+Repository = "https://github.com/mattsta/haproxy-translate"
 
 [tool.setuptools.packages.find]
 where = ["src"]

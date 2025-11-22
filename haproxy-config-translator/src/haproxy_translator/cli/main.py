@@ -46,7 +46,7 @@ console = Console()
 @click.option("--list-formats", is_flag=True, help="List available input formats")
 @click.option("-v", "--verbose", is_flag=True, help="Verbose output")
 @click.option("--security-check", is_flag=True, help="Run security validation and show report")
-@click.version_option(version=__version__, prog_name="haproxy-translate")
+@click.version_option(version=__version__, prog_name="haconf")
 def cli(
     config_file: Path,
     output: Path | None,
@@ -60,15 +60,15 @@ def cli(
     security_check: bool,
 ) -> None:
     """
-    HAProxy Configuration Translator.
+    haconf - HAProxy Configuration Translator.
 
     Translate modern configuration formats (DSL, YAML, HCL) to native HAProxy format.
 
     \b
     Examples:
-        haproxy-translate config.hap -o haproxy.cfg
-        haproxy-translate config.yaml --format yaml --validate
-        haproxy-translate config.hap -o haproxy.cfg --watch
+        haconf config.hap -o haproxy.cfg
+        haconf config.yaml --format yaml --validate
+        haconf config.hap -o haproxy.cfg --watch
     """
     if list_formats:
         _list_formats()

@@ -28,8 +28,8 @@ This comprehensive guide covers all aspects of using the HAProxy Configuration T
 pip install uv -U
 
 # Clone the repository
-git clone https://github.com/mattsta/haproxy-config-translator.git
-cd haproxy-config-translator
+git clone https://github.com/mattsta/haproxy-translate.git
+cd haproxy-translate
 
 # Sync dependencies
 uv sync
@@ -42,7 +42,7 @@ uv sync
 uv sync --dev
 
 # Verify installation
-uv run haproxy-translate --version
+uv run haconf --version
 ```
 
 ---
@@ -54,31 +54,31 @@ uv run haproxy-translate --version
 **Translate to stdout:**
 
 ```bash
-uv run haproxy-translate config.hap
+uv run haconf config.hap
 ```
 
 **Translate to file:**
 
 ```bash
-uv run haproxy-translate config.hap -o /etc/haproxy/haproxy.cfg
+uv run haconf config.hap -o /etc/haproxy/haproxy.cfg
 ```
 
 **Validate only (no output):**
 
 ```bash
-uv run haproxy-translate config.hap --validate
+uv run haconf config.hap --validate
 ```
 
 **Security validation:**
 
 ```bash
-uv run haproxy-translate config.hap --security-check
+uv run haconf config.hap --security-check
 ```
 
 **Watch mode (auto-regenerate on changes):**
 
 ```bash
-uv run haproxy-translate config.hap -o haproxy.cfg --watch
+uv run haconf config.hap -o haproxy.cfg --watch
 ```
 
 ### Debugging and Inspection
@@ -86,7 +86,7 @@ uv run haproxy-translate config.hap -o haproxy.cfg --watch
 **Show IR debug information:**
 
 ```bash
-uv run haproxy-translate config.hap --debug
+uv run haconf config.hap --debug
 ```
 
 Output includes:
@@ -100,7 +100,7 @@ Output includes:
 **Verbose output:**
 
 ```bash
-uv run haproxy-translate config.hap -o haproxy.cfg --verbose
+uv run haconf config.hap -o haproxy.cfg --verbose
 ```
 
 Shows:
@@ -116,19 +116,19 @@ Shows:
 **Auto-detect format (default):**
 
 ```bash
-uv run haproxy-translate config.hap  # .hap → DSL parser
+uv run haconf config.hap  # .hap → DSL parser
 ```
 
 **Explicit format:**
 
 ```bash
-uv run haproxy-translate config.txt --format dsl
+uv run haconf config.txt --format dsl
 ```
 
 **List available formats:**
 
 ```bash
-uv run haproxy-translate --list-formats
+uv run haconf --list-formats
 ```
 
 ### Lua Script Options
@@ -136,7 +136,7 @@ uv run haproxy-translate --list-formats
 **Custom Lua output directory:**
 
 ```bash
-uv run haproxy-translate config.hap -o haproxy.cfg --lua-dir /etc/haproxy/lua
+uv run haconf config.hap -o haproxy.cfg --lua-dir /etc/haproxy/lua
 ```
 
 Default behavior:
@@ -1023,7 +1023,7 @@ Error: Syntax error at line 15, column 10
 **Enable debug mode to see parse tree:**
 
 ```bash
-haproxy-translate config.hap --debug
+haconf config.hap --debug
 ```
 
 ### Type Errors
@@ -1200,10 +1200,10 @@ Always validate configuration before deploying:
 
 ```bash
 # Validate syntax and semantics
-haproxy-translate config.hap --validate
+haconf config.hap --validate
 
 # If valid, generate
-haproxy-translate config.hap -o haproxy.cfg
+haconf config.hap -o haproxy.cfg
 
 # Validate with HAProxy
 haproxy -c -f haproxy.cfg
@@ -1333,7 +1333,7 @@ backend app {
 During development, use watch mode for instant feedback:
 
 ```bash
-haproxy-translate config.hap -o haproxy.cfg --watch --verbose
+haconf config.hap -o haproxy.cfg --watch --verbose
 ```
 
 Changes to `config.hap` will automatically regenerate `haproxy.cfg`.
@@ -1345,12 +1345,12 @@ Changes to `config.hap` will automatically regenerate `haproxy.cfg`.
 - Review [FEATURE_PARITY_REPORT.md](FEATURE_PARITY_REPORT.md) for feature coverage details
 - Check [examples/](examples/) for more complex configurations
 - See [DEVELOPMENT.md](DEVELOPMENT.md) for contribution guidelines
-- Contribute at [GitHub](https://github.com/mattsta/haproxy-config-translator)
+- Contribute at [GitHub](https://github.com/mattsta/haproxy-translate)
 
 ---
 
 **Questions or Issues?**
 
-- Report bugs: https://github.com/mattsta/haproxy-config-translator/issues
-- Discussions: https://github.com/mattsta/haproxy-config-translator/discussions
+- Report bugs: https://github.com/mattsta/haproxy-translate/issues
+- Discussions: https://github.com/mattsta/haproxy-translate/discussions
 - HAProxy docs: https://docs.haproxy.org/
