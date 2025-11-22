@@ -15,59 +15,65 @@ This document provides a complete reference for the HAProxy DSL syntax.
 9. [Resolvers Section](#resolvers-section)
 10. [Peers Section](#peers-section)
 11. [Mailers Section](#mailers-section)
-12. [Loops](#loops)
-13. [Comments](#comments)
+12. [Templates](#templates)
+13. [Loops](#loops)
+14. [Comments](#comments)
 
 ---
 
 ## File Structure
 
-A configuration file consists of one or more sections:
+**IMPORTANT:** Every DSL configuration file must be wrapped in a `config name { }` block:
 
 ```javascript
-// Optional: Variable definitions
-variables {
-    // ...
-}
+config my_config {
+  // Optional: Variable definitions
+  let variable_name = value
 
-// Optional: Global settings
-global {
+  // Optional: Templates
+  template template_name {
     // ...
-}
+  }
 
-// Optional: Default settings
-defaults {
+  // Optional: Global settings
+  global {
     // ...
-}
+  }
 
-// One or more frontends
-frontend name {
+  // Optional: Default settings
+  defaults {
     // ...
-}
+  }
 
-// One or more backends
-backend name {
+  // One or more frontends
+  frontend name {
     // ...
-}
+  }
 
-// Combined frontend+backend
-listen name {
+  // One or more backends
+  backend name {
     // ...
-}
+  }
 
-// Optional: DNS resolution
-resolvers name {
+  // Combined frontend+backend
+  listen name {
     // ...
-}
+  }
 
-// Optional: Peer synchronization
-peers name {
+  // Optional: DNS resolution
+  resolvers name {
     // ...
-}
+  }
 
-// Optional: Email alerts
-mailers name {
+  // Optional: Peer synchronization
+  peers name {
     // ...
+  }
+
+  // Optional: Email alerts
+  mailers name {
+    // ...
+  }
 }
 ```
 
@@ -78,9 +84,7 @@ mailers name {
 ### Strings
 ```javascript
 // Double-quoted strings
-log: "127.0.0.1 local0"
-
-// Can contain special characters
+log: "/dev/log"
 path: "/var/lib/haproxy"
 
 // Can include variables
@@ -98,41 +102,40 @@ port: 8080
 ```javascript
 daemon: true
 check: false
+// Also accepts: yes, no, on, off, 1, 0
 ```
 
 ### Durations
+Durations are specified without quotes:
 ```javascript
-timeout: "30s"      // seconds
-timeout: "5m"       // minutes
-timeout: "1h"       // hours
-timeout: "1d"       // days
-timeout: "500ms"    // milliseconds
-timeout: "1h30m"    // combined
+timeout: {
+  connect: 5s       // seconds
+  client: 30s
+  server: 5m        // minutes
+  tunnel: 1h        // hours
+  check: 500ms      // milliseconds
+}
+```
+
+### Identifiers
+Some values like `mode` take identifiers, not strings:
+```javascript
+// Correct - identifier without quotes
+mode: http
+mode: tcp
+balance: roundrobin
+
+// Incorrect - don't quote these
+mode: "http"  // Wrong!
 ```
 
 ### Arrays
 ```javascript
 // Simple array
-options: ["httplog", "dontlognull"]
+option: ["httplog", "dontlognull"]
 
-// Array of objects
-servers: [
-    { name: "web1", address: "10.0.1.1", port: 8080 },
-    { name: "web2", address: "10.0.1.2", port: 8080 }
-]
-```
-
-### Objects
-```javascript
-// Inline object
-ssl: { cert: "/path/to/cert.pem", verify: "required" }
-
-// Multi-line object
-ssl: {
-    cert: "/path/to/cert.pem"
-    ca_file: "/path/to/ca.pem"
-    verify: "required"
-}
+// Multi-line array
+alpn: ["h2", "http/1.1"]
 ```
 
 ---
@@ -140,37 +143,44 @@ ssl: {
 ## Variables
 
 ### Variable Definition
+Variables are defined with `let`:
 ```javascript
-variables {
-    // Simple values
-    app_port = 8080
-    check_interval = "3s"
+config my_config {
+  // Simple values
+  let app_port = 8080
+  let check_interval = 3s
 
-    // Strings
-    log_server = "127.0.0.1"
+  // Strings
+  let log_server = "/dev/log"
 
-    // Can reference other variables
-    full_log = "${log_server} local0"
-}
-```
-
-### Variable Usage
-```javascript
-backend api {
-    servers: [
-        { name: "api1", address: "10.0.1.1", port: ${app_port} }
-    ]
+  backend api {
+    servers {
+      server api1 {
+        address: "10.0.1.1"
+        port: ${app_port}
+        inter: ${check_interval}
+      }
+    }
+  }
 }
 ```
 
 ### Environment Variables
 ```javascript
-global {
+config my_config {
+  global {
     // Direct reference
     maxconn: ${env.HAPROXY_MAXCONN}
+  }
 
-    // With default value
-    maxconn: ${env.HAPROXY_MAXCONN:-4096}
+  backend api {
+    servers {
+      server api1 {
+        address: "${env.API_HOST}"
+        port: 8080
+      }
+    }
+  }
 }
 ```
 
@@ -179,7 +189,8 @@ global {
 ## Global Section
 
 ```javascript
-global {
+config my_config {
+  global {
     // === Process Management ===
     daemon: true                    // Run as daemon
     user: "haproxy"                 // Run as user
@@ -195,17 +206,16 @@ global {
 
     // === Threading ===
     nbthread: 4                     // Number of threads
-    nbproc: 1                       // Number of processes (deprecated)
 
     // === Logging ===
-    log: "127.0.0.1 local0"        // Log destination
-    log-send-hostname: true        // Include hostname
+    log "/dev/log" local0 info     // Log destination (directive style)
+    log-send-hostname: "myhost"    // Include hostname
     log-tag: "haproxy"             // Log tag
 
     // === SSL/TLS Defaults ===
     ssl-default-bind-ciphers: "ECDHE-ECDSA-AES128-GCM-SHA256:..."
     ssl-default-bind-ciphersuites: "TLS_AES_128_GCM_SHA256:..."
-    ssl-default-bind-options: "ssl-min-ver TLSv1.2 no-tls-tickets"
+    ssl-default-bind-options: ["ssl-min-ver TLSv1.2", "no-tls-tickets"]
     ssl-default-server-ciphers: "ECDHE-ECDSA-AES128-GCM-SHA256"
     ssl-dh-param-file: "/etc/haproxy/dhparam.pem"
     ca-base: "/etc/ssl/certs"
@@ -220,11 +230,11 @@ global {
     tune.comp.maxlevel: 5
 
     // === Stats Socket ===
-    stats_socket: {
-        path: "/var/run/haproxy.sock"
-        level: "admin"
-        mode: "660"
+    stats_socket "/var/run/haproxy.sock" {
+      level: "admin"
+      mode: "660"
     }
+  }
 }
 ```
 
@@ -237,63 +247,38 @@ The translator supports all 165 non-deprecated HAProxy global directives. See [F
 ## Defaults Section
 
 ```javascript
-defaults {
+config my_config {
+  defaults {
     // === Mode ===
-    mode: "http"                    // http or tcp
+    mode: http                      // http or tcp (identifier, not string)
 
     // === Timeouts ===
-    timeouts: {
-        connect: "5s"               // Backend connection timeout
-        client: "30s"               // Client inactivity timeout
-        server: "30s"               // Server inactivity timeout
-        check: "5s"                 // Health check timeout
-        http_request: "10s"         // HTTP request timeout
-        http_keep_alive: "10s"      // Keep-alive timeout
-        queue: "30s"                // Queue timeout
-        tunnel: "1h"                // Tunnel timeout
-        tarpit: "10s"               // Tarpit delay
+    timeout: {
+      connect: 5s                   // Backend connection timeout
+      client: 30s                   // Client inactivity timeout
+      server: 30s                   // Server inactivity timeout
+      check: 5s                     // Health check timeout
+      http_request: 10s             // HTTP request timeout
+      http_keep_alive: 10s          // Keep-alive timeout
+      queue: 30s                    // Queue timeout
+      tunnel: 1h                    // Tunnel timeout
     }
 
     // === Options ===
-    options: [
-        "httplog",
-        "dontlognull",
-        "http-server-close",
-        "forwardfor except 127.0.0.0/8",
-        "redispatch"
+    option: [
+      "httplog",
+      "dontlognull",
+      "http-server-close",
+      "forwardfor except 127.0.0.0/8",
+      "redispatch"
     ]
 
     // === Retries ===
     retries: 3
-    retry_on: "conn-failure empty-response response-timeout"
 
-    // === Error Files ===
-    errorfiles: {
-        400: "/etc/haproxy/errors/400.http"
-        403: "/etc/haproxy/errors/403.http"
-        500: "/etc/haproxy/errors/500.http"
-    }
-
-    // === Connection Reuse ===
-    http_reuse: "safe"              // never, safe, aggressive, always
-
-    // === Logging ===
-    log_format: "%ci:%cp [%tr] %ft %b/%s %TR/%Tw/%Tc/%Tr/%Ta %ST %B %CC"
-    log_tag: "haproxy"
-
-    // === Compression ===
-    compression: {
-        algo: "gzip"
-        type: "text/html text/plain application/json"
-    }
-
-    // === Default Server Options ===
-    default_server: {
-        check: true
-        inter: "3s"
-        fall: 3
-        rise: 2
-    }
+    // === Error Handling ===
+    errorloc 503 "http://maintenance.example.com"
+  }
 }
 ```
 
@@ -302,113 +287,100 @@ defaults {
 ## Frontend Section
 
 ```javascript
-frontend name {
+config my_config {
+  frontend web {
     // === Bind Addresses ===
-    bind: "*:80"                    // Simple bind
+    bind *:80                       // Simple bind (directive style)
 
-    // Multiple/complex binds
-    binds: [
-        { address: "*:80" },
-        {
-            address: "*:443",
-            ssl: {
-                cert: "/path/to/cert.pem",
-                ca_file: "/path/to/ca.pem",
-                verify: "optional",
-                alpn: "h2,http/1.1"
-            }
-        },
-        {
-            address: "/var/run/socket.sock",
-            mode: "660",
-            user: "haproxy"
-        }
-    ]
+    // SSL bind
+    bind *:443 ssl {
+      cert: "/path/to/cert.pem"
+      ca-file: "/path/to/ca.pem"
+      verify: "optional"
+      alpn: ["h2", "http/1.1"]
+    }
+
+    // Unix socket bind
+    bind /var/run/socket.sock mode "660" user "haproxy"
 
     // === Mode & Settings ===
-    mode: "http"
+    mode: http                      // http or tcp (identifier)
     maxconn: 10000
     backlog: 10000
 
     // === Logging ===
-    log: "127.0.0.1 local0"
-    log_format: "%ci:%cp [%tr] %ft %b/%s"
-    log_tag: "frontend"
+    log: "/dev/log local0"
+    log-format: "%ci:%cp [%tr] %ft %b/%s"
+    log-tag: "frontend"
 
     // === ACLs ===
-    acls: [
-        { name: "is_api", criterion: "path_beg /api/" },
-        { name: "is_static", criterion: "path_end .jpg .png .css .js" },
-        { name: "host_example", criterion: "hdr(host) -i example.com" },
-        { name: "src_local", criterion: "src 192.168.0.0/16" }
-    ]
+    acl is_api {
+      path_beg "/api/"
+    }
+
+    acl is_static {
+      path_end ".jpg" ".png" ".css" ".js"
+    }
+
+    acl host_example {
+      hdr "host" "-i" "example.com"
+    }
 
     // === Backend Selection ===
-    use_backends: [
-        { backend: "api_servers", condition: "if is_api" },
-        { backend: "static_servers", condition: "if is_static" }
-    ]
-    default_backend: "webservers"
+    use_backend api_servers if is_api
+    use_backend static_servers if is_static
+    default_backend: webservers
 
     // === HTTP Request Rules ===
     http-request {
-        deny if { path_beg /admin } !src_local
-        set-header "X-Forwarded-Proto" "https" if { ssl_fc }
-        add-header "X-Request-ID" "%[uuid()]"
-        redirect scheme "https" unless { ssl_fc }
+      deny if { path_beg /admin } !src_local
+      set-header "X-Forwarded-Proto" "https" if ssl_fc
+      add-header "X-Request-ID" "%[uuid()]"
     }
 
     // === HTTP Response Rules ===
     http-response {
-        set-header "X-Frame-Options" "DENY"
-        del-header "Server"
+      set-header "X-Frame-Options" "DENY"
+      del-header "Server"
     }
 
     // === TCP Rules ===
     tcp-request {
-        connection reject if { src -f /etc/haproxy/blacklist.lst }
-        content accept if { req.ssl_hello_type 1 }
-        inspect-delay "5s"
+      connection reject if { src -f /etc/haproxy/blacklist.lst }
+      content accept if { req.ssl_hello_type 1 }
+      inspect-delay 5s
     }
 
     // === Stick Table ===
-    stick_table: {
-        type: "ip"
-        size: "100k"
-        expire: "30m"
-        store: "conn_cur,conn_rate(10s)"
+    stick-table {
+      type: ip
+      size: 100000
+      expire: 30m
+      store: ["conn_cur", "conn_rate(10s)"]
     }
 
     // === Stats ===
-    stats: {
-        enable: true
-        uri: "/stats"
-        refresh: "10s"
-        auth: "admin:password"
+    stats {
+      enable: true
+      uri: "/stats"
+      refresh: 10s
+      auth: "admin:password"
     }
 
     // === Capture ===
-    captures: [
-        { type: "request", header: "Host", length: 64 },
-        { type: "response", header: "Content-Type", length: 64 }
-    ]
+    capture request header "Host" 64
+    capture response header "Content-Type" 64
 
     // === Rate Limiting ===
-    rate_limit_sessions: 1000
+    rate-limit sessions: 1000
 
     // === Monitoring ===
     monitor_uri: "/health"
-    monitor_fail: "if { nbsrv(backend) lt 1 }"
-
-    // === Compression ===
-    compression: {
-        algo: "gzip"
-        type: "text/html text/plain"
-    }
 
     // === Unique ID ===
-    unique_id_format: "%{+X}o\\ %ci:%cp_%fi:%fp_%Ts_%rt:%pid"
-    unique_id_header: "X-Request-ID"
+    unique-id-format: "%{+X}o %ci:%cp_%fi:%fp_%Ts_%rt:%pid"
+    unique-id-header: "X-Request-ID"
+  }
 }
 ```
 
@@ -417,146 +389,136 @@ frontend name {
 ## Backend Section
 
 ```javascript
-backend name {
+config my_config {
+  backend api {
     // === Mode & Balance ===
-    mode: "http"
-    balance: "roundrobin"           // roundrobin, leastconn, source,
-                                    // uri, url_param, hdr, rdp-cookie,
-                                    // random, first, static-rr, hash
+    mode: http                      // http or tcp (identifier)
+    balance: roundrobin             // roundrobin, leastconn, source,
+                                   // uri, url_param, random, first,
+                                   // static-rr, hdr, rdp-cookie
 
     // === Hash Options ===
-    hash_type: "consistent"         // map-based or consistent
-    hash_balance_factor: 150
+    hash-type: consistent           // map-based or consistent
+    hash-balance-factor: 150
 
     // === Options ===
-    options: [
-        "httpchk GET /health",
-        "http-server-close",
-        "forwardfor"
-    ]
-
-    // === Servers ===
-    servers: [
-        {
-            name: "web1",
-            address: "192.168.1.10",
-            port: 8080,
-            check: true,
-            weight: 10,
-            maxconn: 100,
-            backup: false,
-
-            // Health check options
-            inter: "3s",
-            fall: 3,
-            rise: 2,
-
-            // SSL options
-            ssl: true,
-            verify: "required",
-            ca_file: "/etc/ssl/ca.pem",
-            sni: "req.hdr(host)",
-
-            // Connection options
-            maxqueue: 100,
-            slowstart: "30s",
-
-            // Agent check
-            agent_check: true,
-            agent_addr: "192.168.1.10",
-            agent_port: 9999,
-            agent_inter: "5s"
-        }
-    ]
-
-    // === Server Templates ===
-    server_templates: [
-        {
-            prefix: "srv",
-            range: "1-10",
-            address: "_http._tcp.example.com",
-            port: 8080,
-            check: true,
-            resolvers: "mydns"
-        }
+    option: [
+      "httpchk GET /health",
+      "http-server-close",
+      "forwardfor"
     ]
 
     // === Default Server Options ===
-    default_server: {
+    default-server {
+      check: true
+      inter: 3s
+      fall: 3
+      rise: 2
+      maxconn: 100
+    }
+
+    // === Servers ===
+    servers {
+      server web1 {
+        address: "192.168.1.10"
+        port: 8080
         check: true
-        inter: "3s"
+        weight: 10
+        maxconn: 100
+        backup: false
+
+        // Health check options
+        inter: 3s
         fall: 3
         rise: 2
-        maxconn: 100
+
+        // SSL options
+        ssl: true
+        verify: "required"
+        ca-file: "/etc/ssl/ca.pem"
+        sni: "req.hdr(host)"
+
+        // Connection options
+        maxqueue: 100
+        slowstart: 30s
+
+        // Agent check
+        agent-check: true
+        agent-addr: "192.168.1.10"
+        agent-port: 9999
+        agent-inter: 5s
+      }
+
+      server web2 {
+        address: "192.168.1.11"
+        port: 8080
+        check: true
+        weight: 10
+      }
+    }
+
+    // === Server Templates ===
+    server-template srv [1..10] {
+      address: "_http._tcp.example.com"
+      port: 8080
+      check: true
+      resolvers: "mydns"
     }
 
     // === HTTP Check ===
-    http_check: {
-        send: {
-            method: "GET"
-            uri: "/health"
-            version: "HTTP/1.1"
-            headers: {
-                Host: "api.example.com"
-            }
-        }
-        expect: { status: "200" }
+    http-check {
+      send method GET uri "/health" headers {
+        header "Host" "api.example.com"
+      }
+      expect status 200
     }
 
     // === TCP Check ===
-    tcp_check: [
-        { connect: true },
-        { send: "PING\\r\\n" },
-        { expect: { string: "+PONG" } }
-    ]
+    tcp-check {
+      connect
+      send "PING\r\n"
+      expect string "+PONG"
+    }
 
     // === Stick Table & Rules ===
-    stick_table: {
-        type: "ip"
-        size: "100k"
-        expire: "30m"
-        store: "conn_cur"
+    stick-table {
+      type: ip
+      size: 100000
+      expire: 30m
+      store: ["conn_cur"]
     }
 
-    stick_rules: [
-        { type: "on", pattern: "src" },
-        { type: "match", pattern: "src" },
-        { type: "store-request", pattern: "src" }
-    ]
-
-    // === Cookie Persistence ===
-    cookie: {
-        name: "SERVERID"
-        mode: "insert"
-        options: ["indirect", "nocache"]
-    }
+    stick on src
+    stick match src
+    stick store-request src
 
     // === HTTP Reuse ===
-    http_reuse: "aggressive"
+    http-reuse: aggressive          // never, safe, aggressive, always
 
     // === Retries ===
     retries: 3
-    retry_on: "conn-failure empty-response"
+    retry-on: "conn-failure empty-response"
 
     // === Email Alert ===
-    email_alert: {
-        mailers: "alerters"
-        from: "haproxy@example.com"
-        to: "ops@example.com"
-        level: "alert"
+    email-alert {
+      mailers: alerters
+      from: "haproxy@example.com"
+      to: "ops@example.com"
+      level: alert
     }
 
     // === HTTP Request/Response ===
     http-request {
-        set-header "X-Backend" "api"
+      set-header "X-Backend" "api"
     }
 
     http-response {
-        add-header "X-Served-By" "%s"
+      add-header "X-Served-By" "%s"
     }
 
     // === Source Address ===
     source: "192.168.1.100"
+  }
 }
 ```
 
@@ -567,25 +529,32 @@ backend name {
 The `listen` section combines frontend and backend:
 
 ```javascript
-listen name {
+config my_config {
+  listen stats {
     // All frontend properties
-    bind: "*:8404"
-    mode: "http"
+    bind *:8404
+    mode: http
 
     // All backend properties
-    balance: "roundrobin"
-    servers: [
-        { name: "app1", address: "10.0.1.1", port: 8080, check: true }
-    ]
+    balance: roundrobin
+
+    servers {
+      server app1 {
+        address: "10.0.1.1"
+        port: 8080
+        check: true
+      }
+    }
 
     // Commonly used for stats
-    stats: {
-        enable: true
-        uri: "/stats"
-        refresh: "10s"
-        auth: "admin:password"
-        admin: "if LOCALHOST"
+    stats {
+      enable: true
+      uri: "/stats"
+      refresh: 10s
+      auth: "admin:password"
+      admin if LOCALHOST
     }
+  }
 }
 ```
 
@@ -594,17 +563,17 @@ listen name {
 ## Resolvers Section
 
 ```javascript
-resolvers mydns {
-    nameservers: [
-        { name: "dns1", address: "8.8.8.8", port: 53 },
-        { name: "dns2", address: "8.8.4.4", port: 53 }
-    ]
+config my_config {
+  resolvers mydns {
+    nameserver dns1 "8.8.8.8" 53
+    nameserver dns2 "8.8.4.4" 53
 
     resolve_retries: 3
-    timeout_resolve: "1s"
-    timeout_retry: "1s"
-    hold_valid: "10s"
-    hold_obsolete: "30s"
+    timeout_resolve: 1s
+    timeout_retry: 1s
+    hold_valid: 10s
+    hold_obsolete: 30s
+  }
 }
 ```
 
@@ -613,11 +582,11 @@ resolvers mydns {
 ## Peers Section
 
 ```javascript
-peers mypeers {
-    peer_list: [
-        { name: "haproxy1", address: "192.168.1.1", port: 1024 },
-        { name: "haproxy2", address: "192.168.1.2", port: 1024 }
-    ]
+config my_config {
+  peers mypeers {
+    peer haproxy1 "192.168.1.1" 1024
+    peer haproxy2 "192.168.1.2" 1024
+  }
 }
 ```
 
@@ -626,12 +595,43 @@ peers mypeers {
 ## Mailers Section
 
 ```javascript
-mailers alerters {
-    mailers: [
-        { name: "smtp1", address: "smtp.example.com", port: 587 }
-    ]
+config my_config {
+  mailers alerters {
+    mailer smtp1 "smtp.example.com" 587
+    timeout_mail: 10s
+  }
+}
+```
 
-    timeout: "10s"
+---
+
+## Templates
+
+Templates allow you to define reusable property sets:
+
+```javascript
+config my_config {
+  template server_defaults {
+    check: true
+    inter: 3s
+    rise: 2
+    fall: 3
+  }
+
+  backend api {
+    servers {
+      server api1 {
+        address: "10.0.1.1"
+        port: 8080
+        @server_defaults    // Spread template properties
+      }
+      server api2 {
+        address: "10.0.1.2"
+        port: 8080
+        @server_defaults
+      }
+    }
+  }
 }
 ```
 
@@ -642,24 +642,36 @@ mailers alerters {
 ### For Loop with Range
 
 ```javascript
-backend dynamic {
-    for i in [1, 2, 3, 4, 5] {
-        server "web${i}" "10.0.1.${i}":8080 check
+config my_config {
+  backend dynamic {
+    servers {
+      for i in [1..5] {
+        server "web${i}" {
+          address: "10.0.1.${i}"
+          port: 8080
+          check: true
+        }
+      }
     }
+  }
 }
 ```
 
 ### For Loop with List
 
 ```javascript
-variables {
-    ports = [8080, 8081, 8082]
-}
-
-backend multi_port {
-    for port in ${ports} {
-        server "app_${port}" "10.0.1.1":${port} check
+config my_config {
+  backend multi_port {
+    servers {
+      for port in [8080, 8081, 8082] {
+        server "app_${port}" {
+          address: "10.0.1.1"
+          port: ${port}
+          check: true
+        }
+      }
     }
+  }
 }
 ```
 
@@ -675,10 +687,28 @@ backend multi_port {
  * comment
  */
 
-global {
+config my_config {
+  global {
     daemon: true  // Inline comment
+  }
 }
 ```
+
+---
+
+## Key Syntax Rules
+
+1. **Config Wrapper Required**: All DSL files must be wrapped in `config name { }`
+
+2. **Mode Values Are Identifiers**: Use `mode: http` not `mode: "http"`
+
+3. **Bind Is a Directive**: Use `bind *:80` not `bind: "*:80"`
+
+4. **Servers In Blocks**: Define servers inside `servers { }` blocks
+
+5. **Durations Without Quotes**: Use `inter: 3s` not `inter: "3s"`
+
+6. **Balance Values Are Identifiers**: Use `balance: roundrobin` not `balance: "roundrobin"`
 
 ---
 

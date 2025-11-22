@@ -22,34 +22,50 @@ Create a file called `my-config.hap`:
 
 ```javascript
 // my-config.hap - A simple load balancer
-global {
+config my_loadbalancer {
+  global {
     daemon: true
     maxconn: 4096
-    log: "127.0.0.1 local0"
-}
+    log "/dev/log" local0 info
+  }
 
-defaults {
-    mode: "http"
-    timeouts: {
-        connect: "5s"
-        client: "30s"
-        server: "30s"
+  defaults {
+    mode: http
+    retries: 3
+    timeout: {
+      connect: 5s
+      client: 30s
+      server: 30s
     }
-    options: ["httplog", "dontlognull"]
-}
+    option: ["httplog", "dontlognull"]
+  }
 
-frontend web {
-    bind: "*:80"
-    default_backend: "servers"
-}
+  frontend web {
+    bind *:80
+    default_backend: servers
+  }
 
-backend servers {
-    balance: "roundrobin"
-    servers: [
-        { name: "web1", address: "192.168.1.10", port: 8080, check: true },
-        { name: "web2", address: "192.168.1.11", port: 8080, check: true },
-        { name: "web3", address: "192.168.1.12", port: 8080, check: true }
-    ]
+  backend servers {
+    balance: roundrobin
+
+    servers {
+      server web1 {
+        address: "192.168.1.10"
+        port: 8080
+        check: true
+      }
+      server web2 {
+        address: "192.168.1.11"
+        port: 8080
+        check: true
+      }
+      server web3 {
+        address: "192.168.1.12"
+        port: 8080
+        check: true
+      }
+    }
+  }
 }
 ```
 
@@ -74,10 +90,11 @@ The translator generates standard HAProxy configuration:
 global
     daemon
     maxconn 4096
-    log 127.0.0.1 local0
+    log /dev/log local0 info
 
 defaults
     mode http
+    retries 3
     timeout connect 5s
     timeout client 30s
     timeout server 30s
@@ -95,56 +112,87 @@ backend servers
     server web3 192.168.1.12:8080 check
 ```
 
+## DSL Syntax Essentials
+
+### Config Wrapper
+All DSL files must be wrapped in a `config name { }` block:
+
+```javascript
+config my_config {
+  // All sections go inside here
+  global { ... }
+  defaults { ... }
+  frontend name { ... }
+  backend name { ... }
+}
+```
+
+### Mode Values
+Mode values are identifiers, not strings:
+
+```javascript
+// Correct
+mode: http
+mode: tcp
+
+// Incorrect
+mode: "http"  // Don't quote mode values
+```
+
+### Bind Directive
+Bind addresses are specified without quotes:
+
+```javascript
+// Correct
+bind *:80
+bind 0.0.0.0:443
+
+// With SSL
+bind *:443 ssl { cert: "/path/to/cert.pem" }
+```
+
+### Server Definitions
+Servers are defined inside a `servers { }` block:
+
+```javascript
+backend api {
+  servers {
+    server api1 {
+      address: "10.0.1.1"
+      port: 8080
+      check: true
+      weight: 10
+    }
+  }
+}
+```
+
 ## Why Use the DSL?
 
 ### 1. **Type Safety**
-Catch errors at translation time, not when HAProxy fails to start:
-
-```javascript
-// ❌ HAProxy: Typos silently ignored
-// option htplog  <-- typo not caught until runtime
-
-// ✅ DSL: Structured syntax prevents common errors
-options: ["httplog"]
-```
+Catch errors at translation time, not when HAProxy fails to start.
 
 ### 2. **Modern Syntax**
-Clean, readable configuration:
-
-```javascript
-// ❌ HAProxy: Repetitive, positional arguments
-server web1 192.168.1.10:8080 check weight 10 maxconn 100
-server web2 192.168.1.11:8080 check weight 10 maxconn 100
-server web3 192.168.1.12:8080 check weight 10 maxconn 100
-
-// ✅ DSL: Structured, explicit properties
-servers: [
-    { name: "web1", address: "192.168.1.10", port: 8080,
-      check: true, weight: 10, maxconn: 100 },
-    { name: "web2", address: "192.168.1.11", port: 8080,
-      check: true, weight: 10, maxconn: 100 },
-    { name: "web3", address: "192.168.1.12", port: 8080,
-      check: true, weight: 10, maxconn: 100 }
-]
-```
+Clean, readable configuration with structured blocks.
 
 ### 3. **Variables & Templating**
 DRY configuration with variables:
 
 ```javascript
-variables {
-    app_port = 8080
-    check_interval = "3s"
-    server_weight = 10
-}
+config with_vars {
+  let app_port = 8080
+  let check_interval = 3s
 
-backend api {
-    servers: [
-        { name: "api1", address: "10.0.1.1", port: ${app_port},
-          check: true, inter: ${check_interval}, weight: ${server_weight} },
-        { name: "api2", address: "10.0.1.2", port: ${app_port},
-          check: true, inter: ${check_interval}, weight: ${server_weight} }
-    ]
+  backend api {
+    servers {
+      server api1 {
+        address: "10.0.1.1"
+        port: ${app_port}
+        check: true
+        inter: ${check_interval}
+      }
+    }
+  }
 }
 ```
 
@@ -152,26 +200,42 @@ backend api {
 Generate servers programmatically:
 
 ```javascript
-backend dynamic {
-    for i in [1, 2, 3, 4, 5] {
-        server "node${i}" "10.0.1.${i}":8080 check
+config dynamic {
+  backend nodes {
+    servers {
+      for i in [1, 2, 3, 4, 5] {
+        server "node${i}" {
+          address: "10.0.1.${i}"
+          port: 8080
+          check: true
+        }
+      }
     }
+  }
 }
 ```
 
-### 5. **Environment Variables**
-Inject runtime configuration:
+### 5. **Templates**
+Reuse common configurations:
 
 ```javascript
-global {
-    // Uses $HAPROXY_MAXCONN or defaults to 4096
-    maxconn: ${env.HAPROXY_MAXCONN:-4096}
-}
+config templated {
+  template server_defaults {
+    check: true
+    inter: 3s
+    rise: 2
+    fall: 3
+  }
 
-backend api {
-    servers: [
-        { name: "api", address: "${env.API_HOST}", port: ${env.API_PORT:-8080} }
-    ]
+  backend api {
+    servers {
+      server api1 {
+        address: "10.0.1.1"
+        port: 8080
+        @server_defaults
+      }
+    }
+  }
 }
 ```
 
@@ -180,7 +244,6 @@ backend api {
 - **[Syntax Reference](SYNTAX_REFERENCE.md)** - Complete DSL syntax documentation
 - **[Migration Guide](MIGRATION_GUIDE.md)** - Convert existing HAProxy configs
 - **[Architecture Guide](ARCHITECTURE.md)** - How the translator works internally
-- **[Examples](examples/)** - Real-world configuration examples
 
 ## Common Commands
 
@@ -193,12 +256,6 @@ uv run haproxy-translate config.hap --validate
 
 # Show verbose output
 uv run haproxy-translate config.hap -v
-
-# Multiple input files
-uv run haproxy-translate main.hap includes/*.hap -o output.cfg
-
-# Watch mode (re-translate on changes)
-uv run haproxy-translate config.hap -o output.cfg --watch
 ```
 
 ## Getting Help
