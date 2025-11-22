@@ -1309,9 +1309,13 @@ class TestPatternsMdExamples:
     """Tests for additional PATTERNS.md examples not covered elsewhere."""
 
     def test_blue_green_deployment_pattern(self, parser, codegen):
-        """Test Blue-Green deployment pattern from PATTERNS.md."""
+        """Test Blue-Green deployment pattern from PATTERNS.md with variable weights."""
         dsl_source = """
 config blue_green {
+  // Control which environment is active via weight variables
+  let blue_weight = 100
+  let green_weight = 0
+
   template production_server {
     check: true
     inter: 2s
@@ -1334,7 +1338,7 @@ config blue_green {
         server "blue${i}" {
           address: "10.0.1.${i}"
           port: 8080
-          weight: 100
+          weight: ${blue_weight}
           @production_server
         }
       }
@@ -1343,7 +1347,7 @@ config blue_green {
         server "green${i}" {
           address: "10.0.2.${i}"
           port: 8080
-          weight: 0
+          weight: ${green_weight}
           @production_server
         }
       }
@@ -1365,6 +1369,31 @@ config blue_green {
         assert "server green2" in output
         assert "server green3" in output
         assert "weight 0" in output
+
+    def test_weight_variable_references(self, parser, codegen):
+        """Test that weight field supports variable references."""
+        dsl_source = """
+config test {
+  let primary_weight = 100
+  let secondary_weight = 50
+  let standby_weight = 0
+
+  backend api {
+    servers {
+      server primary { address: "10.0.1.1", port: 8080, weight: ${primary_weight} }
+      server secondary { address: "10.0.1.2", port: 8080, weight: ${secondary_weight} }
+      server standby { address: "10.0.1.3", port: 8080, weight: ${standby_weight} }
+    }
+  }
+}
+"""
+        ir = parser.parse(dsl_source)
+        output = codegen.generate(ir)
+
+        # Variable references should be resolved
+        assert "server primary 10.0.1.1:8080 weight 100" in output
+        assert "server secondary 10.0.1.2:8080 weight 50" in output
+        assert "server standby 10.0.1.3:8080 weight 0" in output
 
     def test_session_affinity_pattern(self, parser, codegen):
         """Test session affinity pattern from PATTERNS.md."""

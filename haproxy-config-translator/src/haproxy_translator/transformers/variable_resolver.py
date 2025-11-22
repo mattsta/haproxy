@@ -227,6 +227,17 @@ class VariableResolver:
                 # Keep as string if not a valid integer
                 resolved_port = resolved_port_str
 
+        # Resolve weight if it's a string with variable reference
+        resolved_weight = server.weight
+        if isinstance(server.weight, str):
+            resolved_weight_str = self._resolve_value(server.weight)
+            # Try to convert to int if possible
+            try:
+                resolved_weight = int(resolved_weight_str)
+            except ValueError:
+                # Keep as string if not a valid integer
+                resolved_weight = resolved_weight_str
+
         # Resolve ALPN list (may contain variable references)
         resolved_alpn = self._resolve_value(server.alpn) if server.alpn else []
 
@@ -240,6 +251,7 @@ class VariableResolver:
             server,
             address=resolved_address,
             port=resolved_port,
+            weight=resolved_weight,
             ssl_verify=resolved_ssl_verify,
             alpn=resolved_alpn,
             sni=resolved_sni,

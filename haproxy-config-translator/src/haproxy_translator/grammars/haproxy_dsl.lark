@@ -848,7 +848,7 @@ default_server_directive: "default-server" "{" default_server_property* "}"
                         | "inter" ":" duration              -> ds_inter
                         | "rise" ":" number                 -> ds_rise
                         | "fall" ":" number                 -> ds_fall
-                        | "weight" ":" number               -> ds_weight
+                        | "weight" ":" number_or_var        -> ds_weight
                         | "maxconn" ":" number              -> ds_maxconn
                         | "ssl" ":" boolean                 -> ds_ssl
                         | "verify" ":" string               -> ds_verify
@@ -882,7 +882,7 @@ server_inline_param: identifier ":" value
                 | "inter" ":" duration              -> server_inter
                 | "rise" ":" number                 -> server_rise
                 | "fall" ":" number                 -> server_fall
-                | "weight" ":" number               -> server_weight
+                | "weight" ":" number_or_var        -> server_weight
                 | "maxconn" ":" number              -> server_maxconn
                 | "minconn" ":" number              -> server_minconn
                 | "maxqueue" ":" number             -> server_maxqueue
@@ -1149,7 +1149,8 @@ object_pair: (identifier | string) ":" value
 // Terminals defined with priority hints
 // Use word boundaries to prevent matching TIME_UNIT as part of identifiers
 TIME_UNIT.2: /(?:ms|[smhd])\b/
-BOOLEAN.2: "true" | "false" | "yes" | "no" | "on" | "off" | "1" | "0"
+// Note: "1" and "0" removed from BOOLEAN to avoid ambiguity with INT in expressions
+BOOLEAN.2: "true" | "false" | "yes" | "no" | "on" | "off"
 INT: /-?\d+/
 FLOAT: /-?\d+\.\d+/
 IDENTIFIER: /[a-zA-Z_][a-zA-Z0-9_]*/

@@ -56,10 +56,11 @@ class DSLParser(ConfigParser):
         1. Parse source to AST
         2. Transform AST to IR
         3. Expand templates (first pass - non-loop servers)
-        4. Resolve variables
+        4. Resolve variables (first pass - non-loop values)
         5. Unroll loops
         6. Expand templates (second pass - loop-generated servers)
-        7. Validate semantics
+        7. Resolve variables (second pass - loop-generated server values)
+        8. Validate semantics
         """
         try:
             # Step 1: Parse with Lark
@@ -73,7 +74,7 @@ class DSLParser(ConfigParser):
             template_expander = TemplateExpander(ir)
             ir = template_expander.expand()
 
-            # Step 4: Resolve variables (multi-pass for nested references)
+            # Step 4: Resolve variables (first pass - multi-pass for nested references)
             variable_resolver = VariableResolver(ir)
             ir = variable_resolver.resolve()
 
@@ -85,7 +86,11 @@ class DSLParser(ConfigParser):
             template_expander2 = TemplateExpander(ir)
             ir = template_expander2.expand()
 
-            # Step 7: Validate semantics
+            # Step 7: Resolve variables (second pass - for loop-generated server values)
+            variable_resolver2 = VariableResolver(ir)
+            ir = variable_resolver2.resolve()
+
+            # Step 8: Validate semantics
             validator = SemanticValidator(ir)
             return validator.validate()
 

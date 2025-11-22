@@ -3997,7 +3997,7 @@ class DSLTransformer(Transformer):
     def ds_fall(self, items: list[Any]) -> tuple[str, int]:
         return ("fall", items[0])
 
-    def ds_weight(self, items: list[Any]) -> tuple[str, int]:
+    def ds_weight(self, items: list[Any]) -> tuple[str, int | str]:
         return ("weight", items[0])
 
     def ds_maxconn(self, items: list[Any]) -> tuple[str, int]:
@@ -4632,7 +4632,7 @@ class DSLTransformer(Transformer):
     def server_fall(self, items: list[Any]) -> tuple[str, int]:
         return ("fall", items[0])
 
-    def server_weight(self, items: list[Any]) -> tuple[str, int]:
+    def server_weight(self, items: list[Any]) -> tuple[str, int | str]:
         return ("weight", items[0])
 
     def server_maxconn(self, items: list[Any]) -> tuple[str, int]:

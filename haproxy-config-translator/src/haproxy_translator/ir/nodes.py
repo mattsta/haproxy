@@ -668,7 +668,7 @@ class Server(IRNode):
     check_interval: str | None = None  # inter
     rise: int = 2
     fall: int = 3
-    weight: int = 1
+    weight: int | str = 1  # Can be int or string with ${var} interpolation
     maxconn: int | None = None
     ssl: bool = False
     ssl_verify: str | None = None
@@ -699,7 +699,7 @@ class DefaultServer(IRNode):
     check_interval: str | None = None  # inter parameter
     rise: int | None = None
     fall: int | None = None
-    weight: int | None = None
+    weight: int | str | None = None  # Can be int or string with ${var} interpolation
     maxconn: int | None = None
     ssl: bool = False
     ssl_verify: str | None = None

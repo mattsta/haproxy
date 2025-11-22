@@ -597,8 +597,8 @@ config my_config {
 ```javascript
 config my_config {
   mailers alerters {
-    timeout_mail: 10s
     mailer smtp1 "smtp.example.com" 587
+    timeout_mail: 10s
   }
 }
 ```
