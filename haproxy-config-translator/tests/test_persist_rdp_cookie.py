@@ -1,6 +1,5 @@
 """Tests for persist rdp-cookie directive implementation."""
 
-import pytest
 
 from haproxy_translator.codegen.haproxy import HAProxyCodeGenerator
 from haproxy_translator.parsers.dsl_parser import DSLParser

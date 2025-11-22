@@ -26,6 +26,7 @@ from ..ir.nodes import (
     Listen,
     MailersSection,
     PeersSection,
+    QuicInitialRule,
     RedirectRule,
     ResolversSection,
     Server,
@@ -1888,7 +1889,7 @@ class HAProxyCodeGenerator:
 
         return " ".join(parts)
 
-    def _format_quic_initial_rule(self, quic_rule: "QuicInitialRule") -> str:
+    def _format_quic_initial_rule(self, quic_rule: QuicInitialRule) -> str:
         """Format quic-initial rule.
 
         Examples:

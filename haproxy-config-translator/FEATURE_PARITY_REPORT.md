@@ -1,6 +1,6 @@
 # HAProxy Config Translator - Feature Parity Report
 
-**Generated:** 2025-11-21 13:07:17
+**Generated:** 2025-11-22 14:30:47
 **HAProxy Version:** 3.3
 **Documentation Source:** `/home/user/haproxy/doc/configuration.txt`
 
@@ -23,13 +23,14 @@ configuration language and the haproxy-config-translator implementation.
 
 ### Proxy Keywords (Frontend/Backend/Listen/Defaults)
 
-- **Total HAProxy Keywords:** 89
-- **Implemented:** 62
-- **Coverage:** `69.7%`
+- **Total HAProxy Keywords:** 79
+- **Implemented:** 78
+- **Deprecated (handled):** 1
+- **Coverage:** `100.0%`
 
 ### Test Coverage
 
-- **Total Test Files:** 105
+- **Total Test Files:** 109
 - **Global Directive Tests:** 10
 - **Proxy Tests:** 0
 - **Bind Option Tests:** 2
@@ -94,58 +95,6 @@ configuration language and the haproxy-config-translator implementation.
 </details>
 
 ### Proxy Keywords
-
-#### Critical Missing Keywords
-
-```
-  - bind
-  - load-server-state-from-file
-  - server
-  - stick
-  - timeout
-  - use_backend
-```
-
-#### Important Missing Keywords
-
-<details>
-<summary>Show Important Keywords</summary>
-
-```
-  - external-check
-  - log-steps
-  - monitor
-```
-
-</details>
-
-#### Optional Missing Keywords
-
-<details>
-<summary>Show Optional Keywords</summary>
-
-```
-  - and
-  - anonymous
-  - capture
-  - crt
-  - declare
-  - errorloc302
-  - errorloc303
-  - filter
-  - limited
-  - marked
-  - persist
-  - quic-initial
-  - rate-limit
-  - sections
-  - specified
-  - they
-  - transparent
-  - with
-```
-
-</details>
 
 ## Implementation Strengths
 

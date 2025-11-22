@@ -1,6 +1,5 @@
 """Tests for quic-initial directive implementation for QUIC Initial packet processing."""
 
-import pytest
 
 from haproxy_translator.codegen.haproxy import HAProxyCodeGenerator
 from haproxy_translator.parsers.dsl_parser import DSLParser

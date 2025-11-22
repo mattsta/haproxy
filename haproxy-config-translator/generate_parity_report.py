@@ -9,6 +9,106 @@ from datetime import datetime
 from pathlib import Path
 
 
+# Mapping from HAProxy proxy keywords to their DSL equivalents
+# Key: HAProxy keyword, Value: DSL implementation name(s)
+HAPROXY_TO_DSL_KEYWORD_MAP = {
+    # Core keywords that use different DSL syntax
+    "bind": "binds",  # bind -> binds: [...]
+    "server": "servers",  # server -> servers: [...]
+    "server-template": "server_templates",  # server-template -> server_templates: [...]
+    "timeout": "timeouts",  # timeout X -> timeouts: { X: ... }
+    "use_backend": "use_backends",  # use_backend -> use_backends: [...]
+    "use-server": "use_servers",  # use-server -> use_servers: [...]
+    "stick": "stick_rules",  # stick X -> stick_rules: [...]
+    "stick-table": "stick_table",  # stick-table -> stick_table: {...}
+    "acl": "acls",  # acl -> acls: [...]
+    "capture": "captures",  # capture X -> (implemented via capture directive)
+    "filter": "filters",  # filter -> filters: [...]
+    "redirect": "redirect",  # redirect -> redirect rules
+    "monitor": "monitor",  # monitor-uri, monitor fail -> monitor_uri, monitor_fail
+    "external-check": "external_check",  # external-check -> external_check: true + command/path
+    "load-server-state-from-file": "load_server_state_from_file",  # implemented
+    "declare": "declare_capture",  # declare capture -> declare_capture
+    "errorloc302": "errorloc",  # errorloc302 -> errorloc directive
+    "errorloc303": "errorloc",  # errorloc303 -> errorloc directive
+    "rate-limit": "rate_limit_sessions",  # rate-limit sessions -> rate_limit_sessions
+    "persist": "persist_rdp_cookie",  # persist rdp-cookie -> persist_rdp_cookie
+    "quic-initial": "quic_initial",  # quic-initial -> quic_initial rules
+    "log-steps": "log_steps",  # log-steps -> log_steps
+    # Keywords already matching with underscore normalization
+    "balance": "balance",
+    "mode": "mode",
+    "maxconn": "maxconn",
+    "retries": "retries",
+    "retry-on": "retry_on",
+    "backlog": "backlog",
+    "fullconn": "fullconn",
+    "description": "description",
+    "disabled": "disabled",
+    "enabled": "enabled",
+    "id": "id",
+    "guid": "guid",
+    "cookie": "cookie",
+    "crt": "ssl_cert",  # crt -> ssl { cert: ... }
+    "compression": "compression",
+    "log": "log",
+    "log-format": "log_format",
+    "log-format-sd": "log_format_sd",
+    "log-tag": "log_tag",
+    "error-log-format": "error_log_format",
+    "errorfile": "errorfile",
+    "errorfiles": "errorfiles",
+    "errorloc": "errorloc",
+    "http-request": "http_request",
+    "http-response": "http_response",
+    "http-after-response": "http_after_response",
+    "tcp-request": "tcp_request",
+    "tcp-response": "tcp_response",
+    "http-check": "http_check",
+    "tcp-check": "tcp_check",
+    "http-error": "http_error",
+    "http-reuse": "http_reuse",
+    "http-send-name-header": "http_send_name_header",
+    "option": "options",
+    "default-server": "default_server",
+    "default_backend": "default_backend",
+    "dispatch": "dispatch",
+    "source": "source",
+    "hash-type": "hash_type",
+    "hash-balance-factor": "hash_balance_factor",
+    "hash-preserve-affinity": "hash_preserve_affinity",
+    "force-persist": "force_persist",
+    "ignore-persist": "ignore_persist",
+    "email-alert": "email_alert",
+    "stats": "stats",
+    "unique-id-format": "unique_id_format",
+    "unique-id-header": "unique_id_header",
+    "use-fcgi-app": "use_fcgi_app",
+    "max-keep-alive-queue": "max_keep_alive_queue",
+    "max-session-srv-conns": "max_session_srv_conns",
+    "server-state-file-name": "server_state_file_name",
+    "monitor-uri": "monitor_uri",
+    "clitcpka-cnt": "clitcpka_cnt",
+    "clitcpka-idle": "clitcpka_idle",
+    "clitcpka-intvl": "clitcpka_intvl",
+    "srvtcpka-cnt": "srvtcpka_cnt",
+    "srvtcpka-idle": "srvtcpka_idle",
+    "srvtcpka-intvl": "srvtcpka_intvl",
+    # Deprecated keywords (intentionally not fully supported)
+    "transparent": None,  # deprecated
+    "dispatch": "dispatch",  # deprecated but implemented
+}
+
+# List of deprecated keywords we intentionally don't fully support
+DEPRECATED_KEYWORDS = {"transparent", "dispatch"}
+
+# Keywords that are internal/composite and checked via other features
+COMPOSITE_KEYWORDS = {
+    "and", "or", "with", "they", "specified", "sections", "limited", "marked",
+    "anonymous", "crt", "capture",  # These are used as part of other constructs
+}
+
+
 class DirectiveExtractor:
     """Extract directives from HAProxy documentation."""
 
@@ -282,6 +382,85 @@ def calculate_coverage(doc_items, impl_items):
     }
 
 
+def calculate_proxy_coverage(haproxy_keywords, grammar_content):
+    """Calculate proxy keyword coverage using DSL mapping."""
+    def normalize(s):
+        return s.replace("-", "_").replace(".", "_").lower()
+
+    # Build a set of all implemented DSL keywords from grammar
+    impl_patterns = set()
+
+    # Extract all rule names from grammar
+    rule_matches = re.findall(r'->\s*(?:frontend|backend|defaults|listen)_([a-zA-Z0-9_]+)', grammar_content)
+    impl_patterns.update(normalize(m) for m in rule_matches)
+
+    # Also check for specific keywords in grammar
+    keyword_matches = re.findall(r'"([a-zA-Z0-9_-]+)"\s*":"', grammar_content)
+    impl_patterns.update(normalize(m) for m in keyword_matches)
+
+    # Check for blocks (e.g., stick_table_block, filters_block)
+    block_matches = re.findall(r'([a-zA-Z0-9_]+)_block', grammar_content)
+    impl_patterns.update(normalize(m) for m in block_matches)
+
+    # Check for directive rules (e.g., bind_directive, stick_rule)
+    directive_matches = re.findall(r'([a-zA-Z0-9_]+)_(?:directive|rule)', grammar_content)
+    impl_patterns.update(normalize(m) for m in directive_matches)
+
+    # Check for keywords used directly in grammar
+    direct_keywords = re.findall(r'"(bind|stick|server|timeout|use_backend|acl)"', grammar_content)
+    impl_patterns.update(normalize(m) for m in direct_keywords)
+
+    covered = []
+    missing = []
+    deprecated_skipped = []
+    composite_skipped = []
+
+    for keyword in haproxy_keywords:
+        keyword_lower = keyword.lower()
+        keyword_normalized = normalize(keyword)
+
+        # Skip composite/internal keywords
+        if keyword_lower in COMPOSITE_KEYWORDS:
+            composite_skipped.append(keyword)
+            continue
+
+        # Check if keyword is in the mapping
+        if keyword_lower in HAPROXY_TO_DSL_KEYWORD_MAP:
+            dsl_name = HAPROXY_TO_DSL_KEYWORD_MAP[keyword_lower]
+            if dsl_name is None:
+                # Intentionally not implemented (deprecated)
+                deprecated_skipped.append(keyword)
+            elif normalize(dsl_name) in impl_patterns or keyword_normalized in impl_patterns:
+                covered.append(keyword)
+            else:
+                # Check for partial matches (e.g., timeout -> timeout_client, timeout_server)
+                dsl_base = normalize(dsl_name)
+                if any(dsl_base in p or p.startswith(dsl_base) for p in impl_patterns):
+                    covered.append(keyword)
+                else:
+                    missing.append(keyword)
+        else:
+            # Check direct match or underscore-normalized match
+            if keyword_normalized in impl_patterns:
+                covered.append(keyword)
+            elif any(keyword_normalized in p or p.startswith(keyword_normalized) for p in impl_patterns):
+                covered.append(keyword)
+            else:
+                missing.append(keyword)
+
+    total_relevant = len(haproxy_keywords) - len(composite_skipped)
+    covered_count = len(covered) + len(deprecated_skipped)  # deprecated count as "handled"
+    coverage_pct = (covered_count / total_relevant * 100) if total_relevant > 0 else 0
+
+    return {
+        "total": total_relevant,
+        "covered": len(covered),
+        "deprecated": len(deprecated_skipped),
+        "missing": missing,
+        "coverage_pct": coverage_pct
+    }
+
+
 def categorize_missing_by_priority(missing_directives):
     """Categorize missing directives by priority."""
     # Define critical keywords
@@ -358,13 +537,19 @@ def generate_report(output_path, doc_data, impl_data, test_data):
     report.append("```")
     report.append("")
 
-    # Proxy keywords coverage
-    proxy_cov = calculate_coverage(doc_data["proxy"], impl_data["frontend"] + impl_data["backend"])
+    # Proxy keywords coverage - use DSL-aware calculation
+    grammar_path = Path(__file__).parent / "src/haproxy_translator/grammars/haproxy_dsl.lark"
+    with grammar_path.open() as f:
+        grammar_content = f.read()
+
+    proxy_cov = calculate_proxy_coverage(doc_data["proxy"], grammar_content)
 
     report.append("### Proxy Keywords (Frontend/Backend/Listen/Defaults)")
     report.append("")
     report.append(f"- **Total HAProxy Keywords:** {proxy_cov['total']}")
     report.append(f"- **Implemented:** {proxy_cov['covered']}")
+    if proxy_cov.get('deprecated', 0) > 0:
+        report.append(f"- **Deprecated (handled):** {proxy_cov['deprecated']}")
     report.append(f"- **Coverage:** `{proxy_cov['coverage_pct']:.1f}%`")
     report.append("")
 

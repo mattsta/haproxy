@@ -1,6 +1,5 @@
 """Phase 13 Batch 3: Lua global directives tests."""
 
-import pytest
 
 from haproxy_translator.codegen.haproxy import HAProxyCodeGenerator
 from haproxy_translator.parsers.dsl_parser import DSLParser

@@ -4814,7 +4814,7 @@ class DSLTransformer(Transformer):
         period = None
         key = None
         table = None
-        parameters = {}
+        parameters: dict[str, str] = {}
 
         for item in items:
             if isinstance(item, tuple):
