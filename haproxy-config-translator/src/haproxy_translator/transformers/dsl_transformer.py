@@ -3155,105 +3155,109 @@ class DSLTransformer(Transformer):
                 http_after_response_rules.extend(prop)
             elif isinstance(prop, tuple):
                 key, value = prop
-                if key == "mode":
-                    mode = Mode(value)
-                elif key == "description":
-                    description = value
-                elif key == "disabled":
-                    disabled = value
-                elif key == "enabled":
-                    enabled = value
-                elif key == "id":
-                    id = value
-                elif key == "guid":
-                    guid = value
-                elif key == "balance":
-                    balance = BalanceAlgorithm(value)
-                elif key == "option":
-                    if isinstance(value, list):
-                        options.extend(value)
-                    else:
-                        options.append(value)
-                elif key == "cookie":
-                    cookie = value
-                elif key == "timeout_server":
-                    timeout_server = value
-                elif key == "timeout_connect":
-                    timeout_connect = value
-                elif key == "timeout_check":
-                    timeout_check = value
-                elif key == "timeout_tunnel":
-                    timeout_tunnel = value
-                elif key == "timeout_server_fin":
-                    timeout_server_fin = value
-                elif key == "retries":
-                    retries = value
-                elif key == "maxconn":
-                    maxconn = value
-                elif key == "backlog":
-                    backlog = value
-                elif key == "max_keep_alive_queue":
-                    max_keep_alive_queue = value
-                elif key == "max_session_srv_conns":
-                    max_session_srv_conns = value
-                elif key == "log":
-                    log.append(value)
-                elif key == "log_tag":
-                    log_tag = value
-                elif key == "log_format":
-                    log_format = value
-                elif key == "error_log_format":
-                    error_log_format = value
-                elif key == "log_format_sd":
-                    log_format_sd = value
-                elif key == "errorfiles":
-                    errorfiles = value
-                elif key == "dispatch":
-                    dispatch = value
-                elif key == "use_fcgi_app":
-                    use_fcgi_app = value
-                elif key == "external_check_command":
-                    external_check_command = value
-                elif key == "external_check_path":
-                    external_check_path = value
-                elif key == "errorloc":
-                    errorloc.update(value)
-                elif key == "errorloc302":
-                    errorloc302.update(value)
-                elif key == "errorloc303":
-                    errorloc303.update(value)
-                elif key == "http_reuse":
-                    http_reuse = value
-                elif key == "http_send_name_header":
-                    http_send_name_header = value
-                elif key == "retry_on":
-                    retry_on = value
-                elif key == "source":
-                    source = value
-                elif key == "hash_type":
-                    hash_type = value
-                elif key == "hash_balance_factor":
-                    hash_balance_factor = value
-                elif key == "hash_preserve_affinity":
-                    hash_preserve_affinity = value
-                elif key == "load_server_state_from":
-                    from ..ir.nodes import LoadServerStateFrom
-
-                    load_server_state_from = LoadServerStateFrom(value)
-                elif key == "server_state_file_name":
-                    server_state_file_name = value
-                elif key == "filters":
-                    filters = value
-                elif key == "srvtcpka_cnt":
-                    srvtcpka_cnt = value
-                elif key == "srvtcpka_idle":
-                    srvtcpka_idle = value
-                elif key == "srvtcpka_intvl":
-                    srvtcpka_intvl = value
-                elif key == "persist_rdp_cookie":
-                    persist_rdp_cookie = value  # Empty string means use default "msts"
-                elif key == "__template_spread__":
-                    template_spreads.append(value)
+                match key:
+                    # Type conversions
+                    case "mode":
+                        mode = Mode(value)
+                    case "balance":
+                        balance = BalanceAlgorithm(value)
+                    case "load_server_state_from":
+                        from ..ir.nodes import LoadServerStateFrom
+                        load_server_state_from = LoadServerStateFrom(value)
+                    # Simple scalar assignments
+                    case "description":
+                        description = value
+                    case "disabled":
+                        disabled = value
+                    case "enabled":
+                        enabled = value
+                    case "id":
+                        id = value
+                    case "guid":
+                        guid = value
+                    case "cookie":
+                        cookie = value
+                    case "timeout_server":
+                        timeout_server = value
+                    case "timeout_connect":
+                        timeout_connect = value
+                    case "timeout_check":
+                        timeout_check = value
+                    case "timeout_tunnel":
+                        timeout_tunnel = value
+                    case "timeout_server_fin":
+                        timeout_server_fin = value
+                    case "retries":
+                        retries = value
+                    case "maxconn":
+                        maxconn = value
+                    case "backlog":
+                        backlog = value
+                    case "max_keep_alive_queue":
+                        max_keep_alive_queue = value
+                    case "max_session_srv_conns":
+                        max_session_srv_conns = value
+                    case "log_tag":
+                        log_tag = value
+                    case "log_format":
+                        log_format = value
+                    case "error_log_format":
+                        error_log_format = value
+                    case "log_format_sd":
+                        log_format_sd = value
+                    case "errorfiles":
+                        errorfiles = value
+                    case "dispatch":
+                        dispatch = value
+                    case "use_fcgi_app":
+                        use_fcgi_app = value
+                    case "external_check_command":
+                        external_check_command = value
+                    case "external_check_path":
+                        external_check_path = value
+                    case "http_reuse":
+                        http_reuse = value
+                    case "http_send_name_header":
+                        http_send_name_header = value
+                    case "retry_on":
+                        retry_on = value
+                    case "source":
+                        source = value
+                    case "hash_type":
+                        hash_type = value
+                    case "hash_balance_factor":
+                        hash_balance_factor = value
+                    case "hash_preserve_affinity":
+                        hash_preserve_affinity = value
+                    case "server_state_file_name":
+                        server_state_file_name = value
+                    case "filters":
+                        filters = value
+                    case "srvtcpka_cnt":
+                        srvtcpka_cnt = value
+                    case "srvtcpka_idle":
+                        srvtcpka_idle = value
+                    case "srvtcpka_intvl":
+                        srvtcpka_intvl = value
+                    case "persist_rdp_cookie":
+                        persist_rdp_cookie = value  # Empty string means use default "msts"
+                    # List operations
+                    case "option":
+                        if isinstance(value, list):
+                            options.extend(value)
+                        else:
+                            options.append(value)
+                    case "log":
+                        log.append(value)
+                    case "__template_spread__":
+                        template_spreads.append(value)
+                    # Dict updates
+                    case "errorloc":
+                        errorloc.update(value)
+                    case "errorloc302":
+                        errorloc302.update(value)
+                    case "errorloc303":
+                        errorloc303.update(value)
 
         # Build metadata with server loops and template spreads if any
         metadata = {}
