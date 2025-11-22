@@ -4,17 +4,18 @@ A modern, powerful DSL for HAProxy configuration with **templates**, **loops**, 
 
 ## Project Status
 
-| Metric | Value |
-|--------|-------|
-| **HAProxy Version** | 3.3 |
-| **Tests** | 1,430 passing |
+| Metric                | Value                    |
+| --------------------- | ------------------------ |
+| **HAProxy Version**   | 3.3                      |
+| **Tests**             | 1,430 passing            |
 | **Global Directives** | 95.9% coverage (158/165) |
-| **Proxy Keywords** | 100% coverage (78/78) |
-| **Production Ready** | Yes |
+| **Proxy Keywords**    | 100% coverage (78/78)    |
+| **Production Ready**  | Yes                      |
 
 ## Why Use the DSL?
 
 ### Before: Native HAProxy (repetitive, error-prone)
+
 ```haproxy
 backend api_servers
     balance roundrobin
@@ -27,6 +28,7 @@ backend api_servers
 ```
 
 ### After: DSL with Templates + Loops (60% less code)
+
 ```javascript
 config api_cluster {
   template standard_server {
@@ -57,6 +59,7 @@ config api_cluster {
 ## Key Features
 
 ### Templates - Define Once, Use Everywhere
+
 ```javascript
 template production_server {
   check: true
@@ -70,6 +73,7 @@ server web1 { address: "10.0.1.1", port: 8080, @production_server }
 ```
 
 ### Loops - Generate Servers Dynamically
+
 ```javascript
 for i in [1..5] {
   server "node${i}" {
@@ -85,10 +89,11 @@ for i in [1..3] {
 ```
 
 ### Environment Variables - CI/CD Ready
+
 ```javascript
 // With safe defaults
-let server_count = env("SERVER_COUNT", 3)
-let api_host = env("API_HOST", "localhost")
+let server_count = env("SERVER_COUNT", 3);
+let api_host = env("API_HOST", "localhost");
 
 // Deploy different environments from same config
 // PRODUCTION:  SERVER_COUNT=10 API_HOST=api.prod.internal
@@ -178,6 +183,7 @@ uv run haproxy-translate config.hap --security-check
 ```
 
 The security validator checks for:
+
 - **Hardcoded credentials** - Passwords, API keys, tokens in configuration
 - **Unsafe user settings** - Running as root, missing chroot
 - **SSL/TLS issues** - Weak ciphers, missing certificates, insecure options
@@ -185,6 +191,7 @@ The security validator checks for:
 - **Resource limits** - Missing timeouts, extreme connection limits
 
 Example output:
+
 ```
 Security Check Report
   critical: 1 | high: 2 | medium: 3 | info: 1
@@ -199,39 +206,43 @@ Security Check Report
 
 ## Documentation
 
-| Guide | Description |
-|-------|-------------|
-| **[Quick Start](docs/QUICK_START.md)** | Get running in 5 minutes |
-| **[Patterns Guide](docs/PATTERNS.md)** | Real-world examples with before/after comparisons |
-| **[Syntax Reference](docs/SYNTAX_REFERENCE.md)** | Complete DSL syntax |
-| **[Migration Guide](docs/MIGRATION_GUIDE.md)** | Convert existing HAProxy configs |
-| **[Architecture](docs/ARCHITECTURE.md)** | How the translator works internally |
+| Guide                                            | Description                                       |
+| ------------------------------------------------ | ------------------------------------------------- |
+| **[Quick Start](docs/QUICK_START.md)**           | Get running in 5 minutes                          |
+| **[Patterns Guide](docs/PATTERNS.md)**           | Real-world examples with before/after comparisons |
+| **[Syntax Reference](docs/SYNTAX_REFERENCE.md)** | Complete DSL syntax                               |
+| **[Migration Guide](docs/MIGRATION_GUIDE.md)**   | Convert existing HAProxy configs                  |
+| **[Architecture](docs/ARCHITECTURE.md)**         | How the translator works internally               |
 
 ## Real-World Patterns
 
 The DSL excels at common HAProxy patterns:
 
-| Pattern | Native Lines | DSL Lines | Reduction |
-|---------|-------------|-----------|-----------|
-| 10-Server Pool | 30 | 18 | 40% |
-| Multi-Environment | 3 files | 1 file | 67% |
-| 5 Microservices | 75 | 55 | 27% |
-| Blue-Green Deploy | 50 | 35 | 30% |
+| Pattern           | Native Lines | DSL Lines | Reduction |
+| ----------------- | ------------ | --------- | --------- |
+| 10-Server Pool    | 30           | 18        | 40%       |
+| Multi-Environment | 3 files      | 1 file    | 67%       |
+| 5 Microservices   | 75           | 55        | 27%       |
+| Blue-Green Deploy | 50           | 35        | 30%       |
 
 See **[PATTERNS.md](docs/PATTERNS.md)** for detailed examples.
 
 ## Feature Coverage
 
 ### Global Directives (95.9% - 158/165)
+
 All production-critical directives including:
+
 - Process management (daemon, user, chroot, pidfile)
 - Connection limits (maxconn, maxsslconn, maxconnrate)
 - SSL/TLS defaults (ciphers, options, certificates)
-- Performance tuning (tune.*, buffers, threading)
+- Performance tuning (tune.\*, buffers, threading)
 - QUIC/HTTP3 configuration
 
 ### Proxy Keywords (100% - 78/78)
+
 Complete coverage of frontend/backend/listen/defaults:
+
 - Load balancing algorithms
 - Health checks (HTTP, TCP, agent)
 - Server options (55+ parameters)
@@ -285,6 +296,7 @@ MIT License - see LICENSE file for details.
 ## Contributing
 
 Contributions welcome! Areas of interest:
+
 - Additional example configurations
 - Performance optimizations
 - Documentation improvements

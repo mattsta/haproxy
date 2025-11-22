@@ -8,17 +8,17 @@ This document analyzes feature support in the HAProxy Configuration Translator c
 
 ## Feature Support Summary
 
-| Category | Coverage | Notes |
-|----------|----------|-------|
-| **Global Section** | 70% | Core features complete, clustering/advanced features pending |
-| **Defaults Section** | 90% | Core timeouts, HTTP timeouts, error redirects complete |
-| **Frontend** | 90% | Full ACL, routing, HTTP rules, monitoring support; TCP-level rules pending |
-| **Backend** | 95% | All balance algorithms, comprehensive server options, health checks |
-| **Server Options** | 85% | Core + SSL (SNI/ALPN) complete, advanced networking pending |
-| **Balance Algorithms** | 100% | All 10 primary algorithms fully implemented and tested |
-| **ACLs** | 90% | Full ACL definition support, all criteria types supported |
-| **HTTP Rules** | 85% | Request/response manipulation complete, some advanced actions pending |
-| **DSL Features** | 100% | Variables, templates, loops, conditionals fully supported |
+| Category               | Coverage | Notes                                                                      |
+| ---------------------- | -------- | -------------------------------------------------------------------------- |
+| **Global Section**     | 70%      | Core features complete, clustering/advanced features pending               |
+| **Defaults Section**   | 90%      | Core timeouts, HTTP timeouts, error redirects complete                     |
+| **Frontend**           | 90%      | Full ACL, routing, HTTP rules, monitoring support; TCP-level rules pending |
+| **Backend**            | 95%      | All balance algorithms, comprehensive server options, health checks        |
+| **Server Options**     | 85%      | Core + SSL (SNI/ALPN) complete, advanced networking pending                |
+| **Balance Algorithms** | 100%     | All 10 primary algorithms fully implemented and tested                     |
+| **ACLs**               | 90%      | Full ACL definition support, all criteria types supported                  |
+| **HTTP Rules**         | 85%      | Request/response manipulation complete, some advanced actions pending      |
+| **DSL Features**       | 100%     | Variables, templates, loops, conditionals fully supported                  |
 
 **Overall Coverage**: ~90% of common HAProxy use cases (up from ~85%)
 
@@ -29,6 +29,7 @@ This document analyzes feature support in the HAProxy Configuration Translator c
 ### ✅ **SUPPORTED**
 
 **Process Management:**
+
 - `daemon` - Run in background
 - `user`, `group` - Process ownership
 - `chroot` - File system restriction
@@ -36,27 +37,33 @@ This document analyzes feature support in the HAProxy Configuration Translator c
 - `maxconn` - Maximum concurrent connections
 
 **Logging:**
+
 - `log` - Syslog targets with facility and level
 - Multiple log targets supported
 
 **SSL/TLS:**
+
 - `ssl-default-bind-ciphers` - Default cipher suites
 - `ssl-default-bind-options` - SSL/TLS options (array)
 
 **Lua Scripts:**
+
 - `lua-load` - Load Lua scripts from files
 - Inline Lua scripts (DSL extension)
 
 **Stats:**
+
 - Basic stats configuration
 - `enable`, `uri`, `auth` options
 
 **Tuning:**
+
 - Generic tuning parameters via dict (future-proof)
 
 ### ❌ **NOT YET SUPPORTED**
 
 **Performance Tuning:**
+
 - `nbthread` - Worker thread count
 - `ulimit-n` - File descriptor limits
 - `maxsslconn` - SSL connection limits
@@ -64,10 +71,12 @@ This document analyzes feature support in the HAProxy Configuration Translator c
 - Advanced `tune.*` parameters
 
 **Clustering & Notifications:**
+
 - `peers` - Cluster peer definitions
 - `mailers` - Email alert configuration
 
 **Advanced Features:**
+
 - `userlist` - Authentication user definitions
 - `resolvers` - DNS resolver configuration
 - `program` - External program execution
@@ -75,11 +84,13 @@ This document analyzes feature support in the HAProxy Configuration Translator c
 - `http-errors` - Custom HTTP error sections
 
 **Logging Advanced:**
+
 - `log-format`, `log-format-sd` - Custom log formats
 - `log-tag` - Log message prefix
 - `log-send-hostname` - Include hostname in logs
 
 **SSL Advanced:**
+
 - `ssl-dh-param-file` - DH parameters
 - `ca-base`, `crt-base`, `key-base` - Certificate base paths
 - `ssl-engine` - SSL provider selection
@@ -91,9 +102,11 @@ This document analyzes feature support in the HAProxy Configuration Translator c
 ### ✅ **SUPPORTED**
 
 **Mode & Protocol:**
+
 - `mode` - Operating mode (http, tcp)
 
 **Core Timeouts:**
+
 - `timeout connect` - Server connection timeout
 - `timeout client` - Client idle timeout
 - `timeout server` - Server idle timeout
@@ -101,26 +114,33 @@ This document analyzes feature support in the HAProxy Configuration Translator c
 - `timeout queue` - Queue wait timeout
 
 **Options:**
+
 - Generic `option` directive (array of strings)
 - Supports: `httplog`, `tcplog`, `http-server-close`, etc.
 
 **Error Handling:**
+
 - `errorfile` - Custom error pages by status code
 
 **Health Checks:**
+
 - `http-check` - Default HTTP health check configuration
 
 **Logging:**
+
 - `log` - Log configuration ("global" or custom)
 
 **Retries:**
+
 - `retries` - Connection retry count
 
 **HTTP Timeouts:**
+
 - `timeout http-request` - HTTP request timeout (security)
 - `timeout http-keep-alive` - Keep-alive timeout (performance)
 
 **Error Handling:**
+
 - `errorloc` - Redirect error pages (302 redirect)
 - `errorloc302` - Explicit 302 redirect for error pages
 - `errorloc303` - 303 See Other redirect for error pages
@@ -128,15 +148,18 @@ This document analyzes feature support in the HAProxy Configuration Translator c
 ### ❌ **NOT YET SUPPORTED**
 
 **Common Options (should be explicit):**
+
 - `option http-keep-alive` - Connection reuse
 - `option forwardfor` - Add X-Forwarded-For header
 - `option originalto` - Add original destination header
 - `option redispatch` - Retry on server failure
 
 **Error Handling:**
+
 - `http-error` - Custom HTTP error responses
 
 **Load Balancing:**
+
 - `balance` - Default balance algorithm (currently backend-only)
 
 ---
@@ -146,6 +169,7 @@ This document analyzes feature support in the HAProxy Configuration Translator c
 ### ✅ **SUPPORTED**
 
 **Binding:**
+
 - `bind` - Address and port binding
   - Basic addresses: `*:80`, `127.0.0.1:8080`
   - SSL with certificate: `ssl crt /path/to/cert.pem`
@@ -154,6 +178,7 @@ This document analyzes feature support in the HAProxy Configuration Translator c
   - Variable interpolation: `${ip}:${port}`
 
 **Protocol:**
+
 - `mode` - http or tcp
 - `maxconn` - Maximum connections
 - `timeout client` - Client timeout override
@@ -161,9 +186,11 @@ This document analyzes feature support in the HAProxy Configuration Translator c
 - `timeout http-keep-alive` - Keep-alive timeout (performance)
 
 **Monitoring:**
+
 - `monitor-uri` - Health check URI endpoint (returns 200 OK)
 
 **Access Control:**
+
 - `acl` - Full ACL definition support
   - Named ACLs with criteria
   - Flags (case-insensitive, etc.)
@@ -171,6 +198,7 @@ This document analyzes feature support in the HAProxy Configuration Translator c
   - ACL blocks for multiple definitions
 
 **Routing:**
+
 - `use_backend` - Conditional backend routing
   - With ACL conditions
   - Multiple rules
@@ -178,6 +206,7 @@ This document analyzes feature support in the HAProxy Configuration Translator c
 - `default_backend` - Default backend selection
 
 **HTTP Processing:**
+
 - `http-request` - Request manipulation rules
   - All major actions: deny, allow, redirect, set-header, etc.
   - Lua action support: `lua.function_name`
@@ -186,26 +215,31 @@ This document analyzes feature support in the HAProxy Configuration Translator c
   - Same action support as http-request
 
 **Options:**
+
 - Generic `option` list for any HAProxy option
 
 ### ❌ **NOT YET SUPPORTED**
 
 **TCP-Level Processing:**
+
 - `tcp-request connection` - Pre-TLS filtering
 - `tcp-request session` - Per-session rules
 - `tcp-request content` - Content inspection
 - `inspect-delay` - Buffer inspection window
 
 **Advanced HTTP:**
+
 - `http-after-response` - Post-response processing
 - `capture request header` - Extract headers for logging
 - `capture response header` - Capture response headers
 - `capture cookie` - Extract cookies
 
 **Monitoring:**
+
 - `monitor fail` - Force health check failure
 
 **Other:**
+
 - `use-service` - Internal service routing
 - `use-fcgi-app` - FastCGI routing
 - `backlog` - TCP listen backlog
@@ -218,11 +252,13 @@ This document analyzes feature support in the HAProxy Configuration Translator c
 ### ✅ **SUPPORTED**
 
 **Protocol & Mode:**
+
 - `mode` - http or tcp
 - `balance` - Load balancing algorithm
   - roundrobin, leastconn, source, uri, url_param, random
 
 **Servers:**
+
 - `server` - Full server definition
   - Name, address, port
   - Health checks: check, inter, rise, fall
@@ -237,6 +273,7 @@ This document analyzes feature support in the HAProxy Configuration Translator c
   - Inherits base server options
 
 **Health Checks:**
+
 - `http-check` - Advanced HTTP health checks
   - Method, URI
   - Expected status or string
@@ -244,58 +281,70 @@ This document analyzes feature support in the HAProxy Configuration Translator c
   - Interval configuration
 
 **Session Persistence:**
+
 - `cookie` - Cookie-based persistence
 
 **HTTP Processing:**
+
 - `http-request` - Request rules
 - `http-response` - Response rules
 - Same full support as frontend
 
 **Compression:**
+
 - `compression` block
   - Algorithm selection (gzip, deflate, raw-deflate)
   - Type filtering (text/html, application/json, etc.)
 
 **Timeouts:**
+
 - `timeout server` - Server response timeout
 - `timeout connect` - Connection timeout
 - `timeout check` - Health check timeout
 
 **Retries:**
+
 - `retries` - Connection retry count
 
 **Options:**
+
 - Generic `option` list
 
 ### ❌ **NOT YET SUPPORTED**
 
 **Advanced Load Balancing:**
+
 - `hash-type` - Consistent hashing configuration
 - `hash-balance-factor` - Hash distribution control
 - Additional balance algorithms: static-rr, first, hdr, url32, etc.
 
 **Server Management:**
+
 - `default-server` - Default server options
 - `fullconn` - Slowstart calculation threshold
 - `minconn` - Minimum connections
 
 **Session Persistence:**
+
 - `stick-table` - Stick table definition
 - `stick match`, `stick on`, `stick store-request` - Sticky rules
 - `persist rdp-cookie` - RDP persistence
 
 **Health Checks:**
+
 - Protocol-specific checks: `mysql-check`, `pgsql-check`, `redis-check`, `smtpchk`, `ldap-check`
 - `option external-check` - External health check scripts
 - `tcp-check` - TCP-level health checks
 
 **Connection Management:**
+
 - `tcp-request content` - Content inspection
 - `tcp-response content` - Response filtering
 - `max-reuse` - Connection reuse limits
 - `pool-max-conn`, `pool-low-conn` - Connection pooling
 
 **Queue Management:**
+
 - `queue` - Queue configuration
 
 ---
@@ -305,47 +354,57 @@ This document analyzes feature support in the HAProxy Configuration Translator c
 ### ✅ **SUPPORTED**
 
 **Basic Configuration:**
+
 - `name` - Server name
 - `address` - IP address or hostname
 - `port` - Port number
 
 **Health Checks:**
+
 - `check` - Enable health checks
 - `inter` - Check interval
 - `rise` - Consecutive successes required
 - `fall` - Consecutive failures required
 
 **Load Balancing:**
+
 - `weight` - Server weight
 - `maxconn` - Maximum connections
 - `backup` - Backup server flag
 - `disabled` - Initially disabled
 
 **SSL:**
+
 - `ssl` - Enable SSL to server
 - `verify` - Certificate verification mode
 - `sni` - Server Name Indication (for TLS SNI extension)
 - `alpn` - Application Layer Protocol Negotiation (for HTTP/2, etc.)
 
 **PROXY Protocol:**
+
 - `send-proxy` - Send PROXY protocol v1
 
 **Extensibility:**
+
 - Generic `options` dict for any HAProxy server option
 
 ### ❌ **NOT YET SUPPORTED**
 
 **Advanced Health Checks:**
+
 - `check-ssl` - SSL for health checks
 - `ca-file`, `crt`, `key` - Server certificates
 
 **SSL Advanced:**
+
 - `ssl-min-ver`, `ssl-max-ver` - TLS version constraints
 
 **Performance:**
+
 - `slowstart` - Gradual weight increase
 
 **Networking:**
+
 - `source` - Client IP source binding
 - `interface` - Network interface selection
 - `namespace` - Network namespace
@@ -354,13 +413,16 @@ This document analyzes feature support in the HAProxy Configuration Translator c
 - `tfo` - TCP Fast Open
 
 **Session Persistence:**
+
 - `cookie` - Server cookie value
 - `id` - Server identifier
 
 **Initialization:**
+
 - `init-addr` - Initial address resolution method
 
 **Connection:**
+
 - `minconn` - Minimum connections
 
 ---
@@ -370,6 +432,7 @@ This document analyzes feature support in the HAProxy Configuration Translator c
 ### ✅ **SUPPORTED**
 
 **ACL Definition:**
+
 - Named ACLs
 - Criterion specification (e.g., `path_beg`, `hdr(host)`, `src`)
 - Flags (e.g., `-i` for case-insensitive, `-m str` for match type)
@@ -379,21 +442,25 @@ This document analyzes feature support in the HAProxy Configuration Translator c
 
 **Common Criteria (via generic criterion field):**
 All HAProxy ACL criteria can be used as strings:
+
 - Layer 4: `src`, `dst`, `src_port`, `dst_port`
 - Layer 5: `req.ssl_sni`, `req.ssl_alpn`, `ssl_fc`
 - Layer 7: `req.method`, `req.uri`, `req.path`, `req.hdr()`, `resp.status`
 
 **Matching Types:**
+
 - All matching types supported via flags parameter
 - String matching, regex, IP matching, integer comparisons
 
 ### ❌ **NOT YET SUPPORTED**
 
 **Dynamic ACLs:**
+
 - `add-acl` / `del-acl` in http-request rules (action exists but not tested)
 - Runtime ACL modification via maps
 
 **Advanced:**
+
 - `http_auth_user`, `http_auth_group` ACL criteria (can be used via string)
 
 ---
@@ -405,6 +472,7 @@ All HAProxy ACL criteria can be used as strings:
 **Actions (via generic action + parameters):**
 
 All major actions supported through flexible parameters dict:
+
 - `deny` - Deny request (403)
 - `allow` - Allow request
 - `redirect` - HTTP redirect
@@ -418,10 +486,12 @@ All major actions supported through flexible parameters dict:
 - Custom actions via parameters dict
 
 **Conditions:**
+
 - ACL-based conditions
 - `if` conditional execution
 
 **Parameters:**
+
 - Flexible key-value parameters
 - Proper quoting for values with spaces
 - Status codes, header names, values
@@ -429,6 +499,7 @@ All major actions supported through flexible parameters dict:
 ### ❌ **NOT YET SUPPORTED (explicitly)**
 
 **Advanced Actions:**
+
 - `tarpit` - Rate limiting via delay
 - `auth` - Authentication challenge
 - `normalize-uri` - URI normalization
@@ -437,16 +508,20 @@ All major actions supported through flexible parameters dict:
 - `send-spoe-group` - SPOE integration
 
 **Variable Manipulation:**
+
 - `set-var`, `set-var-fmt`, `unset-var` - Variable operations (can be added via parameters)
 
 **Map Operations:**
+
 - `set-map`, `add-map`, `del-map` - Dynamic map manipulation
 
 **Content Operations:**
+
 - `replace-uri`, `replace-path` - Pattern-based URI replacement
 - `set-query`, `set-pathq` - Query string manipulation
 
 **Response Specific:**
+
 - `set-status` - Change response status
 - `set-log-level` - Modify log level
 - `return` - Return custom response
@@ -484,6 +559,7 @@ All 10 primary balance algorithms are fully implemented and tested:
 ### ✅ **SUPPORTED**
 
 **DSL Extensions (beyond HAProxy):**
+
 - ✅ Variables with `let` keyword
 - ✅ String interpolation: `"${variable}"`
 - ✅ Templates for config reuse
@@ -495,6 +571,7 @@ All 10 primary balance algorithms are fully implemented and tested:
 - ✅ Imports (syntax defined, not implemented)
 
 **Lua Integration:**
+
 - ✅ Inline Lua scripts
 - ✅ External Lua file loading
 - ✅ Lua action calls in http-request
@@ -503,19 +580,23 @@ All 10 primary balance algorithms are fully implemented and tested:
 ### ❌ **NOT YET SUPPORTED**
 
 **HTTP/2:**
+
 - Configuration: `max-concurrent-streams`, `initial-window-size`, `header-table-size`
 - Compatibility modes
 
 **HTTP/3 / QUIC:**
+
 - QUIC configuration
 - Tuning parameters
 
 **Caching:**
+
 - `cache` section definition
 - `cache-store`, `cache-use` directives
 - Cache constraints
 
 **Filters:**
+
 - `filter trace` - Request/response tracing
 - `filter compression` - HTTP compression (compression exists as config block)
 - `filter spoe` - Stream Processing Offload Engine
@@ -523,22 +604,26 @@ All 10 primary balance algorithms are fully implemented and tested:
 - `filter fcgi-app` - FastCGI integration
 
 **Variables:**
+
 - Scoped variables: `global`, `proc`, `sess`, `txn`, `req`, `res`
 - `declare` directive for variable declaration
 - Persistent variable storage
 
 **Stick Tables:**
+
 - Stick table definition with types
 - Tracked metrics: `conn_cnt`, `conn_rate`, `http_req_rate`, etc.
 - Stick counter operations
 
 **Advanced SSL:**
+
 - OCSP stapling
 - Certificate generation
 - Session tickets
 - Detailed cipher configuration
 
 **Observability:**
+
 - Custom log formats
 - Ring buffers
 - Profiling (memory, tasks)
@@ -553,6 +638,7 @@ All 10 primary balance algorithms are fully implemented and tested:
 **Status:** Defined in IR nodes, temporarily disabled in grammar to avoid conflicts.
 
 **Supported in IR:**
+
 - Name, binds, mode
 - Balance algorithm
 - Servers
@@ -560,6 +646,7 @@ All 10 primary balance algorithms are fully implemented and tested:
 - Options
 
 **Not in Grammar:**
+
 - Commented out in DSL grammar
 - Can be re-enabled once conflicts resolved
 
@@ -631,26 +718,31 @@ All supported features generate syntactically correct HAProxy configuration:
 ### Syntax Generation Examples
 
 **Bind with SSL:**
+
 ```
 bind *:443 ssl crt /etc/haproxy/cert.pem alpn h2,http/1.1
 ```
 
 **Server with Health Check:**
+
 ```
 server web1 10.0.1.1:8080 check inter 5s rise 2 fall 3 weight 100
 ```
 
 **HTTP Request Rule:**
+
 ```
 http-request set-header X-Forwarded-Proto https if { ssl_fc }
 ```
 
 **ACL:**
+
 ```
 acl is_api path_beg -i /api
 ```
 
 **Health Check:**
+
 ```
 http-check send meth GET uri /health hdr "Host" "example.com"
 http-check expect status 200
@@ -663,6 +755,7 @@ http-check expect status 200
 ### For Production Use
 
 **Ready Now:**
+
 - Basic HTTP load balancing
 - SSL termination (basic)
 - Health checks
@@ -673,6 +766,7 @@ http-check expect status 200
 - Lua integration
 
 **Add Before Production:**
+
 1. `option forwardfor` support (for client IP preservation)
 2. `timeout http-request` (security)
 3. `option http-keep-alive` (performance)
@@ -682,6 +776,7 @@ http-check expect status 200
 ### For Enterprise Use
 
 Additional features needed:
+
 1. Stick tables (advanced session persistence)
 2. HTTP/2 configuration
 3. Resolvers (service discovery)
@@ -692,6 +787,7 @@ Additional features needed:
 ### For Edge Cases
 
 Specialized deployments may need:
+
 1. HTTP/3 / QUIC
 2. SPOE integration
 3. FastCGI support
@@ -712,6 +808,7 @@ The HAProxy Configuration Translator provides **comprehensive support for ~85% o
 - ✅ Lua integration
 
 **Missing features** are primarily:
+
 - Advanced HTTP/2 and HTTP/3 configuration
 - Stick tables and advanced persistence
 - TCP-level processing rules

@@ -52,21 +52,25 @@ haproxy-translate --version
 ### Basic Commands
 
 **Translate to stdout:**
+
 ```bash
 haproxy-translate config.hap
 ```
 
 **Translate to file:**
+
 ```bash
 haproxy-translate config.hap -o /etc/haproxy/haproxy.cfg
 ```
 
 **Validate only (no output):**
+
 ```bash
 haproxy-translate config.hap --validate
 ```
 
 **Watch mode (auto-regenerate on changes):**
+
 ```bash
 haproxy-translate config.hap -o haproxy.cfg --watch
 ```
@@ -74,11 +78,13 @@ haproxy-translate config.hap -o haproxy.cfg --watch
 ### Debugging and Inspection
 
 **Show IR debug information:**
+
 ```bash
 haproxy-translate config.hap --debug
 ```
 
 Output includes:
+
 - Frontends list
 - Backends list
 - Variables defined
@@ -86,11 +92,13 @@ Output includes:
 - Transformation steps
 
 **Verbose output:**
+
 ```bash
 haproxy-translate config.hap -o haproxy.cfg --verbose
 ```
 
 Shows:
+
 - Input file path
 - Parser used
 - Parse success info
@@ -100,16 +108,19 @@ Shows:
 ### Format Options
 
 **Auto-detect format (default):**
+
 ```bash
 haproxy-translate config.hap  # .hap → DSL parser
 ```
 
 **Explicit format:**
+
 ```bash
 haproxy-translate config.txt --format dsl
 ```
 
 **List available formats:**
+
 ```bash
 haproxy-translate --list-formats
 ```
@@ -117,11 +128,13 @@ haproxy-translate --list-formats
 ### Lua Script Options
 
 **Custom Lua output directory:**
+
 ```bash
 haproxy-translate config.hap -o haproxy.cfg --lua-dir /etc/haproxy/lua
 ```
 
 Default behavior:
+
 - If `-o` specified: Lua scripts go to same directory as output
 - If stdout: Lua scripts go to current directory
 
@@ -217,6 +230,7 @@ backend app {
 ```
 
 **Generated:**
+
 ```
 server web1 10.0.1.1:8080 check inter 3s rise 2 fall 3 maxconn 100
 ```
@@ -239,6 +253,7 @@ servers {
 ```
 
 **Generated:**
+
 ```
 server web1 10.0.1.1:8080 check
 server web2 10.0.1.2:8080 check
@@ -467,6 +482,7 @@ backend api_backend {
 ```
 
 **Generated:**
+
 ```
 server-template api 10 api-{id}.example.com:8080 check inter 5s rise 2 fall 3
 ```
@@ -949,11 +965,13 @@ frontend api {
 ### Validation Errors
 
 **Undefined backend reference:**
+
 ```
 Error: Frontend 'web' references undefined backend 'servers'
 ```
 
 **Solution**: Ensure all referenced backends exist:
+
 ```haproxy-dsl
 frontend web {
     default_backend: servers  // Must exist
@@ -965,11 +983,13 @@ backend servers {  // ✓ Defined
 ```
 
 **Undefined variable:**
+
 ```
 Error: Undefined variable: ${port}
 ```
 
 **Solution**: Define variable before use:
+
 ```haproxy-dsl
 let port = 8080  // ✓ Define first
 
@@ -982,17 +1002,20 @@ server web1 {
 ### Parse Errors
 
 **Invalid syntax:**
+
 ```
 Error: Syntax error at line 15, column 10
 ```
 
 **Solution**: Check for:
+
 - Missing colons: `mode: http` not `mode http`
 - Missing commas in arrays: `["a", "b"]` not `["a" "b"]`
 - Unmatched braces: `{ ... }`
 - Invalid keywords
 
 **Enable debug mode to see parse tree:**
+
 ```bash
 haproxy-translate config.hap --debug
 ```
@@ -1000,11 +1023,13 @@ haproxy-translate config.hap --debug
 ### Type Errors
 
 **Invalid mode value:**
+
 ```
 Error: Invalid mode 'httpx', expected 'http' or 'tcp'
 ```
 
 **Solution**: Use valid enum values:
+
 ```haproxy-dsl
 mode: http  // ✓ Valid
 mode: tcp   // ✓ Valid
@@ -1014,11 +1039,13 @@ mode: httpx // ✗ Invalid
 ### Semantic Validation Errors
 
 **Invalid health check:**
+
 ```
 Error: Invalid health check expect status 999
 ```
 
 **Solution**: Use valid HTTP status codes (100-599):
+
 ```haproxy-dsl
 health-check {
     method: "GET"
@@ -1030,6 +1057,7 @@ health-check {
 ### Common Mistakes
 
 **❌ Wrong:**
+
 ```haproxy-dsl
 // Missing config wrapper
 frontend web {
@@ -1038,6 +1066,7 @@ frontend web {
 ```
 
 **✓ Correct:**
+
 ```haproxy-dsl
 config my_config {
     frontend web {
@@ -1051,6 +1080,7 @@ config my_config {
 ```
 
 **❌ Wrong:**
+
 ```haproxy-dsl
 // Reference before definition
 frontend web {
@@ -1063,6 +1093,7 @@ backend servers {  // Defined after use
 ```
 
 **✓ Correct:**
+
 ```haproxy-dsl
 // Order doesn't matter in same config block
 config my_config {
@@ -1083,12 +1114,14 @@ config my_config {
 ### 1. Use Variables for Configuration Values
 
 **❌ Avoid hardcoding:**
+
 ```haproxy-dsl
 server web1 { address: "10.0.1.1", port: 8080 }
 server web2 { address: "10.0.1.2", port: 8080 }
 ```
 
 **✓ Use variables:**
+
 ```haproxy-dsl
 let base_ip = env("BASE_IP", "10.0.1")
 let app_port = env("APP_PORT", "8080")
@@ -1100,6 +1133,7 @@ server web2 { address: "${base_ip}.2", port: app_port }
 ### 2. Use Templates for Repeated Configuration
 
 **❌ Repetitive:**
+
 ```haproxy-dsl
 server web1 {
     address: "10.0.1.1"
@@ -1120,6 +1154,7 @@ server web2 {
 ```
 
 **✓ Use templates:**
+
 ```haproxy-dsl
 template server_defaults {
     check: true
@@ -1135,6 +1170,7 @@ server web2 { address: "10.0.1.2", port: 8080, @server_defaults }
 ### 3. Use Loops for Scalability
 
 **❌ Manual repetition:**
+
 ```haproxy-dsl
 server web1 { address: "10.0.1.1", port: 8080 }
 server web2 { address: "10.0.1.2", port: 8080 }
@@ -1143,6 +1179,7 @@ server web3 { address: "10.0.1.3", port: 8080 }
 ```
 
 **✓ Use loops:**
+
 ```haproxy-dsl
 servers {
     for i in [1..50] {
@@ -1169,6 +1206,7 @@ haproxy -c -f haproxy.cfg
 ### 5. Use Environment Variables for Secrets
 
 **❌ Don't hardcode secrets:**
+
 ```haproxy-dsl
 stats {
     enable: true
@@ -1177,6 +1215,7 @@ stats {
 ```
 
 **✓ Use environment variables:**
+
 ```haproxy-dsl
 stats {
     enable: true
@@ -1187,6 +1226,7 @@ stats {
 ### 6. Organize Complex Configurations
 
 **Use meaningful section names:**
+
 ```haproxy-dsl
 config production_lb {
     // Global configuration
@@ -1240,6 +1280,7 @@ config my_config {
 ### 8. Use Semantic Names
 
 **❌ Generic names:**
+
 ```haproxy-dsl
 frontend fe1 { ... }
 backend be1 { ... }
@@ -1247,6 +1288,7 @@ server s1 { ... }
 ```
 
 **✓ Descriptive names:**
+
 ```haproxy-dsl
 frontend public_https { ... }
 backend api_servers { ... }
@@ -1302,6 +1344,7 @@ Changes to `config.hap` will automatically regenerate `haproxy.cfg`.
 ---
 
 **Questions or Issues?**
+
 - Report bugs: https://github.com/haproxy/config-translator/issues
 - Discussions: https://github.com/haproxy/config-translator/discussions
 - HAProxy docs: https://docs.haproxy.org/

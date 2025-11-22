@@ -7,6 +7,7 @@ This directory contains example configurations demonstrating various features of
 ### 1. Simple Load Balancer (`01-simple-loadbalancer.hap`)
 
 **Demonstrates:**
+
 - Basic load balancing with round-robin
 - Health checks
 - Multiple backend servers
@@ -15,6 +16,7 @@ This directory contains example configurations demonstrating various features of
 **Use Case:** Basic HTTP load balancing across web servers
 
 **Generate:**
+
 ```bash
 haproxy-translate examples/01-simple-loadbalancer.hap -o haproxy.cfg
 ```
@@ -24,6 +26,7 @@ haproxy-translate examples/01-simple-loadbalancer.hap -o haproxy.cfg
 ### 2. SSL Termination (`02-ssl-termination.hap`)
 
 **Demonstrates:**
+
 - SSL/TLS termination
 - HTTPS to HTTP backends
 - HTTP to HTTPS redirect
@@ -35,6 +38,7 @@ haproxy-translate examples/01-simple-loadbalancer.hap -o haproxy.cfg
 **Use Case:** HTTPS frontend with SSL offloading
 
 **Generate:**
+
 ```bash
 # Set SSL certificate path
 export SSL_CERT_PATH=/etc/haproxy/certs/mysite.pem
@@ -46,6 +50,7 @@ haproxy-translate examples/02-ssl-termination.hap -o haproxy.cfg
 ### 3. ACL-Based Routing (`03-acl-routing.hap`)
 
 **Demonstrates:**
+
 - Multiple ACL definitions
 - ACL block syntax
 - Path-based routing
@@ -59,6 +64,7 @@ haproxy-translate examples/02-ssl-termination.hap -o haproxy.cfg
 **Use Case:** Microservices architecture with different routing rules
 
 **Generate:**
+
 ```bash
 haproxy-translate examples/03-acl-routing.hap -o haproxy.cfg
 ```
@@ -68,6 +74,7 @@ haproxy-translate examples/03-acl-routing.hap -o haproxy.cfg
 ### 4. Dynamic Server Scaling (`04-dynamic-scaling.hap`)
 
 **Demonstrates:**
+
 - Variable usage
 - String interpolation
 - Templates for reusable configuration
@@ -78,6 +85,7 @@ haproxy-translate examples/03-acl-routing.hap -o haproxy.cfg
 **Use Case:** Auto-scaling deployment with configurable server count
 
 **Generate:**
+
 ```bash
 # Configure via environment variables
 export NUM_SERVERS=20
@@ -92,6 +100,7 @@ haproxy-translate examples/04-dynamic-scaling.hap -o haproxy.cfg
 ### 5. Multi-Environment (`05-multi-environment.hap`)
 
 **Demonstrates:**
+
 - Conditional configuration (if/else)
 - Environment-specific settings
 - Ternary expressions
@@ -101,6 +110,7 @@ haproxy-translate examples/04-dynamic-scaling.hap -o haproxy.cfg
 **Use Case:** Single configuration file for all environments
 
 **Generate:**
+
 ```bash
 # Production
 export ENVIRONMENT=production
@@ -213,6 +223,7 @@ servers {
 ## Best Practices
 
 1. **Always validate** before deploying:
+
    ```bash
    haproxy-translate config.hap --validate
    ```
@@ -224,6 +235,7 @@ servers {
 4. **Use loops** for scalable configurations
 
 5. **Test generated config** with HAProxy:
+
    ```bash
    haproxy -c -f haproxy.cfg
    ```

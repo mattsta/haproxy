@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.4.0] - 2025-01-17 (Current Session)
 
 ### Added
+
 - **Server SSL Enhancements**: Full SNI and ALPN support for backend servers
   - Grammar: Added `sni` and `alpn` properties to server configuration
   - Codegen: Outputs `sni <hostname>` and `alpn <protocols>` in server lines
@@ -26,6 +27,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Complements existing `errorfile` (file-based) error handling
 
 ### Fixed
+
 - **CRITICAL: Balance Algorithm Parsing**: All 10 balance algorithms now working
   - Previous bug: All backends defaulted to 'roundrobin' regardless of configuration
   - Root cause: Grammar used string literals instead of terminals
@@ -33,6 +35,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Impact: This was a critical bug preventing use of non-default algorithms
 
 ### Test Coverage
+
 - **212 tests passing** (up from 190, +22 new tests, +11.6% increase)
 - 2 skipped, 3 xfailed (Lua extraction - documented)
 - **86% code coverage** maintained
@@ -45,6 +48,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - test_balance_algorithms.py: 10 parameterized tests for all algorithms
 
 ### Production Readiness
+
 - All high-priority HAProxy features now implemented
 - Feature-complete for common production use cases
 - Comprehensive end-to-end testing for all new features
@@ -53,6 +57,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.3.0] - 2025-01-17
 
 ### Added
+
 - **Listen Section**: Fully implemented listen section with complete grammar and transformer support
   - Combines frontend and backend functionality
   - Supports binds, ACLs, servers, health checks, options, timeouts
@@ -70,21 +75,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Modern manage.sh build script
 
 ### Changed
+
 - Updated README.md with project status and comprehensive feature matrix
 - Enhanced IR nodes with new fields for all features
 - Grammar expanded to support all new features
 
 ### Fixed
+
 - Listen section enabled (was disabled due to grammar conflicts)
 - Type annotations in listen_section transformer
 
 ### Test Coverage
+
 - 190 tests passing (up from 186)
 - 2 skipped, 3 xfailed (Lua extraction - pending parser integration)
 - 86% code coverage maintained
 - All quality gates passing (ruff, mypy)
 
 ### Documentation
+
 - Created FEATURES.md with detailed HAProxy feature parity
 - Created USAGE.md with comprehensive usage guide
 - Created examples/ directory with 5 real-world configurations
@@ -92,6 +101,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Created manage.sh for modern build/test/install workflow
 
 ### Production Readiness
+
 - ~90% HAProxy feature parity for common use cases
 - All high-priority features implemented
 - Comprehensive test coverage
@@ -101,6 +111,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.2.0] - 2025-01-16 (Previous Session)
 
 ### Added
+
 - Complete transformation pipeline integration
 - Multi-pass variable resolution for nested references
 - Bare variable interpolation in bind addresses
@@ -109,12 +120,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Auto-directory creation for output files
 
 ### Fixed
+
 - Parser support for `${var}:${port}` syntax without quotes
 - ACL block parsing
 - Nested variable resolution
 - ValidationError propagation
 
 ### Test Coverage
+
 - 186 tests passing
 - 0 failing
 - 79% → 86% coverage increase
@@ -122,6 +135,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.1.0] - Initial Release
 
 ### Added
+
 - DSL parser with Lark
 - Intermediate Representation (IR) with frozen dataclasses
 - Template system

@@ -12,6 +12,7 @@ Complete implementation plan for a production-ready HAProxy configuration transl
 - **Last Updated**: 2025-11-18 (Session 3)
 
 ### Current Status ✅
+
 - ✅ **344 tests passing** (up from 105)
 - ✅ **92% code coverage** (up from 69%)
 - ✅ **0 linting errors** (ruff clean)
@@ -42,6 +43,7 @@ Complete implementation plan for a production-ready HAProxy configuration transl
 - [ ] Configure GitHub Actions CI/CD
 
 **Validation**:
+
 ```bash
 uv run lint-fix          # Auto-fix lint issues
 uv run format            # Format code
@@ -57,28 +59,34 @@ uv run check-all         # Run all checks
 **Goal**: Fix all Lark grammar issues and ensure parser works correctly
 
 #### Task 2.1: Fix Grammar Conflicts ✅
+
 - [x] Resolved reduce/reduce conflicts in expression grammar
 - [x] Simplified expression precedence rules
 - [x] Fixed template variable parsing
 - [x] Tested all grammar rules with comprehensive unit tests (45 tests)
 
 **Files**:
+
 - `src/haproxy_translator/grammars/haproxy_dsl.lark`
 
 **Tests**:
+
 - `tests/test_parser/test_grammar.py` (24 tests)
 - `tests/test_parser/test_expressions.py` (19 tests)
 
 #### Task 2.2: Improve Transformer Robustness ✅
+
 - [x] Added comprehensive error handling with ParseError
 - [x] Validated all dataclass constructions
 - [x] Handled edge cases (empty sections, missing fields)
 - [x] Added source location tracking throughout
 
 **Files**:
+
 - `src/haproxy_translator/transformers/dsl_transformer.py`
 
 **Achievements**:
+
 - Switched to Earley parser for better ambiguity handling
 - Fixed TIME_UNIT and BOOLEAN terminal priorities
 - Added inline server syntax support
@@ -92,18 +100,22 @@ uv run check-all         # Run all checks
 **Goal**: Implement all transformation logic
 
 #### Task 3.1: Template Expansion
+
 - [ ] Implement template resolution
 - [ ] Support template inheritance
 - [ ] Handle template spreading (`@template_name`)
 - [ ] Validate template references
 
 **Files**:
+
 - `src/haproxy_translator/transformers/template_expander.py`
 
 **Tests**:
+
 - `tests/test_transformers/test_template_expansion.py`
 
 **Example**:
+
 ```haproxy-dsl
 template server_defaults {
   check: true
@@ -118,36 +130,44 @@ server web1 {
 ```
 
 #### Task 3.2: Variable Resolution
+
 - [ ] Implement variable lookup
 - [ ] Support environment variable substitution
 - [ ] Handle default values
 - [ ] Validate variable references
 
 **Files**:
+
 - `src/haproxy_translator/transformers/variable_resolver.py`
 
 **Tests**:
+
 - `tests/test_transformers/test_variable_resolution.py`
 
 **Example**:
+
 ```haproxy-dsl
 let backend_port = env("BACKEND_PORT") ?? 8080
 let ssl_cert = "${SSL_CERT:/etc/ssl/default.pem}"
 ```
 
 #### Task 3.3: Loop Unrolling
+
 - [ ] Implement for-loop expansion
 - [ ] Support range syntax (1..10)
 - [ ] Support list iteration
 - [ ] Handle nested loops
 
 **Files**:
+
 - `src/haproxy_translator/transformers/loop_unroller.py`
 
 **Tests**:
+
 - `tests/test_transformers/test_loop_unrolling.py`
 
 **Example**:
+
 ```haproxy-dsl
 servers {
   for i in 1..5 {
@@ -166,38 +186,47 @@ servers {
 **Goal**: Comprehensive configuration validation
 
 #### Task 4.1: Semantic Validation
+
 - [ ] Backend reference validation
 - [ ] ACL reference validation
 - [ ] Mode compatibility checks
 - [ ] Health check validation
 
 **Files**:
+
 - `src/haproxy_translator/validators/semantic.py`
 
 **Tests**:
+
 - `tests/test_validators/test_semantic_validation.py`
 
 #### Task 4.2: Type Validation
+
 - [ ] Port range validation (1-65535)
 - [ ] Timeout format validation
 - [ ] IP address validation
 - [ ] Path validation
 
 **Files**:
+
 - `src/haproxy_translator/validators/type_checker.py`
 
 **Tests**:
+
 - `tests/test_validators/test_type_validation.py`
 
 #### Task 4.3: Circular Dependency Detection
+
 - [ ] Detect circular backend references
 - [ ] Detect circular ACL dependencies
 - [ ] Provide helpful error messages
 
 **Files**:
+
 - `src/haproxy_translator/validators/dependency_checker.py`
 
 **Tests**:
+
 - `tests/test_validators/test_dependency_detection.py`
 
 ---
@@ -207,28 +236,34 @@ servers {
 **Goal**: Produce clean, optimized HAProxy configs
 
 #### Task 5.1: Formatting Improvements
+
 - [ ] Consistent indentation
 - [ ] Proper line wrapping
 - [ ] Comment preservation
 - [ ] Section ordering
 
 **Files**:
+
 - `src/haproxy_translator/codegen/haproxy.py`
 - `src/haproxy_translator/codegen/formatter.py`
 
 **Tests**:
+
 - `tests/test_codegen/test_formatting.py`
 
 #### Task 5.2: Optimization
+
 - [ ] Merge duplicate ACLs
 - [ ] Combine similar rules
 - [ ] Remove unused sections
 - [ ] Optimize server lists
 
 **Files**:
+
 - `src/haproxy_translator/codegen/optimizer.py`
 
 **Tests**:
+
 - `tests/test_codegen/test_optimization.py`
 
 ---
@@ -238,6 +273,7 @@ servers {
 **Goal**: 95%+ test coverage with comprehensive edge case testing
 
 #### Task 6.1: Unit Tests
+
 - [ ] Parser unit tests (grammar rules)
 - [ ] Transformer unit tests (each transformation)
 - [ ] Validator unit tests (each validation rule)
@@ -247,16 +283,19 @@ servers {
 **Coverage Target**: 90%+ for each module
 
 #### Task 6.2: Integration Tests
+
 - [ ] End-to-end translation tests
 - [ ] Multi-file configuration tests
 - [ ] Error handling tests
 - [ ] CLI integration tests
 
 **Files**:
+
 - `tests/integration/test_end_to_end.py`
 - `tests/integration/test_cli.py`
 
 #### Task 6.3: Edge Case Tests
+
 - [ ] Empty configurations
 - [ ] Extremely large configurations
 - [ ] Malformed input
@@ -265,14 +304,17 @@ servers {
 - [ ] Missing required fields
 
 **Files**:
+
 - `tests/edge_cases/`
 
 #### Task 6.4: Regression Tests
+
 - [ ] Real-world HAProxy configs
 - [ ] Complex configurations
 - [ ] Performance benchmarks
 
 **Files**:
+
 - `tests/regression/`
 
 ---
@@ -282,24 +324,30 @@ servers {
 **Goal**: Support multiple input formats
 
 #### Task 7.1: YAML Parser
+
 - [ ] Implement YAML parser
 - [ ] Support YAML anchors/aliases
 - [ ] Add YAML-specific tests
 
 **Files**:
+
 - `src/haproxy_translator/parsers/yaml_parser.py`
 
 **Tests**:
+
 - `tests/test_parsers/test_yaml_parser.py`
 
 #### Task 7.2: TOML Parser (Optional)
+
 - [ ] Implement TOML parser
 - [ ] Add TOML-specific tests
 
 **Files**:
+
 - `src/haproxy_translator/parsers/toml_parser.py`
 
 **Tests**:
+
 - `tests/test_parsers/test_toml_parser.py`
 
 ---
@@ -309,6 +357,7 @@ servers {
 **Goal**: Comprehensive documentation for users and developers
 
 #### Task 8.1: User Documentation
+
 - [ ] Getting started guide
 - [ ] Installation instructions
 - [ ] DSL syntax reference
@@ -318,12 +367,14 @@ servers {
 - [ ] Troubleshooting guide
 
 **Files**:
+
 - `docs/user-guide/getting-started.md`
 - `docs/user-guide/dsl-reference.md`
 - `docs/user-guide/examples.md`
 - `docs/user-guide/migration.md`
 
 #### Task 8.2: Developer Documentation
+
 - [ ] Architecture overview
 - [ ] Contributing guide
 - [ ] API reference
@@ -331,11 +382,13 @@ servers {
 - [ ] Testing guide
 
 **Files**:
+
 - `docs/dev-guide/architecture.md`
 - `docs/dev-guide/contributing.md`
 - `docs/dev-guide/api-reference.md`
 
 #### Task 8.3: API Documentation
+
 - [ ] Generate API docs with Sphinx/mkdocs
 - [ ] Docstring coverage
 - [ ] Code examples in docstrings
@@ -347,24 +400,29 @@ servers {
 **Goal**: Fast, efficient translation
 
 #### Task 9.1: Profiling
+
 - [ ] Profile parser performance
 - [ ] Profile transformation performance
 - [ ] Identify bottlenecks
 
 **Tools**:
+
 - `cProfile`, `py-spy`, `line_profiler`
 
 #### Task 9.2: Optimization
+
 - [ ] Optimize hot paths
 - [ ] Cache compiled grammars
 - [ ] Parallelize independent operations
 
 #### Task 9.3: Benchmarking
+
 - [ ] Create benchmark suite
 - [ ] Measure translation speed
 - [ ] Compare with baseline
 
 **Files**:
+
 - `benchmarks/`
 
 ---
@@ -374,29 +432,34 @@ servers {
 **Goal**: Ready for production use
 
 #### Task 10.1: Error Handling
+
 - [ ] User-friendly error messages
 - [ ] Suggestions for fixes
 - [ ] Detailed stack traces in debug mode
 
 #### Task 10.2: CLI Enhancements
+
 - [ ] Progress indicators
 - [ ] Color-coded output
 - [ ] JSON output mode
 - [ ] Diff mode (show changes)
 
 #### Task 10.3: Packaging
+
 - [ ] PyPI package
 - [ ] Docker image
 - [ ] Homebrew formula
 - [ ] Release automation
 
 #### Task 10.4: CI/CD
+
 - [ ] GitHub Actions workflow
 - [ ] Automated testing
 - [ ] Automated releases
 - [ ] Code quality checks
 
 **Files**:
+
 - `.github/workflows/ci.yml`
 - `.github/workflows/release.yml`
 
@@ -406,14 +469,14 @@ servers {
 
 ### Test Coverage Goals
 
-| Component | Target Coverage | Current |
-|-----------|----------------|---------|
-| Parsers | 95% | 86% ✅ |
-| Transformers | 95% | 70% ⏳ |
-| Validators | 95% | 0% |
-| Code Generator | 90% | 47% |
-| CLI | 80% | 0% |
-| **Overall** | **90%** | **61%** ⏳ |
+| Component      | Target Coverage | Current    |
+| -------------- | --------------- | ---------- |
+| Parsers        | 95%             | 86% ✅     |
+| Transformers   | 95%             | 70% ⏳     |
+| Validators     | 95%             | 0%         |
+| Code Generator | 90%             | 47%        |
+| CLI            | 80%             | 0%         |
+| **Overall**    | **90%**         | **61%** ⏳ |
 
 ### Test Types
 
@@ -481,6 +544,7 @@ uv run check-all
 ## Milestones
 
 ### Milestone 1: Core Functionality (v0.1.0)
+
 - ✅ Parser infrastructure
 - ✅ Basic DSL support
 - ✅ Code generator
@@ -488,6 +552,7 @@ uv run check-all
 - Target: Week 1
 
 ### Milestone 2: Complete Transformations (v0.2.0)
+
 - [ ] Template expansion
 - [ ] Variable resolution
 - [ ] Loop unrolling
@@ -495,12 +560,14 @@ uv run check-all
 - Target: Week 2
 
 ### Milestone 3: Comprehensive Testing (v0.3.0)
+
 - [ ] 90%+ test coverage
 - [ ] Integration tests
 - [ ] Edge case tests
 - Target: Week 3
 
 ### Milestone 4: Production Ready (v1.0.0)
+
 - [ ] Full documentation
 - [ ] Multiple parsers (YAML)
 - [ ] Performance optimization

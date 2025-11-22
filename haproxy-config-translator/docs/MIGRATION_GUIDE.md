@@ -34,6 +34,7 @@ config my_config {
 ## Basic Structure
 
 ### HAProxy Native Syntax
+
 ```haproxy
 global
     daemon
@@ -56,6 +57,7 @@ backend servers
 ```
 
 ### Modern DSL Syntax
+
 ```javascript
 config my_app {
   global {
@@ -744,15 +746,19 @@ config my_config {
 ## Migration Tips
 
 ### 1. Always Start with the Config Wrapper
+
 Every DSL file must have `config name { }` as the outer wrapper.
 
 ### 2. Mode Values Are Identifiers
+
 Use `mode: http` not `mode: "http"`.
 
 ### 3. Bind Is a Directive, Not a Property
+
 Use `bind *:80` not `bind: "*:80"`.
 
 ### 4. Servers Go in a Servers Block
+
 ```javascript
 servers {
   server name {
@@ -765,6 +771,7 @@ servers {
 ### 5. Use Templates for Repeated Settings
 
 **Server Templates** - For common server options:
+
 ```javascript
 config my_config {
   template server_defaults {
@@ -783,6 +790,7 @@ config my_config {
 ```
 
 **Backend Templates** - For common backend configurations:
+
 ```javascript
 config my_config {
   template production_backend {
@@ -801,6 +809,7 @@ config my_config {
 ```
 
 **Health Check Templates** - For standardized health monitoring:
+
 ```javascript
 config my_config {
   template http_health {
@@ -818,6 +827,7 @@ config my_config {
 ```
 
 **ACL Templates** - For reusable access control patterns:
+
 ```javascript
 config my_config {
   template internal_network {
@@ -853,6 +863,7 @@ server api1 address: "10.0.1.1" port: 8080 check: true
 ```
 
 ### 7. Validate Early and Often
+
 ```bash
 uv run haproxy-translate config.hap --validate
 ```

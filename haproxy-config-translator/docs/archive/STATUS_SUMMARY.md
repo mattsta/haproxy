@@ -8,13 +8,13 @@
 
 ## Test & Quality Metrics ✅
 
-| Metric | Value | Status |
-|--------|-------|--------|
-| Tests Passing | 344/344 | ✅ 100% |
-| Code Coverage | 92% | ✅ Excellent |
-| Ruff Linting | 0 errors | ✅ Clean |
-| Mypy Type Checking | 0 errors | ✅ Clean |
-| Test Files | 31 | ✅ Comprehensive |
+| Metric             | Value    | Status           |
+| ------------------ | -------- | ---------------- |
+| Tests Passing      | 344/344  | ✅ 100%          |
+| Code Coverage      | 92%      | ✅ Excellent     |
+| Ruff Linting       | 0 errors | ✅ Clean         |
+| Mypy Type Checking | 0 errors | ✅ Clean         |
+| Test Files         | 31       | ✅ Comprehensive |
 
 ---
 
@@ -23,6 +23,7 @@
 ### Overall Coverage: 77% (134/175 features)
 
 **Strong Areas (90%+)**
+
 - ✅ Lua Integration: 100% (6/6 features)
 - ✅ Backend Section: 93% (25/27 features)
 - ✅ Defaults Section: 91% (21/23 features)
@@ -30,10 +31,12 @@
 - ✅ ACLs: 91% (10/11 features)
 
 **Good Areas (70-89%)**
+
 - ⚠️ Frontend Section: 82% (18/22 features)
 - ⚠️ HTTP Actions: 71% (10/14 actions)
 
 **Needs Work (< 70%)**
+
 - ❌ Server Options: 64% (16/25 options)
 - ❌ Global Section: 60% (15/25 directives)
 - ❌ Bind Options: 27% (3/11 options)
@@ -43,6 +46,7 @@
 ## What's Working Perfectly
 
 ### Core Load Balancing ✅
+
 - All 10 major balance algorithms
 - Health checks with advanced expect conditions
 - Server templates for dynamic scaling
@@ -50,6 +54,7 @@
 - Compression configuration
 
 ### DSL Features ✅
+
 - Variables and string interpolation
 - Templates and template spreading
 - For loops for dynamic generation
@@ -57,6 +62,7 @@
 - Environment variable integration
 
 ### SSL/TLS ✅
+
 - SSL termination on bind
 - Server-side SSL connections
 - SNI and ALPN support
@@ -64,6 +70,7 @@
 - Default cipher configuration
 
 ### HTTP Processing ✅
+
 - Request/response manipulation
 - ACL-based routing
 - Header manipulation (set/add/del/replace)
@@ -71,12 +78,14 @@
 - Cookie-based persistence
 
 ### Session Persistence ✅
+
 - Stick tables with all types (ip, ipv6, integer, string, binary)
 - Stick rules (on, match, store-request, store-response)
 - Table expiration and purging
 - Peer synchronization
 
 ### TCP Layer ✅
+
 - TCP request/response rules
 - Connection-level filtering
 - Content inspection
@@ -136,12 +145,14 @@
 **Total Estimated Effort**: 24-26 hours
 
 ### Medium Priority (10 features, ~20 hours)
+
 - http-reuse, http-after-response, normalize-uri
 - transparent, hash balance algorithm
-- Various tune.* parameters
+- Various tune.\* parameters
 - Additional bind/server options
 
 ### Low Priority (22 features, ~30 hours)
+
 - Advanced SSL options (dh-params, ca-base, etc.)
 - Process/thread affinity
 - Network namespaces
@@ -153,12 +164,15 @@
 ## Path to 100% Parity
 
 ### Phase 1: Critical Features (24-26 hours)
+
 Implement the top 9 missing features listed above. This brings us to **~90% functional parity** for production use cases.
 
 ### Phase 2: Medium Priority (20 hours)
+
 Add remaining commonly-used features. Brings us to **~95% parity**.
 
 ### Phase 3: Complete Coverage (30 hours)
+
 Implement all remaining features for **100% parity**.
 
 **Total Time to 100%**: ~75-80 hours
@@ -168,6 +182,7 @@ Implement all remaining features for **100% parity**.
 ## Current Project Health
 
 ### Strengths ✅
+
 - **Solid foundation**: All core features working
 - **High quality**: 92% test coverage, no lint/type errors
 - **Excellent DSL**: Variables, templates, loops all working
@@ -176,8 +191,9 @@ Implement all remaining features for **100% parity**.
 - **Comprehensive tests**: 344 tests covering major scenarios
 
 ### Areas for Improvement ⚠️
+
 - **Bind options**: Only 27% coverage - needs work
-- **Global tuning**: Missing many tune.* parameters
+- **Global tuning**: Missing many tune.\* parameters
 - **Server options**: Missing some SSL and networking options
 - **Documentation**: Need migration guide and more examples
 
@@ -186,7 +202,9 @@ Implement all remaining features for **100% parity**.
 ## Recommendations
 
 ### For Immediate Production Use ✅
+
 The translator is ready for production if your config uses:
+
 - Standard load balancing (all algorithms supported)
 - SSL termination
 - Basic health checks
@@ -196,12 +214,13 @@ The translator is ready for production if your config uses:
 - HTTP request/response manipulation
 
 ### Not Yet Ready For ❌
+
 - Configs requiring custom log-format
 - Configs using PROXY protocol on bind
 - Configs requiring source IP binding
 - Configs needing mutual TLS (client certs)
 - Configs using header capture
-- Configs with complex tune.* parameters
+- Configs with complex tune.\* parameters
 
 ---
 
@@ -233,6 +252,7 @@ The translator is ready for production if your config uses:
 ## Conclusion
 
 The HAProxy Config Translator is a **solid, production-ready foundation** with:
+
 - ✅ 344 tests passing
 - ✅ 92% code coverage
 - ✅ 0 lint/type errors

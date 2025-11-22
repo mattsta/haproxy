@@ -49,6 +49,7 @@ global_property: "daemon" ":" boolean     -> global_daemon
 ```
 
 **Key Features:**
+
 - Declarative grammar definition
 - Automatic AST generation
 - Priority-based token resolution
@@ -85,6 +86,7 @@ class DSLTransformer(Transformer):
 ```
 
 **Transformer Pipeline:**
+
 1. **Variable Resolution** - Expands `${var}` references
 2. **Loop Unrolling** - Expands `for` loops into repeated elements
 3. **Template Expansion** - Processes template blocks
@@ -130,6 +132,7 @@ class Server(IRNode):
 ```
 
 **IR Benefits:**
+
 - Type-safe configuration
 - Validation at construction
 - Easy to traverse and analyze
@@ -217,12 +220,14 @@ src/haproxy_translator/
 ### Adding a New Global Directive
 
 1. **Add to Grammar** (`haproxy_dsl.lark`):
+
 ```lark
 global_property: ...
                | "my-new-directive" ":" string -> global_my_new_directive
 ```
 
 2. **Add to IR** (`nodes.py`):
+
 ```python
 @dataclass
 class GlobalConfig(IRNode):
@@ -231,18 +236,21 @@ class GlobalConfig(IRNode):
 ```
 
 3. **Add Transformer** (`dsl_transformer.py`):
+
 ```python
 def global_my_new_directive(self, items):
     return ("my_new_directive", str(items[0]))
 ```
 
 4. **Add Code Generator** (`haproxy.py`):
+
 ```python
 if global_config.my_new_directive:
     lines.append(self._indent(f"my-new-directive {global_config.my_new_directive}"))
 ```
 
 5. **Add Tests**:
+
 ```python
 def test_my_new_directive(parser, codegen):
     source = '''
@@ -324,6 +332,7 @@ class CodeGenError(TranslatorError):
 ```
 
 Example error output:
+
 ```
 ParseError: Unexpected token at line 15, column 8
   |

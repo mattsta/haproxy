@@ -115,6 +115,7 @@ backend servers
 ## DSL Syntax Essentials
 
 ### Config Wrapper
+
 All DSL files must be wrapped in a `config name { }` block:
 
 ```javascript
@@ -128,18 +129,20 @@ config my_config {
 ```
 
 ### Mode Values
+
 Mode values are identifiers, not strings:
 
 ```javascript
 // Correct
-mode: http
-mode: tcp
+mode: http;
+mode: tcp;
 
 // Incorrect
-mode: "http"  // Don't quote mode values
+mode: "http"; // Don't quote mode values
 ```
 
 ### Bind Directive
+
 Bind addresses are specified without quotes:
 
 ```javascript
@@ -152,6 +155,7 @@ bind *:443 ssl { cert: "/path/to/cert.pem" }
 ```
 
 ### Server Definitions
+
 Servers support three syntax styles - choose based on complexity:
 
 ```javascript
@@ -180,6 +184,7 @@ backend api {
 The DSL dramatically reduces configuration complexity. Here's a real example:
 
 ### Before: Native HAProxy (12 lines of repetition)
+
 ```haproxy
 backend api_servers
     balance roundrobin
@@ -196,6 +201,7 @@ backend api_servers
 ```
 
 ### After: DSL with Templates + Loops (60% less code)
+
 ```javascript
 config api_cluster {
   template standard_server {
@@ -230,6 +236,7 @@ config api_cluster {
 #### 1. **Templates** - Define Once, Use Everywhere
 
 **Server Templates** - Standardize server settings:
+
 ```javascript
 template production_server {
   check: true
@@ -244,6 +251,7 @@ server web1 { address: "10.0.1.1", port: 8080, @production_server }
 ```
 
 **Backend Templates** - Share backend configurations:
+
 ```javascript
 template api_backend {
   balance: leastconn
@@ -260,6 +268,7 @@ backend api_v1 {
 ```
 
 **Health Check Templates** - Consistent health monitoring:
+
 ```javascript
 template http_health {
   method: "GET"
@@ -274,6 +283,7 @@ backend api {
 ```
 
 **ACL Templates** - Reusable security patterns:
+
 ```javascript
 template internal_network {
   criterion: "src"
@@ -287,6 +297,7 @@ frontend web {
 ```
 
 #### 2. **Loops** - Generate Servers Dynamically
+
 ```javascript
 // Range syntax: [start..end] inclusive
 for i in [1..5] {
@@ -303,6 +314,7 @@ for i in [1..3] {
 ```
 
 #### 3. **Variables** - DRY Configuration
+
 ```javascript
 let app_port = 8080
 let check_interval = 3s
@@ -316,6 +328,7 @@ server api1 {
 ```
 
 #### 4. **Environment Variables** - CI/CD Ready
+
 ```javascript
 // With defaults for safety
 let server_count = env("SERVER_COUNT", 3)
@@ -329,11 +342,12 @@ let timeout = env("TIMEOUT_SECONDS", 30s)
 ```
 
 #### 5. **Multi-Pass Variable Resolution**
+
 ```javascript
-let port = 8080
-let host = "10.0.1.1"
-let endpoint = "${host}:${port}"     // Resolves to "10.0.1.1:8080"
-let full_url = "${endpoint}/api"     // Resolves to "10.0.1.1:8080/api"
+let port = 8080;
+let host = "10.0.1.1";
+let endpoint = "${host}:${port}"; // Resolves to "10.0.1.1:8080"
+let full_url = "${endpoint}/api"; // Resolves to "10.0.1.1:8080/api"
 ```
 
 ---
@@ -341,6 +355,7 @@ let full_url = "${endpoint}/api"     // Resolves to "10.0.1.1:8080/api"
 ### Real-World Patterns
 
 See **[PATTERNS.md](PATTERNS.md)** for comprehensive examples:
+
 - Multi-environment deployments (dev/staging/prod from one config)
 - Microservices routing with templates
 - Blue-green deployments with weight variables

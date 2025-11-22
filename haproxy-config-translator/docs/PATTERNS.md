@@ -21,9 +21,11 @@ This guide demonstrates the **dramatic advantages** of the DSL over native HAPro
 ## 1. Server Pool Generation
 
 ### The Problem
+
 Adding 10 servers with identical settings requires 10 nearly-identical lines.
 
 ### Native HAProxy (30 lines)
+
 ```haproxy
 backend api_servers
     balance roundrobin
@@ -42,6 +44,7 @@ backend api_servers
 ```
 
 ### DSL Solution (18 lines) - **40% reduction**
+
 ```javascript
 config api_cluster {
   template standard_server {
@@ -71,6 +74,7 @@ config api_cluster {
 ```
 
 ### Key Benefits
+
 - **Single source of truth** for server settings
 - **Change once, apply everywhere** - modify the template to update all servers
 - **Arithmetic support** - use `${100 + i}` for offset calculations
@@ -81,12 +85,15 @@ config api_cluster {
 ## 2. Multi-Environment Configs
 
 ### The Problem
+
 Production, staging, and development need different server counts, timeouts, and hostnames but share 90% of the same structure.
 
 ### Native HAProxy Approach
+
 Requires maintaining 3 separate files with duplicated configuration.
 
 ### DSL Solution - Single Parameterized Config
+
 ```javascript
 config multi_env {
   // Environment-specific settings from CI/CD
@@ -135,6 +142,7 @@ config multi_env {
 ```
 
 ### Deploy Commands
+
 ```bash
 # Production: 10 servers, longer timeouts
 DEPLOY_ENV=production SERVER_COUNT=10 API_HOST=api.prod.internal \
@@ -150,6 +158,7 @@ uv run haproxy-translate config.hap -o haproxy.cfg
 ```
 
 ### Key Benefits
+
 - **One config, multiple environments**
 - **CI/CD friendly** - inject values at build time
 - **Safe defaults** - `env("VAR", default)` ensures fallback values
@@ -160,9 +169,11 @@ uv run haproxy-translate config.hap -o haproxy.cfg
 ## 3. Microservices Routing
 
 ### The Problem
+
 Route requests to 5+ microservices based on path, with each service having multiple backends.
 
 ### Native HAProxy (75+ lines)
+
 ```haproxy
 frontend api_gateway
     bind *:443 ssl crt /etc/ssl/combined.pem
@@ -199,6 +210,7 @@ backend orders_service
 ```
 
 ### DSL Solution (55 lines) - **27% reduction + better maintainability**
+
 ```javascript
 config microservices_gateway {
   // Shared health check settings
@@ -257,6 +269,7 @@ config microservices_gateway {
 ```
 
 ### Key Benefits
+
 - **Template for health check settings** - change once for all services
 - **Dynamic replica count** - scale via environment variable
 - **Consistent configuration** - impossible to have mismatched settings between services
@@ -266,9 +279,11 @@ config microservices_gateway {
 ## 4. Blue-Green Deployments
 
 ### The Problem
+
 Maintain two identical backend pools (blue/green) and switch between them with zero downtime.
 
 ### DSL Solution
+
 ```javascript
 config blue_green {
   // Control which environment is active via weight variables
@@ -319,6 +334,7 @@ config blue_green {
 ```
 
 ### Deployment Commands
+
 ```bash
 # Normal operation - blue active (blue_weight=100, green_weight=0)
 # Edit the let statements in config.hap and regenerate:
@@ -334,6 +350,7 @@ uv run haproxy-translate config.hap -o haproxy.cfg
 ```
 
 ### Key Benefits
+
 - **Single config file** for both environments
 - **Gradual rollout** via weight percentages
 - **Instant rollback** - just regenerate with different weights
@@ -344,9 +361,11 @@ uv run haproxy-translate config.hap -o haproxy.cfg
 ## 5. Health Check Standardization
 
 ### The Problem
+
 Different teams configure health checks inconsistently, leading to cascading failures.
 
 ### DSL Solution - Organizational Standards
+
 ```javascript
 config standardized_health {
   // Organizational health check standards
@@ -422,6 +441,7 @@ config standardized_health {
 ```
 
 ### Key Benefits
+
 - **Enforced standards** - teams must use approved templates
 - **Service tiers** - critical, standard, batch clearly defined
 - **Easy auditing** - search for `@critical_service` to find critical backends
@@ -432,9 +452,11 @@ config standardized_health {
 ## 6. Health Check Templates
 
 ### The Problem
+
 Health check configuration requires multiple properties (method, URI, expected status, headers) that need to be consistent across backends.
 
 ### Native HAProxy Approach
+
 ```haproxy
 backend api_v1
     balance roundrobin
@@ -459,6 +481,7 @@ backend api_v3
 ```
 
 ### DSL Solution - Health Check Templates
+
 ```javascript
 config api_cluster {
   // Define health check templates for different service types
@@ -515,6 +538,7 @@ config api_cluster {
 ```
 
 ### Key Benefits
+
 - **Standardized health checks** - define once, use everywhere
 - **Easy override** - template provides defaults, explicit values override
 - **Service tiers** - different templates for different health check depth
@@ -525,9 +549,11 @@ config api_cluster {
 ## 7. ACL Templates
 
 ### The Problem
+
 ACL patterns are often repeated across frontends with slight variations (API paths, security checks, etc.).
 
 ### Native HAProxy Approach
+
 ```haproxy
 frontend web
     bind *:443 ssl crt /etc/ssl/cert.pem
@@ -549,6 +575,7 @@ frontend api
 ```
 
 ### DSL Solution - ACL Templates
+
 ```javascript
 config secure_gateway {
   // Define reusable ACL patterns
@@ -594,6 +621,7 @@ config secure_gateway {
 ```
 
 ### Key Benefits
+
 - **Reusable patterns** - define network ranges, paths, etc. once
 - **Security consistency** - ensure all frontends use the same trusted IPs
 - **Easy auditing** - search for `@internal_network` to find all internal-only access points
@@ -604,9 +632,11 @@ config secure_gateway {
 ## 8. Backend Templates
 
 ### The Problem
+
 Multiple backends share common configurations (balance algorithm, options, timeouts) that need to be kept in sync.
 
 ### Native HAProxy Approach
+
 ```haproxy
 backend api_v1
     balance leastconn
@@ -631,6 +661,7 @@ backend api_v3
 ```
 
 ### DSL Solution - Backend Templates
+
 ```javascript
 config api_services {
   // Define common backend configuration
@@ -664,6 +695,7 @@ config api_services {
 ```
 
 ### Key Benefits
+
 - **Centralized configuration** - change backend settings in one place
 - **Consistency** - all backends use the same options and algorithms
 - **Easy maintenance** - add new backends with minimal configuration
@@ -674,9 +706,11 @@ config api_services {
 ## 9. SSL/TLS Configuration
 
 ### The Problem
+
 Modern TLS requires specific ciphers, ALPN, and security options that are easy to misconfigure.
 
 ### DSL Solution
+
 ```javascript
 config secure_frontend {
   // Security standards
@@ -715,9 +749,11 @@ config secure_frontend {
 ## 10. Rate Limiting Patterns
 
 ### The Problem
+
 Implement consistent rate limiting across multiple frontends.
 
 ### DSL Solution
+
 ```javascript
 config rate_limited {
   let rate_limit = env("RATE_LIMIT_RPS", 100)
@@ -754,9 +790,11 @@ config rate_limited {
 ## 11. Session Affinity
 
 ### The Problem
+
 Maintain session affinity for stateful applications with proper cookie handling.
 
 ### DSL Solution
+
 ```javascript
 config sticky_sessions {
   template sticky_server {
@@ -789,20 +827,21 @@ config sticky_sessions {
 
 ## Summary: DSL vs Native Comparison
 
-| Pattern | Native Lines | DSL Lines | Reduction | Key Advantage |
-|---------|-------------|-----------|-----------|---------------|
-| 10-Server Pool | 30 | 18 | 40% | Template + Loop |
-| Multi-Environment | 3 files | 1 file | 67% | Environment Variables |
-| 5 Microservices | 75 | 55 | 27% | Shared Templates |
-| Blue-Green | 50 | 35 | 30% | Weight Variables |
-| Health Standards | N/A | 45 | - | Enforced Consistency |
-| Health Check Templates | 24 | 20 | 17% | Standardized Health Checks |
-| ACL Templates | 18 | 15 | 17% | Reusable ACL Patterns |
-| Backend Templates | 21 | 15 | 29% | Centralized Backend Config |
+| Pattern                | Native Lines | DSL Lines | Reduction | Key Advantage              |
+| ---------------------- | ------------ | --------- | --------- | -------------------------- |
+| 10-Server Pool         | 30           | 18        | 40%       | Template + Loop            |
+| Multi-Environment      | 3 files      | 1 file    | 67%       | Environment Variables      |
+| 5 Microservices        | 75           | 55        | 27%       | Shared Templates           |
+| Blue-Green             | 50           | 35        | 30%       | Weight Variables           |
+| Health Standards       | N/A          | 45        | -         | Enforced Consistency       |
+| Health Check Templates | 24           | 20        | 17%       | Standardized Health Checks |
+| ACL Templates          | 18           | 15        | 17%       | Reusable ACL Patterns      |
+| Backend Templates      | 21           | 15        | 29%       | Centralized Backend Config |
 
 ## When to Use the DSL
 
 **Best for:**
+
 - Server pools with >3 similar servers
 - Multi-environment deployments (dev/staging/prod)
 - Organizations wanting to standardize configurations
@@ -810,6 +849,7 @@ config sticky_sessions {
 - Teams that need to reduce configuration drift
 
 **Native HAProxy still works better for:**
+
 - Simple, single-server setups
 - Configs that never change
 - Runtime-only modifications (use stats socket)

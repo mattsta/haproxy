@@ -105,8 +105,8 @@ The haproxy-config-translator excels in several areas:
 1. **Core Global Directives** - Strong coverage of essential global configuration
    - Process management (daemon, user, group, chroot, pidfile)
    - Connection limits (maxconn, maxsslconn, maxconnrate, maxsessrate)
-   - SSL/TLS configuration (ssl-default-bind-*, ssl-default-server-*)
-   - Performance tuning (tune.* directives)
+   - SSL/TLS configuration (ssl-default-bind-_, ssl-default-server-_)
+   - Performance tuning (tune.\* directives)
 
 2. **Proxy Configuration** - Comprehensive support for proxy sections
    - Frontend, backend, defaults, listen sections
@@ -212,17 +212,19 @@ Based on the analysis, here are recommended priorities for achieving 100% parity
 
 ## Conclusion
 
-The haproxy-config-translator currently implements **165** out of 
-**172** global directives (95.9% coverage), 
+The haproxy-config-translator currently implements **165** out of
+**172** global directives (95.9% coverage),
 demonstrating strong foundational support for HAProxy configuration.
 
 **Strengths:**
+
 - Excellent coverage of core configuration directives
 - Modern DSL features (variables, templates, loops)
 - Comprehensive server and proxy configuration
 - Strong test coverage
 
 **Areas for Improvement:**
+
 - Runtime API (`stats socket`)
 - Stick table replication (`peers`)
 - DNS resolution (`resolvers`)

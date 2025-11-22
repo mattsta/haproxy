@@ -16,6 +16,7 @@ The HAProxy Configuration Translator is a **solid foundation** with excellent DS
 ### Current State
 
 **Strengths:**
+
 - ✅ Excellent DSL (variables, templates, loops, conditionals)
 - ✅ Solid core load balancing and routing
 - ✅ SSL/TLS hardening complete
@@ -24,6 +25,7 @@ The HAProxy Configuration Translator is a **solid foundation** with excellent DS
 - ✅ Clean, well-architected codebase
 
 **Weaknesses:**
+
 - ❌ Missing critical production directives (forwardfor already works via generic option!)
 - ❌ No `default-server` directive (causes config duplication)
 - ❌ Limited performance tuning options
@@ -32,17 +34,17 @@ The HAProxy Configuration Translator is a **solid foundation** with excellent DS
 
 ### Feature Coverage Analysis
 
-| Category | Coverage | Status |
-|----------|----------|--------|
-| **DSL Features** | 100% | ✅ Complete |
-| **Core Load Balancing** | 100% | ✅ Complete |
-| **SSL/TLS Hardening** | 95% | ✅ Near Complete |
-| **Defaults Section** | 85% | ✅ Good |
-| **Backend Section** | 60% | ⚠️ Needs Work |
-| **Frontend Section** | 50% | ⚠️ Needs Work |
-| **Global Section** | 30% | ❌ Missing Many |
-| **Server Options** | 40% | ❌ Missing Many |
-| **Bind Options** | 30% | ❌ Missing Many |
+| Category                | Coverage | Status           |
+| ----------------------- | -------- | ---------------- |
+| **DSL Features**        | 100%     | ✅ Complete      |
+| **Core Load Balancing** | 100%     | ✅ Complete      |
+| **SSL/TLS Hardening**   | 95%      | ✅ Near Complete |
+| **Defaults Section**    | 85%      | ✅ Good          |
+| **Backend Section**     | 60%      | ⚠️ Needs Work    |
+| **Frontend Section**    | 50%      | ⚠️ Needs Work    |
+| **Global Section**      | 30%      | ❌ Missing Many  |
+| **Server Options**      | 40%      | ❌ Missing Many  |
+| **Bind Options**        | 30%      | ❌ Missing Many  |
 
 **Overall Feature Parity**: ~22% of HAProxy directives (80-90 of ~411 total)
 
@@ -78,6 +80,7 @@ backend api {
 ```
 
 **Implementation Plan**:
+
 1. Add IR node `DefaultServer` in `nodes.py`
 2. Add grammar rule `default_server_directive` in `haproxy_dsl.lark`
 3. Add transformer in `dsl_transformer.py`
@@ -85,6 +88,7 @@ backend api {
 5. Add comprehensive tests
 
 **Files to Modify**:
+
 - `src/haproxy_translator/ir/nodes.py`
 - `src/haproxy_translator/grammars/haproxy_dsl.lark`
 - `src/haproxy_translator/transformers/dsl_transformer.py`
@@ -118,6 +122,7 @@ Test created: `tests/test_parser/test_common_options.py::test_option_http_keep_a
 **Impact**: HIGH - Security and performance
 
 **Currently Supported**:
+
 - ✅ `timeout connect` (defaults/backend)
 - ✅ `timeout client` (defaults/frontend)
 - ✅ `timeout server` (defaults/backend)
@@ -127,6 +132,7 @@ Test created: `tests/test_parser/test_common_options.py::test_option_http_keep_a
 - ✅ `timeout queue` (defaults)
 
 **Missing**:
+
 - ❌ `timeout http-request` in backend
 - ❌ `timeout tunnel` (WebSocket/long connections)
 - ❌ `timeout client-fin`
@@ -289,6 +295,7 @@ Test created: `tests/test_parser/test_common_options.py::test_option_http_keep_a
 ### Test Organization
 
 Create new test files for missing coverage:
+
 - `tests/test_cli/test_integration.py` - CLI integration tests
 - `tests/test_parser/test_listen_section.py` - Listen section tests
 - `tests/test_transformer/test_edge_cases.py` - Transformer edge cases
@@ -303,6 +310,7 @@ Create new test files for missing coverage:
 **Goal**: Production-ready for basic use cases
 
 **Features**:
+
 1. ✅ `option forwardfor` (VERIFIED - add tests only)
 2. ✅ `option http-keep-alive` (VERIFIED - add tests only)
 3. ⭐ `default-server` directive (4-6 hrs)
@@ -314,6 +322,7 @@ Create new test files for missing coverage:
 9. Test coverage: 88% → 92% (5 hrs)
 
 **Deliverables**:
+
 - All critical features implemented
 - Common production patterns tested
 - 268+ tests passing
@@ -324,6 +333,7 @@ Create new test files for missing coverage:
 **Goal**: Production-ready for advanced use cases
 
 **Features**:
+
 1. `log-format` custom logging (4 hrs)
 2. `http-check expect` enhancements (3 hrs)
 3. `capture request/response header` (5-6 hrs)
@@ -332,6 +342,7 @@ Create new test files for missing coverage:
 6. Test coverage: 92% → 96% (6 hrs)
 
 **Deliverables**:
+
 - Advanced logging and debugging
 - Comprehensive health checks
 - 290+ tests passing
@@ -342,6 +353,7 @@ Create new test files for missing coverage:
 **Goal**: Enterprise-ready with advanced features
 
 **Features**:
+
 1. Additional load balancing algorithms (6 hrs)
 2. Full TCP processing support (8 hrs)
 3. HTTP advanced processing (8 hrs)
@@ -350,6 +362,7 @@ Create new test files for missing coverage:
 6. Test coverage: 96% → 99% (8 hrs)
 
 **Deliverables**:
+
 - Enterprise-grade features
 - Comprehensive test suite
 - 320+ tests passing
@@ -360,6 +373,7 @@ Create new test files for missing coverage:
 **Goal**: Specialized use cases and modern protocols
 
 **Features**:
+
 1. HTTP/2 configuration (8 hrs)
 2. Caching support (10 hrs)
 3. SPOE integration (12 hrs)
@@ -367,6 +381,7 @@ Create new test files for missing coverage:
 5. Test coverage: 99% → 100% (5 hrs)
 
 **Deliverables**:
+
 - Modern protocol support
 - Full feature parity
 - 350+ tests passing
@@ -539,12 +554,14 @@ These can be implemented quickly for immediate value:
 The HAProxy Configuration Translator has a **solid foundation** and is ready for the next phase of development. With focused effort on critical features (especially `default-server`), we can achieve production-readiness for most use cases within 20-30 hours.
 
 The phased approach ensures we:
+
 1. **Deliver value quickly** (Phase 1 critical features)
 2. **Build systematically** (Phases 2-3 advanced features)
 3. **Achieve excellence** (Phase 4 specialized features)
 4. **Maintain quality** (100% test coverage throughout)
 
 **Next Actions**:
+
 1. ✅ Run common options tests
 2. ⭐ Implement `default-server` (highest priority)
 3. Add global tuning directives

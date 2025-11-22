@@ -9,6 +9,7 @@
 ## KEY FINDINGS
 
 ### Critical Discovery: Only 15% Implementation Coverage
+
 - **Implemented**: 15/100+ directives
 - **Missing**: 85+ directives
 - **Gap**: 85% of global functionality not implemented
@@ -29,6 +30,7 @@
 ## WHAT WE CURRENTLY SUPPORT
 
 ### Fully Implemented (15 Directives)
+
 ```
 ✅ daemon                       - Background execution
 ✅ user / group                 - Process ownership
@@ -45,6 +47,7 @@
 ```
 
 ### Architectural Limitations
+
 - **Grammar** only defines 40 global_property rules
 - **IR nodes** have limited global_config fields
 - **Transformer** only handles 12+ global directives
@@ -55,6 +58,7 @@
 ## INVESTIGATION METHODOLOGY
 
 ### Sources Researched
+
 1. **Official HAProxy Documentation**
    - HAProxy 2.0.28 Configuration Manual
    - HAProxy 2.8.16 Configuration Manual
@@ -76,7 +80,9 @@
 ## DELIVERABLES CREATED
 
 ### 1. Complete Investigation Report
+
 **File**: `GLOBAL_DIRECTIVES_INVESTIGATION.md` (10,000+ words)
+
 - Detailed catalog of all 100+ global directives
 - Category-by-category breakdown
 - Implementation complexity analysis
@@ -84,7 +90,9 @@
 - Effort estimates and resource requirements
 
 ### 2. Quick Reference Guide
+
 **File**: `GLOBAL_DIRECTIVES_QUICK_REFERENCE.md`
+
 - Currently implemented directives
 - Critical missing directives (Phase 1)
 - Priority breakdown by tier
@@ -92,7 +100,9 @@
 - Week-by-week implementation roadmap
 
 ### 3. Complete CSV Listing
+
 **File**: `GLOBAL_DIRECTIVES_COMPLETE_LIST.csv` (128 directives)
+
 - All directives with status and priority
 - Easy filtering and sorting
 - Integration with project management tools
@@ -102,9 +112,11 @@
 ## IMPLEMENTATION ROADMAP
 
 ### PHASE 1: CRITICAL (3-4 days) - 15 Directives
+
 **Priority**: IMMEDIATE - These are most commonly used
 
 Essential directives that users expect:
+
 - Environment variables: `setenv`, `presetenv`, `resetenv`, `unsetenv`
 - Rate limiting: `maxconnrate`, `maxsslrate`, `maxsessrate`
 - Buffer tuning: `tune.bufsize`, `tune.maxrewrite`, `maxpipes`
@@ -116,9 +128,11 @@ Essential directives that users expect:
 **Estimated Impact**: 30% coverage improvement
 
 ### PHASE 2: HIGH PRIORITY (4-5 days) - 25-30 Directives
+
 **Priority**: HIGH - Advanced users need these
 
 Performance and protocol enhancements:
+
 - SSL tuning: `tune.ssl.bufsize`, `tune.ssl.cachesize`, `tune.ssl.lifetime`, etc. (10+ directives)
 - HTTP/2: `tune.h2.*` (10+ directives)
 - TLS 1.3: `ssl-default-bind-ciphersuites`, `ssl-default-server-ciphersuites`
@@ -128,9 +142,11 @@ Performance and protocol enhancements:
 **Estimated Impact**: 30% coverage improvement
 
 ### PHASE 3: MEDIUM PRIORITY (3-4 days) - 20+ Directives
+
 **Priority**: MEDIUM - Specialized use cases
 
 System integration and advanced features:
+
 - Memory tuning: `tune.memory.*` directives
 - CPU affinity: `cpu-map`
 - System options: `uid`, `gid`, `setcap`, `set-dumpable`, `unix-bind`
@@ -140,9 +156,11 @@ System integration and advanced features:
 **Estimated Impact**: 20% coverage improvement
 
 ### PHASE 4: LOW PRIORITY (4-5 days) - 20+ Directives
+
 **Priority**: LOW - Enterprise-specific features
 
 Specialized modules and advanced systems:
+
 - Device detection: DeviceAtlas, 51Degrees, WURFL (10+ directives)
 - Stats/monitoring: Full stats config, email alerts
 - Enterprise: `userlist`, `peers`, `mailers`, `programs`, `http-errors`, `rings`
@@ -155,15 +173,16 @@ Specialized modules and advanced systems:
 
 ## EFFORT ESTIMATION
 
-| Phase | Directives | Tests | Effort | Impact |
-|-------|-----------|-------|--------|--------|
-| **Phase 1** | 15 | 30-40 | 3-4 days | +30% |
-| **Phase 2** | 25-30 | 50-60 | 4-5 days | +30% |
-| **Phase 3** | 20+ | 40-50 | 3-4 days | +20% |
-| **Phase 4** | 20+ | 30-40 | 4-5 days | +15% |
-| **TOTAL** | **85+** | **150-190** | **14-18 days** | **95%** |
+| Phase       | Directives | Tests       | Effort         | Impact  |
+| ----------- | ---------- | ----------- | -------------- | ------- |
+| **Phase 1** | 15         | 30-40       | 3-4 days       | +30%    |
+| **Phase 2** | 25-30      | 50-60       | 4-5 days       | +30%    |
+| **Phase 3** | 20+        | 40-50       | 3-4 days       | +20%    |
+| **Phase 4** | 20+        | 30-40       | 4-5 days       | +15%    |
+| **TOTAL**   | **85+**    | **150-190** | **14-18 days** | **95%** |
 
 ### Final Coverage
+
 - **Current**: 15% (15/100+ directives)
 - **After Phase 1**: 45% (45/100+ directives)
 - **After Phase 2**: 75% (75/100+ directives)
@@ -175,26 +194,31 @@ Specialized modules and advanced systems:
 ## CODE CHANGES REQUIRED
 
 ### IR Nodes (ir/nodes.py)
+
 - Add 10+ new fields to `GlobalConfig`
-- Expand `tuning` dict to handle all tune.* directives
+- Expand `tuning` dict to handle all tune.\* directives
 - Add nested config objects for complex features
 
 ### Grammar (haproxy_dsl.lark)
+
 - Add 85+ new global_property rules
 - Extend keyword definitions
-- Handle tune.* dot-notation directives
+- Handle tune.\* dot-notation directives
 
 ### Transformer (dsl_transformer.py)
+
 - Add 85+ new transformer methods
 - Enhance global_section() method
 - Handle complex directive variants
 
 ### Code Generator (codegen/haproxy.py)
-- Expand _generate_global() method
+
+- Expand \_generate_global() method
 - Add output formatting for all directives
 - Handle directive ordering and dependencies
 
 ### Tests
+
 - Create 150-200 new test cases
 - Organize tests by category
 - Include integration tests
@@ -204,6 +228,7 @@ Specialized modules and advanced systems:
 ## CRITICAL GAPS ANALYSIS
 
 ### What's Missing That Users Expect
+
 1. **Environment Variables** - Cannot configure environment before HAProxy startup
 2. **Rate Limiting** - Cannot rate-limit connections at global level
 3. **Master-Worker Mode** - Cannot use automatic process reloading
@@ -213,8 +238,9 @@ Specialized modules and advanced systems:
 7. **CPU Affinity** - Cannot bind threads to specific CPUs
 
 ### Users Most Affected
+
 - **Enterprise users**: Need device detection, master-worker mode
-- **Performance-focused users**: Need all tune.* directives
+- **Performance-focused users**: Need all tune.\* directives
 - **Security-focused users**: Need advanced SSL/TLS options
 - **DevOps users**: Need environment variables and CPU affinity
 
@@ -223,18 +249,21 @@ Specialized modules and advanced systems:
 ## RECOMMENDATIONS
 
 ### Immediate Actions (Next Session)
+
 1. Prioritize Phase 1 directives (15-20 directives)
 2. Start with environment variables (highest impact)
 3. Follow with rate limiting and buffer tuning
 4. Create test suite for Phase 1
 
 ### Strategic Approach
+
 1. **Block-by-block implementation**: Implement one category at a time
 2. **Test-first development**: Write tests before implementing
 3. **Documentation as you go**: Update grammar and IR docs
 4. **Gradual rollout**: Each phase can be released independently
 
 ### Quality Assurance
+
 - Ensure 100% test coverage for each new directive
 - Validate output matches native HAProxy format
 - Cross-reference HAProxy documentation
@@ -245,17 +274,20 @@ Specialized modules and advanced systems:
 ## REFERENCES AND RESOURCES
 
 ### Documentation Files Created
+
 1. `GLOBAL_DIRECTIVES_INVESTIGATION.md` - Complete 12,000+ word report
 2. `GLOBAL_DIRECTIVES_QUICK_REFERENCE.md` - Quick lookup guide
 3. `GLOBAL_DIRECTIVES_COMPLETE_LIST.csv` - Machine-readable list
 4. `GLOBAL_INVESTIGATION_SUMMARY.md` - This document
 
 ### Official HAProxy Docs
+
 - [HAProxy 2.0 Configuration Manual](http://cbonte.github.io/haproxy-dconv/2.0/configuration.html)
 - [HAProxy 2.8 Configuration Manual](https://docs.haproxy.org/2.8/configuration.html)
 - [HAProxy 3.3 Development Manual](https://docs.haproxy.org/dev/configuration.html)
 
 ### Codebase Location
+
 - **Grammar**: `/src/haproxy_translator/grammars/haproxy_dsl.lark`
 - **IR Nodes**: `/src/haproxy_translator/ir/nodes.py`
 - **Transformer**: `/src/haproxy_translator/transformers/dsl_transformer.py`

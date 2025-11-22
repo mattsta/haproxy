@@ -95,7 +95,7 @@ between the master and the workers. The FD of the worker side of the pipe is
 inserted in the poller so it can watch for a close. When the pipe is closed this
 means the master left, and this is not supposed to happen, so it could have
 crash. When it happens all workers are leaving. To survive the reloads of the
-master, the FD are saved in environment variables (HAPROXY_MWORKER_PIPE_{RD,WR})
+master, the FD are saved in environment variables (HAPROXY*MWORKER_PIPE*{RD,WR})
 
 The master-worker mode could be activated by using either "-W" or
 "master-worker" in the global section of the configuration, but it is prefered

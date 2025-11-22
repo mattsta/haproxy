@@ -57,7 +57,7 @@
 
 ## In Progress 🔄
 
-*No items currently in progress*
+_No items currently in progress_
 
 ## Next Steps 🎯
 

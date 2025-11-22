@@ -5,6 +5,7 @@
 Successfully implemented **15 critical Phase 1 global directives** with 100% test coverage!
 
 ### Rate Limiting (3 directives)
+
 - `maxconnrate` - Maximum connection rate per second
 - `maxsslrate` - Maximum SSL connection rate per second
 - `maxsessrate` - Maximum session rate per second
@@ -12,11 +13,13 @@ Successfully implemented **15 critical Phase 1 global directives** with 100% tes
 **Impact**: Protects against DoS attacks, connection floods, and resource exhaustion
 
 ### Process Control (1 directive)
+
 - `nbproc` - Number of HAProxy processes
 
 **Impact**: Multi-process support for CPU utilization and performance
 
 ### SSL/TLS Configuration (5 directives)
+
 - `ca-base` - Base directory for CA certificate files
 - `crt-base` - Base directory for server certificate files
 - `ssl-dh-param-file` - Diffie-Hellman parameters file path
@@ -26,12 +29,14 @@ Successfully implemented **15 critical Phase 1 global directives** with 100% tes
 **Impact**: SSL hardening, certificate management, perfect forward secrecy, secure backend connections
 
 ### Logging Configuration (2 directives)
+
 - `log-tag` - Tag to prefix all log messages
 - `log-send-hostname` - Hostname to send in log messages
 
 **Impact**: Better log aggregation, filtering, and multi-instance management
 
 ### Environment Variables (4 directives)
+
 - `setenv` - Set environment variable
 - `presetenv` - Set environment variable with preset
 - `resetenv` - Reset environment variable to system default
@@ -42,12 +47,14 @@ Successfully implemented **15 critical Phase 1 global directives** with 100% tes
 ## Test Coverage
 
 ### New Tests Created
+
 - **8 comprehensive test cases** in `test_phase1_global_directives.py`
 - Tests cover all 15 new directives individually and combined
 - All tests verify both IR (intermediate representation) and code generation
 - **100% pass rate** - 419 tests passing total
 
 ### Test Categories
+
 1. `test_global_rate_limiting` - All 3 rate limiting directives
 2. `test_global_process_control` - nbproc directive
 3. `test_global_ssl_base_paths` - ca-base and crt-base
@@ -60,24 +67,29 @@ Successfully implemented **15 critical Phase 1 global directives** with 100% tes
 ## Examples Created
 
 ### phase1_features.hap
+
 Complete working example demonstrating ALL 15 Phase 1 features:
+
 - Successfully translates to native HAProxy configuration
 - Shows production-ready setup with SSL backends
 - Demonstrates rate limiting for DoS protection
 - Shows environment variable usage
 
 ### production_global_config.hap (WIP)
+
 More complex example with routing (needs ACL syntax fixes)
 
 ## Code Changes
 
 ### Files Modified
+
 1. `src/haproxy_translator/grammars/haproxy_dsl.lark` - Added 15 grammar rules
 2. `src/haproxy_translator/ir/nodes.py` - Added 12 new GlobalConfig fields
 3. `src/haproxy_translator/transformers/dsl_transformer.py` - Added 15 transformer methods + global_section updates
 4. `src/haproxy_translator/codegen/haproxy.py` - Added code generation for all 15 directives
 
 ### Lines of Code
+
 - Grammar: +24 lines
 - IR nodes: +13 lines
 - Transformer: +113 lines
@@ -88,11 +100,13 @@ More complex example with routing (needs ACL syntax fixes)
 ## Coverage Impact
 
 ### Global Directive Coverage
+
 - **Before**: 15 directives (15%)
 - **After**: 30 directives (30%)
 - **Improvement**: +100% increase!
 
 ### Overall Stats
+
 - Tests: 411 → 419 (+8 tests)
 - All tests passing: 100% ✅
 - Test coverage: 92% (working towards 100%)
@@ -100,6 +114,7 @@ More complex example with routing (needs ACL syntax fixes)
 ## Production Readiness
 
 These Phase 1 features are **production-ready** for:
+
 - ✅ DoS protection (rate limiting)
 - ✅ SSL hardening (server verification, DH parameters)
 - ✅ Multi-process deployment (nbproc)
@@ -109,18 +124,21 @@ These Phase 1 features are **production-ready** for:
 ## Next Steps
 
 ### Phase 2 (High Priority) - 30+ directives
-- SSL tuning (tune.ssl.*)
-- HTTP/2 tuning (tune.h2.*)
+
+- SSL tuning (tune.ssl.\*)
+- HTTP/2 tuning (tune.h2.\*)
 - TLS 1.3 ciphersuites
 - HTTP header limits
 - Master-worker mode
 
 ### Phase 3 (Medium Priority) - 20+ directives
+
 - Memory tuning
 - CPU affinity
 - QUIC/HTTP3 tuning
 
 ### Phase 4 (Low Priority) - 15+ directives
+
 - Device detection modules
 - Enterprise features
 - Debugging options
@@ -149,6 +167,7 @@ These Phase 1 features are **production-ready** for:
 Phase 1 is **COMPLETE** and **PRODUCTION-READY**!
 
 The implementation demonstrates:
+
 - Systematic approach (grammar → IR → transformer → codegen → tests → examples)
 - High quality (100% test pass rate)
 - Real-world value (DoS protection, SSL hardening, 12-factor apps)

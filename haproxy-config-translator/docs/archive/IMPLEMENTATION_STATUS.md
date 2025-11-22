@@ -8,6 +8,7 @@
 ## Current Status
 
 ### Tests & Code Quality ✅
+
 - **Tests:** 1198 passing, 0 skipped, 0 failures
 - **Test Coverage:** ~95%
 - **Mypy:** 0 errors (100% type safe)
@@ -17,6 +18,7 @@
 ### Feature Parity Status
 
 #### Global Directives ✅ 100% NON-DEPRECATED COVERAGE
+
 - **Total HAProxy Directives:** 172 (HAProxy 3.3)
 - **Implemented:** 165 non-deprecated (tested and verified)
 - **Non-Deprecated Coverage:** 100% (165/165) ✅
@@ -33,6 +35,7 @@
 **Achievement:** All non-deprecated global directives are fully implemented!
 
 #### Proxy Keywords ✅ 100% COVERAGE ACHIEVED!
+
 - **Total HAProxy Keywords:** 79 non-deprecated
 - **Implemented:** 78 + 1 deprecated handled = 100% ✅
 - **Coverage:** 100% ✅
@@ -40,6 +43,7 @@
 **Achievement:** All non-deprecated proxy keywords are fully implemented!
 
 #### Server Options
+
 - **Implemented:** 55+ server options
 - **Coverage:** Comprehensive for production use
 
@@ -74,6 +78,7 @@ Implemented the final 4 proxy keywords using modern DSL design principles for ma
    - Extensible design with type-specific parameters
 
 **Session Results:**
+
 - **+43 tests** (1155 → 1198)
 - **0 failures**, 0 type errors
 - **100% proxy keyword coverage achieved!**
@@ -81,6 +86,7 @@ Implemented the final 4 proxy keywords using modern DSL design principles for ma
 - Clean, readable, type-safe syntax improvements over native HAProxy
 
 **Design Philosophy Applied:**
+
 - List-based structures for rules and filters (vs verbose repetition)
 - Type-safe object properties (vs positional parameters)
 - Unified syntax patterns across directives
@@ -88,6 +94,7 @@ Implemented the final 4 proxy keywords using modern DSL design principles for ma
 - Readable property names (track_key vs bare arguments)
 
 ### Phase 5A Progress (Previous Session)
+
 1. ✅ **error-log-format** - Completed implementation and tests (14 tests)
 2. ✅ **log-format-sd** - Completed as part of error-log-format work
 3. ✅ **log-tag** - Completed for listen sections
@@ -106,6 +113,7 @@ Implemented the final 4 proxy keywords using modern DSL design principles for ma
 **Phase 5A:** 100% complete (all 10 directives implemented)
 
 ### Phase 6 Progress (Current Session)
+
 1. ✅ **tune.maxaccept** - Max connections to accept at once
 2. ✅ **tune.maxpollevents** - Max poll events
 3. ✅ **tune.bufsize.small** - Small buffer size
@@ -148,9 +156,11 @@ Implemented the final 4 proxy keywords using modern DSL design principles for ma
 **Phase 6 Status:** 100% COMPLETE (37/37 directives) ✅
 
 ### Priority 4: Debugging & Development (Phase 7) ✅ COMPLETE
+
 Status: 100% complete (6 of 6 directives implemented)
 
 **Completed:**
+
 1. ✅ **quiet** - Suppress warnings
 2. ✅ **debug.counters** - Debug counter output file
 3. ✅ **anonkey** - Anonymization key
@@ -162,9 +172,11 @@ Status: 100% complete (6 of 6 directives implemented)
 **Phase 7 Status:** 100% COMPLETE (6/6 directives) ✅
 
 ### Priority 5: QUIC/HTTP3 Support (Phase 8) ✅ COMPLETE
+
 Status: 100% complete (4 of 4 remaining directives implemented)
 
 **Completed:**
+
 1. ✅ **tune.quic.cc-hystart** - Enable hystart congestion control
 2. ✅ **tune.quic.reorder-ratio** - Packet reordering ratio threshold
 3. ✅ **tune.quic.zero-copy-fwd-send** - Zero-copy forwarding for QUIC
@@ -173,12 +185,14 @@ Status: 100% complete (4 of 4 remaining directives implemented)
 **Phase 8 Results:** +12 tests (941 → 953), 4 new global directives, 0 failures
 **Phase 8 Status:** 100% COMPLETE (4/4 remaining directives) ✅
 
-**Note:** Phase 8 was estimated at 44 directives, but HAProxy 3.0 actually has only 10 tune.quic.* and 12 tune.h2.* directives total (22 total). Of these, 18 were already implemented in previous phases (7 QUIC + 11 HTTP/2), leaving only 4 to complete Phase 8.
+**Note:** Phase 8 was estimated at 44 directives, but HAProxy 3.0 actually has only 10 tune.quic._ and 12 tune.h2._ directives total (22 total). Of these, 18 were already implemented in previous phases (7 QUIC + 11 HTTP/2), leaving only 4 to complete Phase 8.
 
 ### Priority 6: Device Detection (Phase 9) ✅ COMPLETE
+
 Status: 100% complete - Full test coverage added for all device detection libraries
 
 **Completed:**
+
 1. ✅ **DeviceAtlas** (4 directives) - deviceatlas-json-file, deviceatlas-log-level, deviceatlas-separator, deviceatlas-properties-cookie
 2. ✅ **51Degrees** (4 directives) - 51degrees-data-file, 51degrees-property-name-list, 51degrees-property-separator, 51degrees-cache-size
 3. ✅ **WURFL** (7 directives) - wurfl-data-file, wurfl-information-list, wurfl-information-list-separator, wurfl-patch-file, wurfl-cache-size, wurfl-engine-mode, wurfl-useragent-priority
@@ -189,9 +203,11 @@ Status: 100% complete - Full test coverage added for all device detection librar
 **Note:** Phase 9 directives were already implemented in grammar/transformer/codegen in previous sessions, but lacked test coverage. This phase added comprehensive test coverage for all 15 device detection directives.
 
 ### Priority 7: Threading & Process Control (Phase 10 Batch 1) ✅ COMPLETE
+
 Status: 100% complete (3 of 3 directives implemented)
 
 **Completed:**
+
 1. ✅ **nbthread** - Number of worker threads for processing connections
 2. ✅ **thread-groups** - Number of thread groups for organizing worker threads
 3. ✅ **numa-cpu-mapping** - Enable/disable NUMA-aware CPU mapping
@@ -200,15 +216,18 @@ Status: 100% complete (3 of 3 directives implemented)
 **Phase 10 Batch 1 Status:** 100% COMPLETE (3/3 directives) ✅
 
 **Implementation Notes:**
+
 - nbthread was already in grammar but not fully implemented (no IR field, transformer processing, or codegen)
 - Now properly implemented as a separate GlobalConfig field (not in tuning dict)
 - Updated old tests to match new implementation
 - All threading directives work together for NUMA-optimized deployments
 
 ### Priority 8: Resource Limits (Phase 10 Batch 2) ✅ COMPLETE
+
 Status: 100% complete (3 of 3 directives implemented)
 
 **Completed:**
+
 1. ✅ **fd-hard-limit** - Maximum number of file descriptors HAProxy can use
 2. ✅ **maxzlibmem** - Restricts memory available for zlib compression operations
 3. ✅ **strict-limits** - Enforces strict validation of connection and resource limits
@@ -217,15 +236,18 @@ Status: 100% complete (3 of 3 directives implemented)
 **Phase 10 Batch 2 Status:** 100% COMPLETE (3/3 directives) ✅
 
 **Implementation Notes:**
+
 - Critical for production deployments with high connection counts
 - Works with ulimit-n and maxconn for comprehensive resource management
 - strict-limits helps prevent configuration errors in production
 - Enables fine-tuned control over system resource consumption
 
 ### Priority 9: Server State Management (Phase 10 Batch 3) ✅ COMPLETE
+
 Status: 100% complete (3 of 3 directives implemented)
 
 **Completed:**
+
 1. ✅ **server-state-base** - Directory for server state files to enable seamless reloads
 2. ✅ **server-state-file** - File name for storing server state information
 3. ✅ **load-server-state-from-file** - Restore server state at startup (global/local/none)
@@ -234,6 +256,7 @@ Status: 100% complete (3 of 3 directives implemented)
 **Phase 10 Batch 3 Status:** 100% COMPLETE (3/3 directives) ✅
 
 **Implementation Notes:**
+
 - Essential for zero-downtime deployments and seamless HAProxy reloads
 - Preserves server health check states, connection counts, and weights across reloads
 - Works with server-state-base to organize state files by directory
@@ -241,9 +264,11 @@ Status: 100% complete (3 of 3 directives implemented)
 - Critical for production environments requiring continuous availability
 
 ### Priority 10: SSL & Paths (Phase 11 Batch 1) ✅ COMPLETE
+
 Status: 100% complete (6 of 6 directives - test coverage added)
 
 **Completed:**
+
 1. ✅ **ca-base** - Base directory for CA certificates (already implemented, tests added)
 2. ✅ **crt-base** - Base directory for certificate files (already implemented, tests added)
 3. ✅ **key-base** - Base directory for key files (already implemented, tests added)
@@ -255,6 +280,7 @@ Status: 100% complete (6 of 6 directives - test coverage added)
 **Phase 11 Batch 1 Status:** 100% COMPLETE (6/6 directives) ✅
 
 **Implementation Notes:**
+
 - All 6 directives were already fully implemented in grammar, transformer, and codegen
 - Phase 11 focused on adding comprehensive test coverage for production SSL configurations
 - Tests cover standard paths, custom locations, relative directories, and complete SSL configs
@@ -263,10 +289,13 @@ Status: 100% complete (6 of 6 directives - test coverage added)
 - ssl-engine enables hardware acceleration for SSL/TLS operations
 
 ### Priority 11: Rate Limiting & Process Control (Phase 12) ✅ COMPLETE
+
 Status: 100% complete (6 of 6 batches completed)
 
 #### Phase 12 Batch 1: Rate Limiting ✅ COMPLETE
+
 **Completed:**
+
 1. ✅ **maxconnrate** - Maximum connection rate per second for DDoS protection
 2. ✅ **maxsessrate** - Maximum session rate per second to prevent abuse
 3. ✅ **maxsslrate** - Maximum SSL handshake rate per second (CPU protection)
@@ -277,6 +306,7 @@ Status: 100% complete (6 of 6 batches completed)
 **Phase 12 Batch 1 Status:** 100% COMPLETE (5/5 directives) ✅
 
 **Implementation Notes:**
+
 - All 5 directives were already fully implemented in all 4 layers (IR/Grammar/Transformer/Codegen)
 - Fixed maxpipes codegen to properly handle zero values with `is not None` check
 - Added comprehensive tests covering basic usage, production scenarios, and edge cases
@@ -284,7 +314,9 @@ Status: 100% complete (6 of 6 batches completed)
 - Enables fine-grained control over connection rates, SSL overhead, and system resources
 
 #### Phase 12 Batch 2: Master-Worker Mode ✅ COMPLETE
+
 **Completed:**
+
 1. ✅ **master-worker** - Enable master-worker mode for seamless reloads
 2. ✅ **mworker-max-reloads** - Maximum reload attempts for production safety
 3. ✅ **nbproc** - Number of worker processes (legacy multi-process mode)
@@ -293,6 +325,7 @@ Status: 100% complete (6 of 6 batches completed)
 **Phase 12 Batch 2 Status:** 100% COMPLETE (3/3 directives) ✅
 
 **Implementation Notes:**
+
 - All 3 directives were already fully implemented in all 4 layers
 - Added comprehensive tests for zero-downtime reload scenarios
 - Tests cover master-worker enablement, reload limits, and multi-process configurations
@@ -300,22 +333,27 @@ Status: 100% complete (6 of 6 batches completed)
 - Enables graceful reloads without dropping connections
 
 #### Phase 12 Batch 3: HTTPClient Timeout ✅ COMPLETE
+
 **Completed:**
+
 1. ✅ **httpclient.timeout.connect** - Connection timeout for HTTP client operations (health checks, Lua scripts)
 
 **Phase 12 Batch 3 Results:** +9 tests (1057 → 1066), 1 new global directive, 0 failures
 **Phase 12 Batch 3 Status:** 100% COMPLETE (1/1 directive) ✅
 
 **Implementation Notes:**
+
 - Full 4-layer implementation (IR/Grammar/Transformer/Codegen)
 - Added comprehensive tests for milliseconds, seconds, short/long timeouts
 - Tests cover health check scenarios, Lua integration, and production configs
 - Critical for controlling timeouts when HAProxy acts as HTTP client
-- Works with httpclient.retries and httpclient.ssl.* for complete HTTP client configuration
+- Works with httpclient.retries and httpclient.ssl.\* for complete HTTP client configuration
 - Essential for external health checks and Lua-based HTTP operations
 
 #### Phase 12 Batch 4: SSL/TLS Advanced ✅ COMPLETE
+
 **Completed:**
+
 1. ✅ **tune.ssl.hard-maxrecord** - Hard limit on SSL/TLS record size for latency optimization
 2. ✅ **tune.ssl.ocsp-update.maxdelay** - Maximum delay in seconds for OCSP updates
 3. ✅ **tune.ssl.ocsp-update.mindelay** - Minimum delay in seconds for OCSP updates
@@ -325,6 +363,7 @@ Status: 100% complete (6 of 6 batches completed)
 **Phase 12 Batch 4 Status:** 100% COMPLETE (4/4 directives) ✅
 
 **Implementation Notes:**
+
 - All 4 directives use the tuning dict infrastructure (no IR field changes needed)
 - Grammar rules added to both Phase 1 and Phase 6 sections for consistency
 - Transformer uses existing tune_key conversion logic for SSL directives
@@ -332,10 +371,12 @@ Status: 100% complete (6 of 6 batches completed)
 - tune.ssl.ssl-ctx-cache-size properly maps to "tune.ssl.ssl-ctx-cache-size" (with ssl prefix)
 - Tests cover basic usage, production scenarios, and integration with existing SSL settings
 - Critical for OCSP stapling updates and SSL performance tuning in high-traffic environments
-- Works seamlessly with existing tune.ssl.* directives
+- Works seamlessly with existing tune.ssl.\* directives
 
 #### Phase 12 Batch 5: Lua Tuning ✅ COMPLETE
+
 **Completed:**
+
 1. ✅ **tune.lua.bool-sample-conversion** - Enable/disable automatic boolean conversion for Lua samples
 2. ✅ **tune.lua.burst-timeout** - Timeout in milliseconds for Lua burst operations
 3. ✅ **tune.lua.log.stderr** - Configure Lua logging to stderr (on/off/auto)
@@ -344,17 +385,20 @@ Status: 100% complete (6 of 6 batches completed)
 **Phase 12 Batch 5 Status:** 100% COMPLETE (3/3 directives) ✅
 
 **Implementation Notes:**
+
 - All 3 directives use the tuning dict infrastructure
-- Grammar rules added alongside existing tune.lua.* directives
+- Grammar rules added alongside existing tune.lua.\* directives
 - Transformer methods return proper keys for tune_key conversion
-- Special handling for tune.lua.log.stderr via lua.log.* pattern (line 538-540 in transformer)
+- Special handling for tune.lua.log.stderr via lua.log.\* pattern (line 538-540 in transformer)
 - Tests cover boolean conversion, timeout values, and stderr logging modes
 - Development vs. production configurations tested
 - Critical for Lua script debugging and performance optimization
-- Works seamlessly with existing tune.lua.* directives
+- Works seamlessly with existing tune.lua.\* directives
 
 #### Phase 12 Batch 6: Performance Tuning ✅ COMPLETE
+
 **Completed:**
+
 1. ✅ **noevports** - Disable evports polling mechanism (platform-specific)
 2. ✅ **noktls** - Disable kernel TLS offload (platform-specific)
 3. ✅ **no-memory-trimming** - Disable automatic memory trimming (platform-specific)
@@ -373,7 +417,8 @@ Status: 100% complete (6 of 6 batches completed)
 **Phase 12 Batch 6 Status:** 100% COMPLETE (13/13 directives) ✅
 
 **Implementation Notes:**
-- Mixed architecture: 5 IR fields (platform/profiling) + 8 tuning dict (tune.* directives)
+
+- Mixed architecture: 5 IR fields (platform/profiling) + 8 tuning dict (tune.\* directives)
 - Grammar enhanced to support negative numbers (/-?\d+/ pattern) for priority values
 - Transformer tune_key conversion enhanced for multi-level directives:
   - tune_takeover_other_tg_connections → tune.takeover-other-tg-connections (5 parts)
@@ -387,10 +432,13 @@ Status: 100% complete (6 of 6 batches completed)
 - Enables fine-grained control over platform features, profiling, and zero-copy optimizations
 
 ### Priority 12: Remaining Global Directives (Phase 13) 🚧 IN PROGRESS
+
 Status: 14% complete (2 of 6 batches completed, 30 of 72 directives)
 
 #### Phase 13 Batch 1: HTTP/2 Buffers ✅ COMPLETE
+
 **Completed:**
+
 1. ✅ **tune.h2.be.rxbuf** - HTTP/2 backend receive buffer size for performance tuning
 2. ✅ **tune.h2.fe.rxbuf** - HTTP/2 frontend receive buffer size for performance tuning
 
@@ -398,19 +446,22 @@ Status: 14% complete (2 of 6 batches completed, 30 of 72 directives)
 **Phase 13 Batch 1 Status:** 100% COMPLETE (2/2 directives) ✅
 
 **Implementation Notes:**
+
 - Both directives use the tuning dict infrastructure
-- Grammar rules added alongside existing tune.h2.* directives
+- Grammar rules added alongside existing tune.h2.\* directives
 - Transformer methods return proper keys for tune_key conversion
 - Tests cover basic buffer sizes, large buffers for high throughput, combined configs
 - Integration tests with existing HTTP/2 settings (tune.h2.header-table-size, tune.h2.max-concurrent-streams)
 - Upload-optimized and production scenario testing
 - Critical for HTTP/2 performance in high-traffic environments
-- Works seamlessly with existing tune.h2.* directives
+- Works seamlessly with existing tune.h2.\* directives
 
 #### Phase 13 Batch 2: Modern QUIC Directives ✅ COMPLETE
+
 **Completed:**
 
 **Backend QUIC Directives (12):**
+
 1. ✅ **tune.quic.be.cc.cubic-min-losses** - Backend cubic congestion control minimum losses
 2. ✅ **tune.quic.be.cc.hystart** - Backend hystart congestion control enable/disable
 3. ✅ **tune.quic.be.cc.max-frame-loss** - Backend maximum frame loss threshold
@@ -424,53 +475,40 @@ Status: 14% complete (2 of 6 batches completed, 30 of 72 directives)
 11. ✅ **tune.quic.be.tx.pacing** - Backend transmission pacing enable/disable
 12. ✅ **tune.quic.be.tx.udp-gso** - Backend UDP Generic Segmentation Offload enable/disable
 
-**Frontend QUIC Directives (14):**
-13. ✅ **tune.quic.fe.cc.cubic-min-losses** - Frontend cubic congestion control minimum losses
-14. ✅ **tune.quic.fe.cc.hystart** - Frontend hystart congestion control enable/disable
-15. ✅ **tune.quic.fe.cc.max-frame-loss** - Frontend maximum frame loss threshold
-16. ✅ **tune.quic.fe.cc.max-win-size** - Frontend maximum congestion window size
-17. ✅ **tune.quic.fe.cc.reorder-ratio** - Frontend packet reordering ratio
-18. ✅ **tune.quic.fe.max-idle-timeout** - Frontend maximum idle timeout for QUIC connections
-19. ✅ **tune.quic.fe.sec.glitches-threshold** - Frontend security glitches detection threshold
-20. ✅ **tune.quic.fe.sec.retry-threshold** - Frontend retry packet threshold for security
-21. ✅ **tune.quic.fe.sock-per-conn** - Frontend socket per connection mode
-22. ✅ **tune.quic.fe.stream.data-ratio** - Frontend stream data to control frame ratio
-23. ✅ **tune.quic.fe.stream.max-concurrent** - Frontend maximum concurrent streams
-24. ✅ **tune.quic.fe.stream.rxbuf** - Frontend stream receive buffer size
-25. ✅ **tune.quic.fe.tx.pacing** - Frontend transmission pacing enable/disable
-26. ✅ **tune.quic.fe.tx.udp-gso** - Frontend UDP Generic Segmentation Offload enable/disable
+**Frontend QUIC Directives (14):** 13. ✅ **tune.quic.fe.cc.cubic-min-losses** - Frontend cubic congestion control minimum losses 14. ✅ **tune.quic.fe.cc.hystart** - Frontend hystart congestion control enable/disable 15. ✅ **tune.quic.fe.cc.max-frame-loss** - Frontend maximum frame loss threshold 16. ✅ **tune.quic.fe.cc.max-win-size** - Frontend maximum congestion window size 17. ✅ **tune.quic.fe.cc.reorder-ratio** - Frontend packet reordering ratio 18. ✅ **tune.quic.fe.max-idle-timeout** - Frontend maximum idle timeout for QUIC connections 19. ✅ **tune.quic.fe.sec.glitches-threshold** - Frontend security glitches detection threshold 20. ✅ **tune.quic.fe.sec.retry-threshold** - Frontend retry packet threshold for security 21. ✅ **tune.quic.fe.sock-per-conn** - Frontend socket per connection mode 22. ✅ **tune.quic.fe.stream.data-ratio** - Frontend stream data to control frame ratio 23. ✅ **tune.quic.fe.stream.max-concurrent** - Frontend maximum concurrent streams 24. ✅ **tune.quic.fe.stream.rxbuf** - Frontend stream receive buffer size 25. ✅ **tune.quic.fe.tx.pacing** - Frontend transmission pacing enable/disable 26. ✅ **tune.quic.fe.tx.udp-gso** - Frontend UDP Generic Segmentation Offload enable/disable
 
-**Global QUIC Directives (2):**
-27. ✅ **tune.quic.listen** - Enable QUIC listening on all bind addresses
-28. ✅ **tune.quic.mem.tx-max** - Maximum QUIC transmission memory
+**Global QUIC Directives (2):** 27. ✅ **tune.quic.listen** - Enable QUIC listening on all bind addresses 28. ✅ **tune.quic.mem.tx-max** - Maximum QUIC transmission memory
 
 **Phase 13 Batch 2 Results:** +15 tests (1122 → 1137), 28 new global directives, 0 failures
 **Phase 13 Batch 2 Status:** 100% COMPLETE (28/28 directives) ✅
 
 **Implementation Notes:**
+
 - All 28 directives use the tuning dict infrastructure
-- Grammar rules organized by backend (be.*), frontend (fe.*), and global categories
+- Grammar rules organized by backend (be._), frontend (fe._), and global categories
 - Enhanced transformer tune_key conversion logic for multi-level QUIC directives:
   - 4-level directives: tune_quic_be_cc_cubic_min_losses → tune.quic.be.cc.cubic-min-losses
   - 3-level directives: tune_quic_be_max_idle_timeout → tune.quic.be.max-idle-timeout
   - Special mem category: tune_quic_mem_tx_max → tune.quic.mem.tx-max
 - Comprehensive test coverage for:
-  - Backend congestion control (cc.*) - cubic, hystart, frame loss, window size, reordering
-  - Backend streams (stream.*) - data ratio, max concurrent, receive buffers
-  - Backend transmission (tx.*) - pacing, UDP GSO
+  - Backend congestion control (cc.\*) - cubic, hystart, frame loss, window size, reordering
+  - Backend streams (stream.\*) - data ratio, max concurrent, receive buffers
+  - Backend transmission (tx.\*) - pacing, UDP GSO
   - Backend security and timeouts - glitches threshold, idle timeout
-  - Frontend congestion control (cc.*) - same as backend
-  - Frontend streams (stream.*) - same as backend
-  - Frontend transmission (tx.*) - same as backend
+  - Frontend congestion control (cc.\*) - same as backend
+  - Frontend streams (stream.\*) - same as backend
+  - Frontend transmission (tx.\*) - same as backend
   - Frontend security - glitches threshold, retry threshold, socket per connection
   - Global QUIC settings - listen mode, memory limits
   - Complete production configurations combining multiple directives
 - Critical for HTTP/3 performance tuning in production environments
 - Enables fine-grained control over QUIC congestion control, security, and performance
-- Works seamlessly with existing tune.quic.* directives from Phase 8
+- Works seamlessly with existing tune.quic.\* directives from Phase 8
 
 #### Phase 13 Batch 3: Lua Global Directives ✅ COMPLETE
+
 **Completed:**
+
 1. ✅ **lua-load** - Load Lua file in shared context (all threads share state)
 2. ✅ **lua-load-per-thread** - Load Lua file per thread (thread-local state)
 3. ✅ **lua-prepend-path** - Prepend to Lua's package.path or package.cpath
@@ -479,17 +517,20 @@ Status: 14% complete (2 of 6 batches completed, 30 of 72 directives)
 **Phase 13 Batch 3 Status:** 100% COMPLETE (3/3 directives) ✅
 
 **Implementation Notes:**
+
 - All 3 directives use list-based IR fields for flexible configuration
 - Command-line arguments support for lua-load and lua-load-per-thread
 - Path type specification for lua-prepend-path (path or cpath)
 - Multiple script loading with proper ordering
-- Integration with existing Lua tuning directives (tune.lua.*)
+- Integration with existing Lua tuning directives (tune.lua.\*)
 - Tests cover arguments, path types, and combined configurations
 - Critical for Lua-based request processing, authentication, and custom logic
 - Works seamlessly with existing inline Lua script infrastructure
 
 #### Phase 13 Batch 4: SSL Advanced Configuration ✅ COMPLETE
+
 **Completed:**
+
 1. ✅ **ssl-default-bind-curves** - Elliptic curves for client-facing bind (X25519, P-256, etc.)
 2. ✅ **ssl-default-bind-sigalgs** - Signature algorithms for bind (RSA+SHA256, ECDSA+SHA256, etc.)
 3. ✅ **ssl-default-bind-client-sigalgs** - Client signature algorithms for bind
@@ -502,6 +543,7 @@ Status: 14% complete (2 of 6 batches completed, 30 of 72 directives)
 **Phase 13 Batch 4 Status:** 100% COMPLETE (7/7 directives) ✅
 
 **Implementation Notes:**
+
 - All 7 directives use string/integer IR fields for SSL configuration
 - Separate configuration for client-facing (bind) and backend (server) connections
 - Support for modern elliptic curves (X25519, X448, P-256, P-384, P-521)
@@ -513,6 +555,7 @@ Status: 14% complete (2 of 6 batches completed, 30 of 72 directives)
 - Works seamlessly with existing SSL/TLS infrastructure
 
 ### Phase 13 Summary ✅ COMPLETE
+
 **Total Directives Implemented:** 40 (2 + 28 + 3 + 7)
 **Total Tests Added:** 41 (8 + 15 + 7 + 11)
 **Session Test Count:** 1114 → 1155 (+41 tests)
@@ -520,6 +563,7 @@ Status: 14% complete (2 of 6 batches completed, 30 of 72 directives)
 **Achievement:** 100% non-deprecated global directive coverage! 🎉
 
 **Phase 13 Breakdown:**
+
 - Batch 1: HTTP/2 buffer directives (2 directives, 8 tests)
 - Batch 2: Modern QUIC backend/frontend/global directives (28 directives, 15 tests)
 - Batch 3: Lua global directives (3 directives, 7 tests)
@@ -528,6 +572,7 @@ Status: 14% complete (2 of 6 batches completed, 30 of 72 directives)
 **Remaining Global Directives:** 7 deprecated QUIC directives (intentionally excluded per user requirements)
 
 ### Features Implemented (Previous Sessions)
+
 1. ✅ **Phases 1-3:** Core directives, SSL/TLS, HTTP/2, system integration
 2. ✅ **Phase 4A:** Load balancing (hash-type, hash-balance-factor)
 3. ✅ **Phase 4B:** Monitoring (monitor-net, monitor fail)
@@ -543,9 +588,11 @@ Status: 14% complete (2 of 6 batches completed, 30 of 72 directives)
 ## Next Steps for 100% Parity
 
 ### Priority 1: Critical Proxy Keywords (Phase 5A) ✅
+
 Status: 100% complete (10 of 10 directives implemented)
 
 **Completed:**
+
 1. ✅ **error-log-format** - Custom error logging format
 2. ✅ **log-format-sd** - Structured data logging format
 3. ✅ **errorfiles** - Custom error file directory
@@ -561,6 +608,7 @@ Status: 100% complete (10 of 10 directives implemented)
 **Phase 5A Test Count:** +64 tests (799 → 863)
 
 ### Priority 2: Advanced Proxy Features (Phase 5B) ⭐
+
 Implement advanced proxy control keywords:
 
 1. **filter** - Content filtering ❌ PENDING (complex, low priority)
@@ -568,8 +616,8 @@ Implement advanced proxy control keywords:
 3. ✅ **ignore-persist** - Ignore persistence conditions (IMPLEMENTED)
 4. **persist rdp-cookie** - RDP cookie persistence ❌ PENDING (niche use case)
 5. ✅ **rate-limit sessions** - Rate limiting NEW SESSIONS per second (IMPLEMENTED)
-6. ✅ **clitcpka-*** - Client TCP keepalive options (IMPLEMENTED - cnt, idle, intvl)
-7. ✅ **srvtcpka-*** - Server TCP keepalive options (IMPLEMENTED - cnt, idle, intvl)
+6. ✅ **clitcpka-\*** - Client TCP keepalive options (IMPLEMENTED - cnt, idle, intvl)
+7. ✅ **srvtcpka-\*** - Server TCP keepalive options (IMPLEMENTED - cnt, idle, intvl)
 8. ✅ **transparent** - Transparent proxy mode (via option mechanism)
 9. ✅ **guid** - Global unique identifier (IMPLEMENTED)
 10. ✅ **errorloc/errorloc302/errorloc303** - Error location redirects (IMPLEMENTED)
@@ -580,7 +628,8 @@ Implement advanced proxy control keywords:
 **Estimated Impact:** +10-15 keywords (67/89, 75% coverage)
 
 ### Priority 3: Performance Tuning Directives (Phase 6) ⭐
-Implement missing tune.* directives:
+
+Implement missing tune.\* directives:
 
 1. ✅ **tune.maxaccept** - Max connections per accept (IMPLEMENTED)
 2. ✅ **tune.maxpollevents** - Max poll events (IMPLEMENTED)
@@ -622,6 +671,7 @@ Implement missing tune.* directives:
 **Phase 6 Status:** COMPLETE - All performance tuning directives implemented!
 
 ### Priority 4: Debugging & Development (Phase 7) ✅
+
 Status: 100% COMPLETE
 
 1. ✅ **quiet** - Suppress warnings (IMPLEMENTED)
@@ -635,6 +685,7 @@ Status: 100% COMPLETE
 **Phase 7 Status:** COMPLETE - All debugging directives implemented!
 
 ### Priority 5: QUIC/HTTP3 Support (Phase 8) ✅
+
 Status: 100% COMPLETE
 
 1. ✅ **tune.quic.cc-hystart** - Enable hystart congestion control (IMPLEMENTED)
@@ -645,9 +696,10 @@ Status: 100% COMPLETE
 **Phase 8 Progress:** 4/4 remaining directives implemented (100%) ✅
 **Phase 8 Status:** COMPLETE - All QUIC/HTTP3 directives implemented!
 
-**Note:** HAProxy 3.0 has 22 total QUIC/HTTP3 directives (10 tune.quic.* + 12 tune.h2.*). Of these, 18 were already implemented in previous phases, and the remaining 4 were completed in Phase 8.
+**Note:** HAProxy 3.0 has 22 total QUIC/HTTP3 directives (10 tune.quic._ + 12 tune.h2._). Of these, 18 were already implemented in previous phases, and the remaining 4 were completed in Phase 8.
 
 ### Priority 6: Device Detection (Phase 9) ✅
+
 Status: 100% COMPLETE - All device detection directives tested
 
 1. ✅ **DeviceAtlas** - 4 directives (IMPLEMENTED & TESTED)
@@ -660,6 +712,7 @@ Status: 100% COMPLETE - All device detection directives tested
 ## Implementation Strategy
 
 ### Phase-by-Phase Approach
+
 1. **Phase 5A** (Week 1): Critical proxy keywords → 58% coverage
 2. **Phase 5B** (Week 1): Advanced proxy features → 75% coverage
 3. **Phase 6** (Week 2): Performance tuning → 85% global coverage
@@ -668,7 +721,9 @@ Status: 100% COMPLETE - All device detection directives tested
 6. **Phase 9** (Week 3): Device detection (optional) → 100% full parity
 
 ### Development Process
+
 For each phase:
+
 1. ✅ Update IR nodes with new fields
 2. ✅ Extend grammar with new rules
 3. ✅ Implement transformer methods
@@ -680,6 +735,7 @@ For each phase:
 9. ✅ Commit with descriptive message
 
 ### Quality Standards
+
 - **No failing tests** - 100% pass rate always
 - **No type errors** - mypy must pass
 - **Comprehensive tests** - Cover all new features
@@ -696,6 +752,7 @@ The project follows a **well-architected 4-layer design**:
 4. **Codegen Layer** (haproxy.py) - IR to native HAProxy config
 
 **Benefits:**
+
 - Clear separation of concerns
 - Easy to extend with new features
 - Type-safe end-to-end
@@ -705,18 +762,21 @@ The project follows a **well-architected 4-layer design**:
 ## Production Readiness
 
 ### Current State
+
 - ✅ **Core features:** 100% production-ready
 - ✅ **Common use cases:** 95% covered
 - ✅ **Enterprise deployments:** 90% covered
 - ✅ **Specialized deployments:** 75% covered
 
 ### After Phase 5A-5B
+
 - ✅ **All features:** 95% production-ready
 - ✅ **Common use cases:** 98% covered
 - ✅ **Enterprise deployments:** 95% covered
 - ✅ **Specialized deployments:** 85% covered
 
 ### After Phase 6-9
+
 - ✅ **100% HAProxy parity achieved**
 - ✅ **All use cases covered**
 - ✅ **Full enterprise readiness**
@@ -725,6 +785,7 @@ The project follows a **well-architected 4-layer design**:
 ## Commitment to Excellence
 
 **No compromises:**
+
 - ❌ No failing tests
 - ❌ No known issues
 - ❌ No incomplete features
@@ -732,6 +793,7 @@ The project follows a **well-architected 4-layer design**:
 - ❌ No shortcuts
 
 **Only excellence:**
+
 - ✅ 100% test pass rate
 - ✅ 100% type safety
 - ✅ 100% feature parity (goal)
@@ -743,6 +805,7 @@ The project follows a **well-architected 4-layer design**:
 **Primary Goal:** Achieve 100% feature parity with HAProxy 3.3
 
 **Success Criteria:**
+
 - All 89 proxy keywords implemented
 - All 172 global directives implemented
 - 100% test pass rate maintained
@@ -755,4 +818,4 @@ The project follows a **well-architected 4-layer design**:
 
 ---
 
-*This is a living document updated as we implement features toward 100% parity.*
+_This is a living document updated as we implement features toward 100% parity._

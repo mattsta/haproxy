@@ -89,11 +89,13 @@ config my_config {
 The `import` statement allows you to organize configuration across multiple files. Imports are processed and the referenced file paths are stored for external handling.
 
 ### Syntax
+
 ```javascript
-import "path/to/file.hcl"
+import "path/to/file.hcl";
 ```
 
 ### Example
+
 ```javascript
 config production {
   // Import common configuration
@@ -116,31 +118,36 @@ config production {
 ## Data Types
 
 ### Strings
+
 ```javascript
 // Double-quoted strings
-log: "/dev/log"
-path: "/var/lib/haproxy"
+log: "/dev/log";
+path: "/var/lib/haproxy";
 
 // Can include variables
-host: "${env.API_HOST}"
+host: "${env.API_HOST}";
 ```
 
 ### Numbers
+
 ```javascript
-maxconn: 4096
-weight: 10
-port: 8080
+maxconn: 4096;
+weight: 10;
+port: 8080;
 ```
 
 ### Booleans
+
 ```javascript
-daemon: true
-check: false
+daemon: true;
+check: false;
 // Also accepts: yes, no, on, off, 1, 0
 ```
 
 ### Durations
+
 Durations are specified without quotes:
+
 ```javascript
 timeout: {
   connect: 5s       // seconds
@@ -152,24 +159,27 @@ timeout: {
 ```
 
 ### Identifiers
+
 Some values like `mode` take identifiers, not strings:
+
 ```javascript
 // Correct - identifier without quotes
-mode: http
-mode: tcp
-balance: roundrobin
+mode: http;
+mode: tcp;
+balance: roundrobin;
 
 // Incorrect - don't quote these
-mode: "http"  // Wrong!
+mode: "http"; // Wrong!
 ```
 
 ### Arrays
+
 ```javascript
 // Simple array
-option: ["httplog", "dontlognull"]
+option: ["httplog", "dontlognull"];
 
 // Multi-line array
-alpn: ["h2", "http/1.1"]
+alpn: ["h2", "http/1.1"];
 ```
 
 ---
@@ -177,7 +187,9 @@ alpn: ["h2", "http/1.1"]
 ## Variables
 
 ### Variable Definition
+
 Variables are defined with `let`:
+
 ```javascript
 config my_config {
   // Simple values
@@ -200,6 +212,7 @@ config my_config {
 ```
 
 ### Environment Variables
+
 ```javascript
 config my_config {
   global {
@@ -644,6 +657,7 @@ config my_config {
 Templates allow you to define reusable property sets for servers, health checks, and ACLs:
 
 ### Server Templates
+
 ```javascript
 config my_config {
   template server_defaults {
@@ -671,6 +685,7 @@ config my_config {
 ```
 
 ### Health Check Templates
+
 ```javascript
 config my_config {
   template http_health {
@@ -694,6 +709,7 @@ config my_config {
 ```
 
 ### ACL Templates
+
 ```javascript
 config my_config {
   template api_path_acl {
@@ -760,6 +776,7 @@ config backend_templates {
 ```
 
 Backend templates can include:
+
 - `balance`: Load balancing algorithm (roundrobin, leastconn, source, etc.)
 - `option`: List of backend options
 - `retries`: Number of retries on failure
@@ -769,6 +786,7 @@ Backend templates can include:
 - `mode`: Protocol mode (http, tcp)
 
 ### Multiple Template Types Together
+
 ```javascript
 config production {
   // Backend template for production backends
