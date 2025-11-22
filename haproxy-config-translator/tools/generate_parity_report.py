@@ -616,7 +616,7 @@ def generate_report(output_path, doc_data, impl_data, test_data):
     report.append("")
 
     # Proxy keywords coverage - use DSL-aware calculation
-    grammar_path = Path(__file__).parent / "src/haproxy_translator/grammars/haproxy_dsl.lark"
+    grammar_path = Path(__file__).parent.parent / "src/haproxy_translator/grammars/haproxy_dsl.lark"
     with grammar_path.open() as f:
         grammar_content = f.read()
 
@@ -924,10 +924,13 @@ def main():
     print("Generating comprehensive feature parity report...")
     print()
 
-    # Paths
-    doc_path = "/home/user/haproxy/doc/configuration.txt"
-    base_path = "/home/user/haproxy/haproxy-translate"
-    output_path = "/home/user/haproxy/haproxy-translate/FEATURE_PARITY_REPORT.md"
+    # Paths - use relative paths from script location
+    script_dir = Path(__file__).parent
+    project_root = script_dir.parent
+
+    doc_path = project_root.parent / "doc/configuration.txt"
+    base_path = project_root
+    output_path = project_root / "FEATURE_PARITY_REPORT.md"
 
     # Extract documentation data
     print("📖 Extracting from HAProxy documentation...")
