@@ -96,7 +96,7 @@ HAPROXY_TO_DSL_KEYWORD_MAP = {
     "srvtcpka-intvl": "srvtcpka_intvl",
     # Deprecated keywords (intentionally not fully supported)
     "transparent": None,  # deprecated
-    "dispatch": "dispatch",  # deprecated but implemented
+    # "dispatch" already listed above as implemented
 }
 
 # List of deprecated keywords we intentionally don't fully support
