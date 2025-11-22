@@ -5,19 +5,20 @@ This document provides a complete reference for the HAProxy DSL syntax.
 ## Table of Contents
 
 1. [File Structure](#file-structure)
-2. [Data Types](#data-types)
-3. [Variables](#variables)
-4. [Global Section](#global-section)
-5. [Defaults Section](#defaults-section)
-6. [Frontend Section](#frontend-section)
-7. [Backend Section](#backend-section)
-8. [Listen Section](#listen-section)
-9. [Resolvers Section](#resolvers-section)
-10. [Peers Section](#peers-section)
-11. [Mailers Section](#mailers-section)
-12. [Templates](#templates)
-13. [Loops](#loops)
-14. [Comments](#comments)
+2. [Imports](#imports)
+3. [Data Types](#data-types)
+4. [Variables](#variables)
+5. [Global Section](#global-section)
+6. [Defaults Section](#defaults-section)
+7. [Frontend Section](#frontend-section)
+8. [Backend Section](#backend-section)
+9. [Listen Section](#listen-section)
+10. [Resolvers Section](#resolvers-section)
+11. [Peers Section](#peers-section)
+12. [Mailers Section](#mailers-section)
+13. [Templates](#templates)
+14. [Loops](#loops)
+15. [Comments](#comments)
 
 ---
 
@@ -27,6 +28,10 @@ This document provides a complete reference for the HAProxy DSL syntax.
 
 ```javascript
 config my_config {
+  // Optional: Import other configuration files
+  import "common/defaults.hcl"
+  import "security/ssl.hcl"
+
   // Optional: Variable definitions
   let variable_name = value
 
@@ -76,6 +81,35 @@ config my_config {
   }
 }
 ```
+
+---
+
+## Imports
+
+The `import` statement allows you to organize configuration across multiple files. Imports are processed and the referenced file paths are stored for external handling.
+
+### Syntax
+```javascript
+import "path/to/file.hcl"
+```
+
+### Example
+```javascript
+config production {
+  // Import common configuration
+  import "common/defaults.hcl"
+  import "security/ssl-settings.hcl"
+  import "backends/api-servers.hcl"
+
+  frontend web {
+    bind *:443 ssl
+    mode: http
+    default_backend: api
+  }
+}
+```
+
+**Note:** Import processing is currently at the IR level - the `imports` list is populated in the ConfigIR but actual file loading must be handled by the consuming application.
 
 ---
 
