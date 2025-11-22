@@ -17,6 +17,7 @@ from haproxy_translator.ir.nodes import (
     Frontend,
     GlobalConfig,
     HealthCheck,
+    HttpError,
     HttpRequestRule,
     HttpResponseRule,
     Listen,
@@ -25,6 +26,10 @@ from haproxy_translator.ir.nodes import (
     LogTarget,
     LuaScript,
     Mode,
+    Nameserver,
+    QuicInitialRule,
+    RedirectRule,
+    ResolversSection,
     Server,
     ServerTemplate,
     StatsConfig,
@@ -868,6 +873,249 @@ class TestCodegenCoverageGaps:
         )
         output = codegen.generate(ir)
         assert "stats admin if TRUE" in output
+
+    def test_backend_error_log_format(self, codegen):
+        """Test backend error_log_format (line 1008)."""
+        ir = ConfigIR(
+            name="test",
+            backends=[
+                Backend(
+                    name="api",
+                    error_log_format="%ci:%cp [%t] %ft %b/%s",
+                    servers=[Server(name="s1", address="127.0.0.1", port=8080)],
+                ),
+            ],
+        )
+        output = codegen.generate(ir)
+        assert "error-log-format" in output
+
+    def test_backend_log_format_sd(self, codegen):
+        """Test backend log_format_sd (line 1011)."""
+        ir = ConfigIR(
+            name="test",
+            backends=[
+                Backend(
+                    name="api",
+                    log_format_sd='[exampleSDID@0 key1="value1"]',
+                    servers=[Server(name="s1", address="127.0.0.1", port=8080)],
+                ),
+            ],
+        )
+        output = codegen.generate(ir)
+        assert "log-format-sd" in output
+
+    def test_listen_enabled_false(self, codegen):
+        """Test listen section with enabled=False (line 1184)."""
+        ir = ConfigIR(
+            name="test",
+            listens=[
+                Listen(
+                    name="disabled_listen",
+                    binds=[Bind(address="*:8080")],
+                    enabled=False,
+                    servers=[Server(name="s1", address="127.0.0.1", port=8080)],
+                ),
+            ],
+        )
+        output = codegen.generate(ir)
+        assert "disabled" in output
+
+    def test_listen_guid(self, codegen):
+        """Test listen section with guid (line 1192)."""
+        ir = ConfigIR(
+            name="test",
+            listens=[
+                Listen(
+                    name="my_listen",
+                    binds=[Bind(address="*:8080")],
+                    guid="unique-listen-12345",
+                    servers=[Server(name="s1", address="127.0.0.1", port=8080)],
+                ),
+            ],
+        )
+        output = codegen.generate(ir)
+        assert "guid unique-listen-12345" in output
+
+    def test_listen_http_request_rules(self, codegen):
+        """Test listen section with http_request_rules (line 1242)."""
+        ir = ConfigIR(
+            name="test",
+            listens=[
+                Listen(
+                    name="my_listen",
+                    binds=[Bind(address="*:8080")],
+                    mode=Mode.HTTP,
+                    http_request_rules=[
+                        HttpRequestRule(
+                            action="set-header",
+                            parameters={"name": "X-Test", "value": "test"},
+                        ),
+                    ],
+                    servers=[Server(name="s1", address="127.0.0.1", port=8080)],
+                ),
+            ],
+        )
+        output = codegen.generate(ir)
+        assert "http-request set-header" in output
+        assert "X-Test" in output
+
+    def test_listen_http_response_rules(self, codegen):
+        """Test listen section with http_response_rules (line 1246)."""
+        ir = ConfigIR(
+            name="test",
+            listens=[
+                Listen(
+                    name="my_listen",
+                    binds=[Bind(address="*:8080")],
+                    mode=Mode.HTTP,
+                    http_response_rules=[
+                        HttpResponseRule(
+                            action="del-header",
+                            parameters={"name": "Server"},
+                        ),
+                    ],
+                    servers=[Server(name="s1", address="127.0.0.1", port=8080)],
+                ),
+            ],
+        )
+        output = codegen.generate(ir)
+        assert "http-response del-header" in output
+        assert "Server" in output
+
+    def test_redirect_set_cookie_option(self, codegen):
+        """Test redirect with set-cookie option (lines 1501-1502)."""
+        ir = ConfigIR(
+            name="test",
+            frontends=[
+                Frontend(
+                    name="web",
+                    binds=[Bind(address="*:80")],
+                    mode=Mode.HTTP,
+                    redirect_rules=[
+                        RedirectRule(
+                            type="scheme",
+                            target="https",
+                            code=301,
+                            options={"set-cookie": "REDIRECTED=1"},
+                        ),
+                    ],
+                ),
+            ],
+        )
+        output = codegen.generate(ir)
+        assert "redirect scheme https code 301" in output
+        assert "set-cookie REDIRECTED=1" in output
+
+    def test_redirect_clear_cookie_option(self, codegen):
+        """Test redirect with clear-cookie option (lines 1501-1502)."""
+        ir = ConfigIR(
+            name="test",
+            frontends=[
+                Frontend(
+                    name="web",
+                    binds=[Bind(address="*:80")],
+                    mode=Mode.HTTP,
+                    redirect_rules=[
+                        RedirectRule(
+                            type="location",
+                            target="https://example.com",
+                            options={"clear-cookie": "SESSION"},
+                        ),
+                    ],
+                ),
+            ],
+        )
+        output = codegen.generate(ir)
+        assert "redirect location https://example.com" in output
+        assert "clear-cookie SESSION" in output
+
+    def test_redirect_with_condition(self, codegen):
+        """Test redirect with condition (line 1506)."""
+        ir = ConfigIR(
+            name="test",
+            frontends=[
+                Frontend(
+                    name="web",
+                    binds=[Bind(address="*:80")],
+                    mode=Mode.HTTP,
+                    redirect_rules=[
+                        RedirectRule(
+                            type="scheme",
+                            target="https",
+                            code=301,
+                            condition="if !{ ssl_fc }",
+                        ),
+                    ],
+                ),
+            ],
+        )
+        output = codegen.generate(ir)
+        assert "redirect scheme https code 301 if !{ ssl_fc }" in output
+
+    def test_http_error_lf_string(self, codegen):
+        """Test http-error with lf-string (lines 1533-1536)."""
+        ir = ConfigIR(
+            name="test",
+            frontends=[
+                Frontend(
+                    name="web",
+                    binds=[Bind(address="*:80")],
+                    mode=Mode.HTTP,
+                    http_errors=[
+                        HttpError(
+                            status=503,
+                            content_type="text/html",
+                            lf_string="<html><body>Service unavailable: %[date]</body></html>",
+                        ),
+                    ],
+                ),
+            ],
+        )
+        output = codegen.generate(ir)
+        assert "http-error status 503" in output
+        assert 'lf-string "<html><body>Service unavailable: %[date]</body></html>"' in output
+
+    def test_quic_initial_generic_parameters(self, codegen):
+        """Test QUIC initial rules with generic parameters (lines 1939-1940)."""
+        ir = ConfigIR(
+            name="test",
+            frontends=[
+                Frontend(
+                    name="quic_front",
+                    binds=[Bind(address="*:443")],
+                    mode=Mode.HTTP,
+                    quic_initial_rules=[
+                        QuicInitialRule(
+                            action="reject",
+                            parameters={"reason": "unauthorized"},
+                        ),
+                    ],
+                ),
+            ],
+        )
+        output = codegen.generate(ir)
+        assert "quic-initial reject" in output
+        assert "reason unauthorized" in output
+
+    def test_resolvers_hold_options(self, codegen):
+        """Test resolvers with hold_obsolete, hold_other, hold_refused (lines 1974, 1976, 1978)."""
+        ir = ConfigIR(
+            name="test",
+            resolvers=[
+                ResolversSection(
+                    name="dns",
+                    nameservers=[Nameserver(name="ns1", address="8.8.8.8", port=53)],
+                    hold_obsolete="10s",
+                    hold_other="20s",
+                    hold_refused="5s",
+                ),
+            ],
+        )
+        output = codegen.generate(ir)
+        assert "resolvers dns" in output
+        assert "hold obsolete 10s" in output
+        assert "hold other 20s" in output
+        assert "hold refused 5s" in output
 
 
 if __name__ == "__main__":
