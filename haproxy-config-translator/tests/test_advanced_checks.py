@@ -385,3 +385,224 @@ class TestAdvancedHealthChecks:
         assert "use-server admin_api if is_admin" in output
         assert "http-check send meth GET uri /api/health" in output
         assert "http-check expect status 200" in output
+
+
+class TestHttpCheckCoverageGaps:
+    """Tests for HTTP check edge cases to improve coverage."""
+
+    def test_http_check_send_with_headers(self):
+        """Test http-check send with custom headers."""
+        config = """
+        config test {
+            backend api {
+                http-check {
+                    send method "GET" uri "/health" headers { header "X-Health-Check" "true" header "Accept" "application/json" }
+                    expect status 200
+                }
+
+                servers {
+                    server api1 {
+                        address: "10.0.1.1"
+                        port: 8080
+                    }
+                }
+            }
+        }
+        """
+        parser = DSLParser()
+        ir = parser.parse(config)
+        codegen = HAProxyCodeGenerator()
+        output = codegen.generate(ir)
+
+        assert ir.backends[0].http_check_rules[0].type == "send"
+        assert ir.backends[0].http_check_rules[0].headers is not None
+        assert "X-Health-Check" in ir.backends[0].http_check_rules[0].headers
+
+        assert "http-check send meth GET uri /health" in output
+        assert "hdr X-Health-Check true" in output
+        assert "hdr Accept application/json" in output
+
+    def test_http_check_expect_negate(self):
+        """Test http-check expect with negation using ! syntax."""
+        config = """
+        config test {
+            backend api {
+                http-check {
+                    send method "GET" uri "/health"
+                    expect ! status 500
+                }
+
+                servers {
+                    server api1 {
+                        address: "10.0.1.1"
+                        port: 8080
+                    }
+                }
+            }
+        }
+        """
+        parser = DSLParser()
+        ir = parser.parse(config)
+        codegen = HAProxyCodeGenerator()
+        output = codegen.generate(ir)
+
+        assert ir.backends[0].http_check_rules[1].type == "expect"
+        assert ir.backends[0].http_check_rules[1].expect_negate is True
+
+        assert "http-check expect ! status 500" in output
+
+    def test_http_check_expect_rstring(self):
+        """Test http-check expect with regex string match."""
+        config = """
+        config test {
+            backend api {
+                http-check {
+                    send method "GET" uri "/api/status"
+                    expect rstring ".*healthy.*"
+                }
+
+                servers {
+                    server api1 {
+                        address: "10.0.1.1"
+                        port: 8080
+                    }
+                }
+            }
+        }
+        """
+        parser = DSLParser()
+        ir = parser.parse(config)
+        codegen = HAProxyCodeGenerator()
+        output = codegen.generate(ir)
+
+        assert ir.backends[0].http_check_rules[1].expect_type == "rstring"
+        assert ir.backends[0].http_check_rules[1].expect_value == ".*healthy.*"
+
+        assert "http-check expect rstring .*healthy.*" in output
+
+    def test_http_check_connect_ssl_options(self):
+        """Test http-check connect with SSL options."""
+        config = """
+        config test {
+            backend api {
+                http-check {
+                    connect port 8443 ssl sni "api.example.com" alpn "h2,http/1.1"
+                    send method "GET" uri "/health"
+                    expect status 200
+                }
+
+                servers {
+                    server api1 {
+                        address: "10.0.1.1"
+                        port: 8443
+                        ssl: true
+                    }
+                }
+            }
+        }
+        """
+        parser = DSLParser()
+        ir = parser.parse(config)
+        codegen = HAProxyCodeGenerator()
+        output = codegen.generate(ir)
+
+        connect_rule = ir.backends[0].http_check_rules[0]
+        assert connect_rule.type == "connect"
+        assert connect_rule.port == 8443
+        assert connect_rule.ssl is True
+        assert connect_rule.sni == "api.example.com"
+        assert connect_rule.alpn == "h2,http/1.1"
+
+        assert "http-check connect port 8443 ssl sni api.example.com alpn h2,http/1.1" in output
+
+    def test_http_check_disable_on_404(self):
+        """Test http-check disable-on-404 directive."""
+        config = """
+        config test {
+            backend api {
+                http-check {
+                    send method "GET" uri "/health"
+                    expect status 200
+                    disable-on-404
+                }
+
+                servers {
+                    server api1 {
+                        address: "10.0.1.1"
+                        port: 8080
+                    }
+                }
+            }
+        }
+        """
+        parser = DSLParser()
+        ir = parser.parse(config)
+        codegen = HAProxyCodeGenerator()
+        output = codegen.generate(ir)
+
+        # Find the disable-on-404 rule
+        disable_rule = [r for r in ir.backends[0].http_check_rules if r.type == "disable-on-404"]
+        assert len(disable_rule) == 1
+
+        assert "http-check disable-on-404" in output
+
+
+class TestTcpCheckCoverageGaps:
+    """Tests for TCP check edge cases to improve coverage."""
+
+    def test_tcp_check_connect_ssl_options(self):
+        """Test tcp-check connect with SSL options."""
+        config = """
+        config test {
+            backend secure_redis {
+                mode: tcp
+
+                tcp-check {
+                    connect port 6380 ssl sni "redis.example.com" alpn "redis"
+                    send "PING\\r\\n"
+                    expect string "PONG"
+                }
+
+                servers {
+                    server redis1 {
+                        address: "10.0.1.1"
+                        port: 6380
+                        ssl: true
+                    }
+                }
+            }
+        }
+        """
+        parser = DSLParser()
+        ir = parser.parse(config)
+        codegen = HAProxyCodeGenerator()
+        output = codegen.generate(ir)
+
+        connect_rule = ir.backends[0].tcp_check_rules[0]
+        assert connect_rule.type == "connect"
+        assert connect_rule.port == 6380
+        assert connect_rule.ssl is True
+        assert connect_rule.sni == "redis.example.com"
+        assert connect_rule.alpn == "redis"
+
+        assert "tcp-check connect port 6380 ssl sni redis.example.com alpn redis" in output
+
+    def test_tcp_check_empty_type_fallback(self):
+        """Test tcp-check with unknown type returns empty string."""
+        from haproxy_translator.ir.nodes import TcpCheckRule
+        codegen = HAProxyCodeGenerator()
+
+        # Create a tcp-check with an unknown type to hit the fallback
+        unknown_rule = TcpCheckRule(type="unknown")
+        result = codegen._format_tcp_check_rule(unknown_rule)
+        assert result == ""
+
+    def test_http_check_empty_type_fallback(self):
+        """Test http-check with unknown type returns empty string."""
+        from haproxy_translator.ir.nodes import HttpCheckRule
+        codegen = HAProxyCodeGenerator()
+
+        # Create a http-check with an unknown type to hit the fallback
+        unknown_rule = HttpCheckRule(type="unknown")
+        result = codegen._format_http_check_rule(unknown_rule)
+        assert result == ""

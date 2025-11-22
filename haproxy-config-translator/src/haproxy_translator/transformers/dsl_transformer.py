@@ -3019,14 +3019,37 @@ class DSLTransformer(Transformer):
         """Transform http-check connect with SSL only."""
         return self._parse_ssl_options(items)
 
+    def http_check_ssl_options(self, items: list[Any]) -> dict[str, Any]:
+        """Transform http-check SSL options."""
+        return self._parse_ssl_options_from_strings(items)
+
+    def tcp_check_ssl_options(self, items: list[Any]) -> dict[str, Any]:
+        """Transform tcp-check SSL options."""
+        return self._parse_ssl_options_from_strings(items)
+
+    def _parse_ssl_options_from_strings(self, items: list[Any]) -> dict[str, Any]:
+        """Parse SSL options from string items (sni, alpn values)."""
+        opts: dict[str, bool | str | None] = {"ssl": True, "sni": None, "alpn": None}
+
+        # Items are the string values for sni and alpn (in order)
+        strings = [str(item) for item in items if item is not None]
+        if len(strings) >= 1:
+            opts["sni"] = strings[0]
+        if len(strings) >= 2:
+            opts["alpn"] = strings[1]
+
+        return opts
+
     def _parse_ssl_options(self, items: list[Any]) -> dict[str, Any]:
-        """Parse SSL options from inlined ssl_options rule."""
+        """Parse SSL options from items which may include a transformed ssl_options dict."""
         opts: dict[str, bool | str | None] = {"ssl": False, "sni": None, "alpn": None}
         if not items:
             return opts
 
-        # Items will be tokens from the inlined rule: may contain sni and alpn strings
-        for _i, item in enumerate(items):
+        # Check if first item is already a transformed ssl_options dict
+        for item in items:
+            if isinstance(item, dict) and "ssl" in item:
+                return item
             if isinstance(item, str):
                 # First string after ssl is sni, second is alpn
                 if opts["sni"] is None:
@@ -4447,6 +4470,10 @@ class DSLTransformer(Transformer):
 
     def header_definition(self, items: list[Any]) -> tuple[str, str]:
         return (items[0], items[1])
+
+    def http_check_headers(self, items: list[Any]) -> list[tuple[str, str]]:
+        """Transform http-check headers block into list of (name, value) tuples."""
+        return items  # List of header_definition tuples
 
     def servers_block(self, items: list[Any]) -> list[Server | ForLoop]:
         """Return list of servers and/or for loops."""
