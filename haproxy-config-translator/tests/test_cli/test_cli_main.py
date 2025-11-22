@@ -194,6 +194,74 @@ class TestTranslatorErrors:
         finally:
             config_path.unlink(missing_ok=True)
 
+    def test_invalid_config_with_debug_mode(self):
+        """Test that invalid config with debug mode shows exception details."""
+        from haproxy_translator.cli.main import _translate_once
+        from haproxy_translator.utils.errors import ParseError
+
+        with tempfile.NamedTemporaryFile(suffix=".hap", delete=False, mode="w") as f:
+            f.write('''
+            config test {
+                frontend web {
+                    this is invalid syntax
+                }
+            }
+            ''')
+            config_path = Path(f.name)
+
+        try:
+            with pytest.raises(ParseError):
+                _translate_once(
+                    config_file=config_path,
+                    output=None,
+                    format=None,
+                    validate=True,
+                    debug=True,  # Enable debug mode
+                    lua_dir=None,
+                    verbose=False,
+                )
+        finally:
+            config_path.unlink(missing_ok=True)
+
+
+class TestFormatSpecification:
+    """Test format specification in CLI."""
+
+    def test_translate_with_format_dsl(self):
+        """Test translation with explicit DSL format."""
+        from haproxy_translator.cli.main import _translate_once
+
+        with tempfile.NamedTemporaryFile(suffix=".txt", delete=False, mode="w") as f:
+            f.write('''
+            config test {
+                frontend web {
+                    bind *:80
+                    mode: http
+                    default_backend: app
+                }
+                backend app {
+                    balance: roundrobin
+                    servers {
+                        server s1 { address: "10.0.0.1" port: 8080 }
+                    }
+                }
+            }
+            ''')
+            config_path = Path(f.name)
+
+        try:
+            _translate_once(
+                config_file=config_path,
+                output=None,
+                format="dsl",  # Explicit format
+                validate=True,
+                debug=False,
+                lua_dir=None,
+                verbose=False,
+            )
+        finally:
+            config_path.unlink(missing_ok=True)
+
 
 if __name__ == "__main__":
     pytest.main([__file__, "-v"])
