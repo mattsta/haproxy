@@ -100,6 +100,29 @@ uv run mypy --pretty src && \
 uv run pytest --cov
 ```
 
+## Feature Parity Report
+
+Generate a report comparing implementation coverage against HAProxy documentation:
+
+```bash
+# Default: output to tools/parity_report.md
+uv run python tools/generate_parity_report.py
+
+# Custom HAProxy docs location
+uv run python tools/generate_parity_report.py --docs /path/to/configuration.txt
+
+# Output to stdout
+uv run python tools/generate_parity_report.py --stdout
+
+# JSON output for CI/programmatic use
+uv run python tools/generate_parity_report.py --json --stdout
+
+# Quiet mode (no progress messages)
+uv run python tools/generate_parity_report.py -q -o report.md
+```
+
+Run this periodically to track implementation progress against HAProxy 3.3 documentation.
+
 ## Project Structure
 
 ```
@@ -116,6 +139,7 @@ haproxy-translate/
 │   └── utils/            # Error handling, helpers
 ├── tests/                # Test suite
 ├── examples/             # Example configurations
+├── tools/                # Development tools and scripts
 └── docs/                 # Documentation
 ```
 
@@ -131,9 +155,9 @@ haproxy-translate/
 ## Release Process
 
 1. Update version in `pyproject.toml`
-2. Update `CHANGELOG.md`
-3. Run full test suite: `uv run pytest --cov`
-4. Create git tag: `git tag v0.1.0`
+2. Run full test suite: `uv run pytest -n 20 --cov`
+3. Run feature parity report: `uv run python tools/generate_parity_report.py`
+4. Create git tag: `git tag v0.x.0`
 5. Push tag: `git push --tags`
 6. Build: `uv build`
 7. Publish: `uv publish`
