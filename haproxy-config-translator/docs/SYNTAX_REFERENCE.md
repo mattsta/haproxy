@@ -419,6 +419,7 @@ config my_config {
 
     // === Servers ===
     servers {
+      // Full syntax with all options
       server web1 {
         address: "192.168.1.10"
         port: 8080
@@ -449,12 +450,11 @@ config my_config {
         agent-inter: 5s
       }
 
-      server web2 {
-        address: "192.168.1.11"
-        port: 8080
-        check: true
-        weight: 10
-      }
+      // Compact syntax with comma-separated properties
+      server web2 { address: "192.168.1.11", port: 8080, check: true, weight: 10 }
+
+      // Inline syntax (alternative compact format)
+      server web3 address: "192.168.1.12" port: 8080 check: true
     }
 
     // === Server Templates ===

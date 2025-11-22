@@ -870,7 +870,8 @@ servers_block: "servers" "{" server_item* "}"
 ?server_item: server_definition
             | for_statement
 
-server_definition: "server" (identifier | string) "{" server_property* "}"
+// Server definition supports comma-separated properties for compact syntax
+server_definition: "server" (identifier | string) "{" (server_property ","?)* "}"
                  | "server" identifier server_inline_param+  -> server_inline
 
 server_inline_param: identifier ":" value
