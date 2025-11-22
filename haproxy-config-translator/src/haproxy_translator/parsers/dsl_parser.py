@@ -20,17 +20,11 @@ class DSLParser(ConfigParser):
     """Parser for HAProxy DSL format."""
 
     def __init__(self) -> None:
-        # Load grammar file using importlib.resources
-        try:
-            # Python 3.9+
-            grammar_file = resources.files("haproxy_translator").joinpath(
-                "grammars/haproxy_dsl.lark"
-            )
-            grammar = grammar_file.read_text()
-        except AttributeError:
-            # Python 3.7-3.8 fallback
-            with resources.open_text("haproxy_translator.grammars", "haproxy_dsl.lark") as f:
-                grammar = f.read()
+        # Load grammar file using importlib.resources (Python 3.9+)
+        grammar_file = resources.files("haproxy_translator").joinpath(
+            "grammars/haproxy_dsl.lark"
+        )
+        grammar = grammar_file.read_text()
 
         self.parser = Lark(
             grammar,
