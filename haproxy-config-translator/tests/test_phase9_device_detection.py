@@ -133,7 +133,10 @@ class TestPhase951Degrees:
         """
         parser = DSLParser()
         ir = parser.parse(config)
-        assert ir.global_config.fiftyone_degrees_property_name_list == "BrowserName,BrowserVersion,DeviceType"
+        assert (
+            ir.global_config.fiftyone_degrees_property_name_list
+            == "BrowserName,BrowserVersion,DeviceType"
+        )
 
         codegen = HAProxyCodeGenerator()
         output = codegen.generate(ir)
@@ -188,7 +191,10 @@ class TestPhase951Degrees:
         parser = DSLParser()
         ir = parser.parse(config)
         assert ir.global_config.fiftyone_degrees_data_file == "/var/lib/51degrees/device.dat"
-        assert ir.global_config.fiftyone_degrees_property_name_list == "IsMobile,PlatformName,PlatformVersion"
+        assert (
+            ir.global_config.fiftyone_degrees_property_name_list
+            == "IsMobile,PlatformName,PlatformVersion"
+        )
         assert ir.global_config.fiftyone_degrees_property_separator == "|"
         assert ir.global_config.fiftyone_degrees_cache_size == 5000
 

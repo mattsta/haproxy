@@ -17,18 +17,21 @@ class TestBalanceAlgorithms:
     def codegen(self):
         return HAProxyCodeGenerator()
 
-    @pytest.mark.parametrize("algorithm", [
-        "roundrobin",
-        "leastconn",
-        "source",
-        "uri",
-        "url_param",
-        "random",
-        "static-rr",
-        "first",
-        "hdr",
-        "rdp-cookie",
-    ])
+    @pytest.mark.parametrize(
+        "algorithm",
+        [
+            "roundrobin",
+            "leastconn",
+            "source",
+            "uri",
+            "url_param",
+            "random",
+            "static-rr",
+            "first",
+            "hdr",
+            "rdp-cookie",
+        ],
+    )
     def test_balance_algorithm(self, parser, codegen, algorithm):
         """Test each balance algorithm."""
         source = f"""

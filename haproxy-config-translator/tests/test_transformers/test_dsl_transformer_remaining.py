@@ -2,8 +2,8 @@
 
 import pytest
 
-from haproxy_translator.parsers import DSLParser
 from haproxy_translator.codegen.haproxy import HAProxyCodeGenerator
+from haproxy_translator.parsers import DSLParser
 
 
 class TestListenExtendedOptions:
@@ -19,7 +19,7 @@ class TestListenExtendedOptions:
 
     def test_listen_enabled_directive(self, parser, codegen):
         """Test listen section with enabled directive."""
-        source = '''
+        source = """
         config test {
             listen myservice {
                 bind *:8080
@@ -31,14 +31,14 @@ class TestListenExtendedOptions:
                 }
             }
         }
-        '''
+        """
         ir = parser.parse(source)
         listen = ir.listens[0]
         assert listen.enabled is True
 
     def test_listen_guid_directive(self, parser, codegen):
         """Test listen section with guid directive."""
-        source = '''
+        source = """
         config test {
             listen myservice {
                 bind *:8080
@@ -50,7 +50,7 @@ class TestListenExtendedOptions:
                 }
             }
         }
-        '''
+        """
         ir = parser.parse(source)
         listen = ir.listens[0]
         assert listen.guid == "abc-123-def"
@@ -69,7 +69,7 @@ class TestRedirectOptionsWithCodegen:
 
     def test_redirect_basic_location(self, parser, codegen):
         """Test basic redirect location."""
-        source = '''
+        source = """
         config test {
             frontend web {
                 bind *:80
@@ -84,14 +84,14 @@ class TestRedirectOptionsWithCodegen:
                 }
             }
         }
-        '''
+        """
         ir = parser.parse(source)
         output = codegen.generate(ir)
         assert "redirect location https://example.com" in output
 
     def test_redirect_with_code(self, parser, codegen):
         """Test redirect with custom code."""
-        source = '''
+        source = """
         config test {
             frontend web {
                 bind *:80
@@ -106,7 +106,7 @@ class TestRedirectOptionsWithCodegen:
                 }
             }
         }
-        '''
+        """
         ir = parser.parse(source)
         output = codegen.generate(ir)
         assert "redirect scheme https code 301" in output
@@ -125,7 +125,7 @@ class TestHttpCheckMethodOnly:
 
     def test_http_check_send_method_only(self, parser, codegen):
         """Test http-check send with just method, no URI."""
-        source = '''
+        source = """
         config test {
             backend api {
                 balance: roundrobin
@@ -137,7 +137,7 @@ class TestHttpCheckMethodOnly:
                 }
             }
         }
-        '''
+        """
         ir = parser.parse(source)
         backend = ir.backends[0]
         send_rules = [r for r in backend.http_check_rules if r.type == "send"]
@@ -158,7 +158,7 @@ class TestStatsAuthAndRefresh:
 
     def test_stats_with_auth(self, parser, codegen):
         """Test stats with auth option."""
-        source = '''
+        source = """
         config test {
             frontend web {
                 bind *:80
@@ -177,7 +177,7 @@ class TestStatsAuthAndRefresh:
                 }
             }
         }
-        '''
+        """
         ir = parser.parse(source)
         frontend = ir.frontends[0]
         assert frontend.stats_config is not None
@@ -194,7 +194,7 @@ class TestLuaInlineWithParameters:
 
     def test_lua_inline_script_basic(self, parser):
         """Test basic inline Lua script."""
-        source = '''
+        source = """
         config test {
             lua {
                 inline my_handler {
@@ -202,7 +202,7 @@ class TestLuaInlineWithParameters:
                 }
             }
         }
-        '''
+        """
         ir = parser.parse(source)
         assert len(ir.lua_scripts) == 1
         assert ir.lua_scripts[0].name == "my_handler"
@@ -221,7 +221,7 @@ class TestUseServerWithCondition:
 
     def test_use_server_basic(self, parser, codegen):
         """Test basic use-server directive."""
-        source = '''
+        source = """
         config test {
             backend api {
                 balance: roundrobin
@@ -232,7 +232,7 @@ class TestUseServerWithCondition:
                 }
             }
         }
-        '''
+        """
         ir = parser.parse(source)
         output = codegen.generate(ir)
         assert "use-server s1 if TRUE" in output
@@ -251,7 +251,7 @@ class TestHealthCheckHeaders:
 
     def test_health_check_with_header(self, parser, codegen):
         """Test health check with custom header."""
-        source = '''
+        source = """
         config test {
             backend api {
                 balance: roundrobin
@@ -265,7 +265,7 @@ class TestHealthCheckHeaders:
                 }
             }
         }
-        '''
+        """
         ir = parser.parse(source)
         backend = ir.backends[0]
         assert backend.health_check is not None
@@ -285,7 +285,7 @@ class TestFrontendSingleRulesBlocks:
 
     def test_frontend_http_request_block(self, parser, codegen):
         """Test frontend with http-request block."""
-        source = '''
+        source = """
         config test {
             frontend web {
                 bind *:80
@@ -302,14 +302,14 @@ class TestFrontendSingleRulesBlocks:
                 }
             }
         }
-        '''
+        """
         ir = parser.parse(source)
         frontend = ir.frontends[0]
         assert len(frontend.http_request_rules) >= 1
 
     def test_frontend_http_response_block(self, parser, codegen):
         """Test frontend with http-response block."""
-        source = '''
+        source = """
         config test {
             frontend web {
                 bind *:80
@@ -326,14 +326,14 @@ class TestFrontendSingleRulesBlocks:
                 }
             }
         }
-        '''
+        """
         ir = parser.parse(source)
         frontend = ir.frontends[0]
         assert len(frontend.http_response_rules) >= 1
 
     def test_frontend_tcp_request_block(self, parser, codegen):
         """Test frontend with tcp-request block."""
-        source = '''
+        source = """
         config test {
             frontend tcp_fe {
                 bind *:3306
@@ -351,7 +351,7 @@ class TestFrontendSingleRulesBlocks:
                 }
             }
         }
-        '''
+        """
         ir = parser.parse(source)
         frontend = ir.frontends[0]
         assert len(frontend.tcp_request_rules) >= 1
@@ -370,7 +370,7 @@ class TestListenMixedRuleHandling:
 
     def test_listen_with_http_after_response_block(self, parser, codegen):
         """Test listen section with http-after-response block."""
-        source = '''
+        source = """
         config test {
             listen myservice {
                 bind *:8080
@@ -384,10 +384,11 @@ class TestListenMixedRuleHandling:
                 }
             }
         }
-        '''
+        """
         ir = parser.parse(source)
         listen = ir.listens[0]
         assert len(listen.http_after_response_rules) >= 1
+
 
 class TestBackendSingleRuleHandling:
     """Test backend single rule handling (lines 3540-3605)."""
@@ -402,7 +403,7 @@ class TestBackendSingleRuleHandling:
 
     def test_backend_single_http_check_rule(self, parser, codegen):
         """Test backend with single http-check rule."""
-        source = '''
+        source = """
         config test {
             backend api {
                 balance: roundrobin
@@ -414,14 +415,14 @@ class TestBackendSingleRuleHandling:
                 }
             }
         }
-        '''
+        """
         ir = parser.parse(source)
         backend = ir.backends[0]
         assert len(backend.http_check_rules) >= 1
 
     def test_backend_single_use_server_rule(self, parser, codegen):
         """Test backend with single use-server rule."""
-        source = '''
+        source = """
         config test {
             backend api {
                 balance: roundrobin
@@ -431,7 +432,7 @@ class TestBackendSingleRuleHandling:
                 }
             }
         }
-        '''
+        """
         ir = parser.parse(source)
         backend = ir.backends[0]
         assert len(backend.use_server_rules) >= 1
@@ -450,7 +451,7 @@ class TestMonitorFailCondition:
 
     def test_monitor_fail_basic(self, parser, codegen):
         """Test basic monitor-fail directive."""
-        source = '''
+        source = """
         config test {
             frontend web {
                 bind *:80
@@ -469,7 +470,7 @@ class TestMonitorFailCondition:
                 }
             }
         }
-        '''
+        """
         ir = parser.parse(source)
         frontend = ir.frontends[0]
         assert len(frontend.monitor_fail_rules) >= 1
@@ -484,7 +485,7 @@ class TestACLBlockDefinition:
 
     def test_acl_block_definition(self, parser):
         """Test ACL with block definition."""
-        source = '''
+        source = """
         config test {
             frontend web {
                 bind *:80
@@ -501,10 +502,10 @@ class TestACLBlockDefinition:
                 }
             }
         }
-        '''
+        """
         ir = parser.parse(source)
         frontend = ir.frontends[0]
-        acl = [a for a in frontend.acls if a.name == "is_admin"][0]
+        acl = next(a for a in frontend.acls if a.name == "is_admin")
         assert acl.criterion == "src"
 
 
@@ -517,7 +518,7 @@ class TestFloatAndBooleanParsing:
 
     def test_boolean_false_value(self, parser):
         """Test boolean false value parsing."""
-        source = '''
+        source = """
         config test {
             backend api {
                 balance: roundrobin
@@ -530,7 +531,7 @@ class TestFloatAndBooleanParsing:
                 }
             }
         }
-        '''
+        """
         ir = parser.parse(source)
         backend = ir.backends[0]
         server = backend.servers[0]
@@ -546,7 +547,7 @@ class TestStickTableFeatures:
 
     def test_stick_on_simple_pattern(self, parser):
         """Test stick-on with simple pattern."""
-        source = '''
+        source = """
         config test {
             backend api {
                 balance: roundrobin
@@ -561,7 +562,7 @@ class TestStickTableFeatures:
                 }
             }
         }
-        '''
+        """
         ir = parser.parse(source)
         backend = ir.backends[0]
         assert backend.stick_table is not None
@@ -569,7 +570,7 @@ class TestStickTableFeatures:
 
     def test_stick_table_string_type(self, parser):
         """Test stick-table with string type."""
-        source = '''
+        source = """
         config test {
             backend api {
                 balance: roundrobin
@@ -583,7 +584,7 @@ class TestStickTableFeatures:
                 }
             }
         }
-        '''
+        """
         ir = parser.parse(source)
         backend = ir.backends[0]
         assert backend.stick_table is not None
@@ -603,7 +604,7 @@ class TestHttpReuseMode:
 
     def test_http_reuse_safe(self, parser, codegen):
         """Test http-reuse safe mode."""
-        source = '''
+        source = """
         config test {
             backend api {
                 balance: roundrobin
@@ -613,14 +614,14 @@ class TestHttpReuseMode:
                 }
             }
         }
-        '''
+        """
         ir = parser.parse(source)
         output = codegen.generate(ir)
         assert "http-reuse safe" in output
 
     def test_http_reuse_always(self, parser, codegen):
         """Test http-reuse always mode."""
-        source = '''
+        source = """
         config test {
             backend api {
                 balance: roundrobin
@@ -630,7 +631,7 @@ class TestHttpReuseMode:
                 }
             }
         }
-        '''
+        """
         ir = parser.parse(source)
         output = codegen.generate(ir)
         assert "http-reuse always" in output
@@ -645,7 +646,7 @@ class TestListenHealthCheck:
 
     def test_listen_with_health_check(self, parser):
         """Test listen section with health check."""
-        source = '''
+        source = """
         config test {
             listen myservice {
                 bind *:8080
@@ -660,7 +661,7 @@ class TestListenHealthCheck:
                 }
             }
         }
-        '''
+        """
         ir = parser.parse(source)
         listen = ir.listens[0]
         # Health check might be in metadata
@@ -680,7 +681,7 @@ class TestFiltersSection:
 
     def test_frontend_with_filters(self, parser, codegen):
         """Test frontend with filters."""
-        source = '''
+        source = """
         config test {
             frontend web {
                 bind *:80
@@ -697,7 +698,7 @@ class TestFiltersSection:
                 }
             }
         }
-        '''
+        """
         ir = parser.parse(source)
         output = codegen.generate(ir)
         assert "filter compression" in output
@@ -716,7 +717,7 @@ class TestTcpRuleParams:
 
     def test_tcp_request_with_content_accept(self, parser, codegen):
         """Test TCP request content accept."""
-        source = '''
+        source = """
         config test {
             frontend tcp_fe {
                 bind *:3306
@@ -734,7 +735,7 @@ class TestTcpRuleParams:
                 }
             }
         }
-        '''
+        """
         ir = parser.parse(source)
         output = codegen.generate(ir)
         assert "tcp-request content accept" in output

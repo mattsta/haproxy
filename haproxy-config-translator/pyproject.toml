@@ -7,7 +7,7 @@ name = "haproxy-config-translator"
 version = "0.4.0"
 description = "Modern, powerful configuration translator for HAProxy with pluggable parsers"
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.14"
 license = {text = "MIT"}
 authors = [
     {name = "HAProxy Config Team"}
@@ -18,9 +18,7 @@ classifiers = [
     "Intended Audience :: Developers",
     "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.10",
-    "Programming Language :: Python :: 3.11",
-    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.14",
     "Topic :: System :: Networking",
     "Topic :: Software Development :: Code Generators",
 ]
@@ -63,12 +61,12 @@ haproxy_translator = ["grammars/*.lark", "codegen/templates/*.j2"]
 
 [tool.black]
 line-length = 100
-target-version = ['py310', 'py311', 'py312']
+target-version = ['py314']
 
 # Ruff configuration
 [tool.ruff]
 line-length = 100
-target-version = "py310"
+target-version = "py314"
 src = ["src", "tests"]
 
 [tool.ruff.lint]
@@ -101,6 +99,7 @@ ignore = [
 "tests/**/*.py" = [
     "PLR2004",  # magic values ok in tests
     "S101",     # assert ok in tests
+    "PLC0415", # imports inside test functions ok
 ]
 "src/haproxy_translator/transformers/dsl_transformer.py" = [
     "N802",     # Lark transformer methods must match grammar terminals (uppercase)
@@ -116,6 +115,12 @@ ignore = [
 ]
 "src/haproxy_translator/codegen/haproxy.py" = [
     "PLR0912",  # Complex code generation functions have many branches
+    "PLR0915",  # Many statements in code generation
+]
+"generate_parity_report.py" = [
+    "PTH123",  # open() ok in scripts
+    "PLR0912",  # Complex script
+    "PLR0915",  # Many statements in script
 ]
 "src/haproxy_translator/lua/manager.py" = [
     "PLC0415",  # Lazy import for re module in sanitize function
@@ -126,7 +131,7 @@ known-first-party = ["haproxy_translator"]
 
 # Mypy configuration
 [tool.mypy]
-python_version = "3.10"
+python_version = "3.14"
 warn_return_any = true
 warn_unused_configs = true
 warn_redundant_casts = true

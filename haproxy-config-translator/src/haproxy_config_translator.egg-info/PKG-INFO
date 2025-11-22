@@ -12,12 +12,10 @@ Classifier: Intended Audience :: System Administrators
 Classifier: Intended Audience :: Developers
 Classifier: License :: OSI Approved :: MIT License
 Classifier: Programming Language :: Python :: 3
-Classifier: Programming Language :: Python :: 3.10
-Classifier: Programming Language :: Python :: 3.11
-Classifier: Programming Language :: Python :: 3.12
+Classifier: Programming Language :: Python :: 3.14
 Classifier: Topic :: System :: Networking
 Classifier: Topic :: Software Development :: Code Generators
-Requires-Python: >=3.10
+Requires-Python: >=3.14
 Description-Content-Type: text/markdown
 License-File: LICENSE
 Requires-Dist: lark>=1.1.9

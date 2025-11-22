@@ -2,8 +2,8 @@
 
 import pytest
 
-from haproxy_translator.parsers import DSLParser
 from haproxy_translator.codegen.haproxy import HAProxyCodeGenerator
+from haproxy_translator.parsers import DSLParser
 
 
 class TestServerOptionsExtended:
@@ -19,7 +19,7 @@ class TestServerOptionsExtended:
 
     def test_server_with_maxqueue(self, parser, codegen):
         """Test server with maxqueue option."""
-        source = '''
+        source = """
         config test {
             backend api {
                 balance: roundrobin
@@ -32,7 +32,7 @@ class TestServerOptionsExtended:
                 }
             }
         }
-        '''
+        """
         ir = parser.parse(source)
         backend = ir.backends[0]
         server = backend.servers[0]
@@ -40,7 +40,7 @@ class TestServerOptionsExtended:
 
     def test_server_with_minconn(self, parser, codegen):
         """Test server with minconn option."""
-        source = '''
+        source = """
         config test {
             backend api {
                 balance: roundrobin
@@ -53,7 +53,7 @@ class TestServerOptionsExtended:
                 }
             }
         }
-        '''
+        """
         ir = parser.parse(source)
         backend = ir.backends[0]
         server = backend.servers[0]
@@ -73,7 +73,7 @@ class TestErrorFormats:
 
     def test_frontend_error_log_format(self, parser, codegen):
         """Test frontend with error-log-format."""
-        source = '''
+        source = """
         config test {
             frontend web {
                 bind *:80
@@ -88,7 +88,7 @@ class TestErrorFormats:
                 }
             }
         }
-        '''
+        """
         ir = parser.parse(source)
         frontend = ir.frontends[0]
         assert frontend.error_log_format is not None
@@ -107,7 +107,7 @@ class TestStatsConfigOptions:
 
     def test_stats_with_realm(self, parser, codegen):
         """Test stats with realm option."""
-        source = '''
+        source = """
         config test {
             frontend web {
                 bind *:80
@@ -126,7 +126,7 @@ class TestStatsConfigOptions:
                 }
             }
         }
-        '''
+        """
         ir = parser.parse(source)
         frontend = ir.frontends[0]
         assert frontend.stats_config is not None
@@ -146,7 +146,7 @@ class TestHttpAfterResponseRules:
 
     def test_frontend_http_after_response_set_header(self, parser, codegen):
         """Test frontend with http-after-response set-header."""
-        source = '''
+        source = """
         config test {
             frontend web {
                 bind *:80
@@ -163,7 +163,7 @@ class TestHttpAfterResponseRules:
                 }
             }
         }
-        '''
+        """
         ir = parser.parse(source)
         output = codegen.generate(ir)
         assert "http-after-response set-header" in output
@@ -182,7 +182,7 @@ class TestListenPersistRdpCookie:
 
     def test_listen_persist_rdp_cookie_basic(self, parser, codegen):
         """Test listen section with basic persist rdp-cookie."""
-        source = '''
+        source = """
         config test {
             listen rdp_farm {
                 bind *:3389
@@ -197,14 +197,14 @@ class TestListenPersistRdpCookie:
                 }
             }
         }
-        '''
+        """
         ir = parser.parse(source)
         listen = ir.listens[0]
         assert listen.persist_rdp_cookie == ""  # Empty string means default cookie
 
     def test_listen_persist_rdp_cookie_with_name(self, parser, codegen):
         """Test listen section with persist rdp-cookie and custom name."""
-        source = '''
+        source = """
         config test {
             listen rdp_farm {
                 bind *:3389
@@ -219,7 +219,7 @@ class TestListenPersistRdpCookie:
                 }
             }
         }
-        '''
+        """
         ir = parser.parse(source)
         listen = ir.listens[0]
         assert listen.persist_rdp_cookie == "custom_cookie"
@@ -238,7 +238,7 @@ class TestBackendPersistRdpCookie:
 
     def test_backend_persist_rdp_cookie_basic(self, parser, codegen):
         """Test backend with basic persist rdp-cookie."""
-        source = '''
+        source = """
         config test {
             backend rdp_servers {
                 balance: rdp-cookie
@@ -251,7 +251,7 @@ class TestBackendPersistRdpCookie:
                 }
             }
         }
-        '''
+        """
         ir = parser.parse(source)
         backend = ir.backends[0]
         assert backend.persist_rdp_cookie == ""
@@ -270,7 +270,7 @@ class TestListenWithMultipleOptions:
 
     def test_listen_with_option_array(self, parser, codegen):
         """Test listen section with option array."""
-        source = '''
+        source = """
         config test {
             listen web {
                 bind *:8080
@@ -282,7 +282,7 @@ class TestListenWithMultipleOptions:
                 }
             }
         }
-        '''
+        """
         ir = parser.parse(source)
         listen = ir.listens[0]
         assert "httplog" in listen.options
@@ -301,7 +301,7 @@ class TestBackendWithUseServer:
 
     def test_backend_use_server_basic(self, parser, codegen):
         """Test backend with use-server rule."""
-        source = '''
+        source = """
         config test {
             frontend web {
                 bind *:80
@@ -320,7 +320,7 @@ class TestBackendWithUseServer:
                 }
             }
         }
-        '''
+        """
         ir = parser.parse(source)
         backend = ir.backends[0]
         assert len(backend.use_server_rules) == 1
@@ -341,7 +341,7 @@ class TestFrontendLogOptions:
 
     def test_frontend_with_log_tag(self, parser, codegen):
         """Test frontend with log-tag."""
-        source = '''
+        source = """
         config test {
             frontend web {
                 bind *:80
@@ -356,7 +356,7 @@ class TestFrontendLogOptions:
                 }
             }
         }
-        '''
+        """
         ir = parser.parse(source)
         frontend = ir.frontends[0]
         assert frontend.log_tag == "frontend-web"
@@ -375,7 +375,7 @@ class TestBackendLogOptions:
 
     def test_backend_with_log_tag(self, parser, codegen):
         """Test backend with log-tag."""
-        source = '''
+        source = """
         config test {
             backend api {
                 balance: roundrobin
@@ -385,7 +385,7 @@ class TestBackendLogOptions:
                 }
             }
         }
-        '''
+        """
         ir = parser.parse(source)
         backend = ir.backends[0]
         assert backend.log_tag == "backend-api"
@@ -404,7 +404,7 @@ class TestFrontendIgnorePersist:
 
     def test_frontend_ignore_persist(self, parser, codegen):
         """Test frontend with ignore-persist rule."""
-        source = '''
+        source = """
         config test {
             frontend web {
                 bind *:80
@@ -422,7 +422,7 @@ class TestFrontendIgnorePersist:
                 }
             }
         }
-        '''
+        """
         ir = parser.parse(source)
         frontend = ir.frontends[0]
         assert len(frontend.ignore_persist_rules) == 1
@@ -443,7 +443,7 @@ class TestFrontendForcePersist:
 
     def test_frontend_force_persist(self, parser, codegen):
         """Test frontend with force-persist rule."""
-        source = '''
+        source = """
         config test {
             frontend web {
                 bind *:80
@@ -461,7 +461,7 @@ class TestFrontendForcePersist:
                 }
             }
         }
-        '''
+        """
         ir = parser.parse(source)
         frontend = ir.frontends[0]
         assert len(frontend.force_persist_rules) == 1

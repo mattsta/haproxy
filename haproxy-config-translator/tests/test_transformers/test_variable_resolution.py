@@ -1,6 +1,5 @@
 """Tests for variable resolution transformer."""
 
-
 import pytest
 
 from haproxy_translator.parsers import DSLParser

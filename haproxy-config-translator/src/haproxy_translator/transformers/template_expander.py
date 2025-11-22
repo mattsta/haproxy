@@ -1,9 +1,12 @@
 """Template expansion transformer - expands @template spreads into properties."""
 
 from dataclasses import replace
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
-from ..ir.nodes import ACL, Backend, ConfigIR, Frontend, HealthCheck, Listen, Server
+from ..ir.nodes import BalanceAlgorithm, Mode
+
+if TYPE_CHECKING:
+    from ..ir.nodes import ACL, Backend, ConfigIR, Frontend, HealthCheck, Listen, Server
 
 
 class TemplateExpander:
@@ -40,7 +43,9 @@ class TemplateExpander:
         """Expand template spreads in a listen section."""
         expanded_servers = [self._expand_server(server) for server in listen.servers]
         expanded_acls = [self._expand_acl(acl) for acl in listen.acls]
-        expanded_health_check = self._expand_health_check(listen.health_check) if listen.health_check else None
+        expanded_health_check = (
+            self._expand_health_check(listen.health_check) if listen.health_check else None
+        )
 
         return replace(
             listen,
@@ -54,7 +59,9 @@ class TemplateExpander:
         # First expand child elements
         expanded_servers = [self._expand_server(server) for server in backend.servers]
         expanded_acls = [self._expand_acl(acl) for acl in backend.acls]
-        expanded_health_check = self._expand_health_check(backend.health_check) if backend.health_check else None
+        expanded_health_check = (
+            self._expand_health_check(backend.health_check) if backend.health_check else None
+        )
 
         # Check if backend has template spreads
         if "template_spreads" not in backend.metadata:
@@ -297,8 +304,6 @@ class TemplateExpander:
 
     def _backend_to_dict(self, backend: Backend) -> dict[str, Any]:
         """Extract explicit (non-default) backend properties to a dict."""
-        from ..ir.nodes import BalanceAlgorithm, Mode
-
         props: dict[str, Any] = {}
 
         # Only include properties that differ from defaults
@@ -344,24 +349,23 @@ class TemplateExpander:
 
     def _convert_backend_value(self, field_name: str, value: Any) -> Any:
         """Convert template value to appropriate type for backend field."""
-        from ..ir.nodes import BalanceAlgorithm, Mode
+        # Define converters for specific field types
+        converters: dict[str, type] = {
+            "balance": BalanceAlgorithm,
+            "mode": Mode,
+        }
+        numeric_fields = {"retries", "maxconn"}
 
-        if field_name == "balance":
-            if isinstance(value, str):
-                return BalanceAlgorithm(value)
-            return value
-        elif field_name == "mode":
-            if isinstance(value, str):
-                return Mode(value)
-            return value
-        elif field_name == "options":
-            # Options should be a list
-            if isinstance(value, list):
-                return value
-            return [value]
-        elif field_name in ("retries", "maxconn"):
-            # Numeric fields
-            if isinstance(value, str):
-                return int(value)
-            return value
+        # Handle enum conversions
+        if field_name in converters and isinstance(value, str):
+            return converters[field_name](value)
+
+        # Handle options as list
+        if field_name == "options":
+            return value if isinstance(value, list) else [value]
+
+        # Handle numeric conversions
+        if field_name in numeric_fields and isinstance(value, str):
+            return int(value)
+
         return value

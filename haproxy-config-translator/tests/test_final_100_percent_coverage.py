@@ -1,6 +1,5 @@
 """Final push to 100% test coverage - targeting remaining 138 lines."""
 
-
 from haproxy_translator.codegen.haproxy import HAProxyCodeGenerator
 from haproxy_translator.ir.nodes import TcpRequestRule, TcpResponseRule
 from haproxy_translator.parsers import DSLParser
@@ -20,13 +19,13 @@ class TestFinal100PercentCoverage:
             rule_type="content",
             action="accept",
             condition="src_is_valid",
-            parameters={"table": "st_src_global", "key": "src"}  # Named params, not "params" list
+            parameters={"table": "st_src_global", "key": "src"},  # Named params, not "params" list
         )
 
         backend = Backend(
             name="test_backend",
             tcp_request_rules=[tcp_rule],
-            servers=[Server(name="srv1", address="127.0.0.1", port=8080)]
+            servers=[Server(name="srv1", address="127.0.0.1", port=8080)],
         )
 
         config = ConfigIR(name="test", backends=[backend])
@@ -46,13 +45,13 @@ class TestFinal100PercentCoverage:
             rule_type="content",
             action="accept",
             condition=None,
-            parameters={"log-format": "%ci:%cp"}  # Named params
+            parameters={"log-format": "%ci:%cp"},  # Named params
         )
 
         backend = Backend(
             name="test_backend",
             tcp_response_rules=[tcp_rule],
-            servers=[Server(name="srv1", address="127.0.0.1", port=8080)]
+            servers=[Server(name="srv1", address="127.0.0.1", port=8080)],
         )
 
         config = ConfigIR(name="test", backends=[backend])
@@ -93,7 +92,9 @@ class TestFinal100PercentCoverage:
         assert ir.global_config
         assert ir.global_config.lua_scripts
         # Lua scripts are stored as strings
-        assert any("/etc/haproxy/script.lua" in str(script) for script in ir.global_config.lua_scripts)
+        assert any(
+            "/etc/haproxy/script.lua" in str(script) for script in ir.global_config.lua_scripts
+        )
 
     # ========== Frontend HTTP Response Single (lines 1292, 1296) ==========
 
@@ -310,29 +311,19 @@ class TestFinal100PercentCoverage:
         from haproxy_translator.transformers.template_expander import TemplateExpander
 
         # Create a template
-        template = Template(
-            name="web_template",
-            parameters={"check": True, "weight": 100}
-        )
+        template = Template(name="web_template", parameters={"check": True, "weight": 100})
 
         # Create a server with template_spreads as single string (not list)
         server = Server(
             name="srv1",
             address="127.0.0.1",
             port=8080,
-            metadata={"template_spreads": "web_template"}  # Single string, not list!
+            metadata={"template_spreads": "web_template"},  # Single string, not list!
         )
 
-        backend = Backend(
-            name="app",
-            servers=[server]
-        )
+        backend = Backend(name="app", servers=[server])
 
-        config = ConfigIR(
-            name="test",
-            backends=[backend],
-            templates={"web_template": template}
-        )
+        config = ConfigIR(name="test", backends=[backend], templates={"web_template": template})
 
         # Expand templates - this should hit line 40
         expander = TemplateExpander(config)
@@ -354,17 +345,15 @@ class TestFinal100PercentCoverage:
         host_var = Variable(name="host", value="localhost")
         server_config_var = Variable(
             name="server_config",
-            value={"address": "${host}", "port": "${port}"}  # Dict with var refs!
+            value={"address": "${host}", "port": "${port}"},  # Dict with var refs!
         )
 
         config = ConfigIR(
             name="test",
-            variables={
-                "port": port_var,
-                "host": host_var,
-                "server_config": server_config_var
-            },
-            backends=[Backend(name="app", servers=[Server(name="srv1", address="127.0.0.1", port=8080)])]
+            variables={"port": port_var, "host": host_var, "server_config": server_config_var},
+            backends=[
+                Backend(name="app", servers=[Server(name="srv1", address="127.0.0.1", port=8080)])
+            ],
         )
 
         # Resolve variables - this should hit line 105 when resolving the dict
@@ -372,4 +361,7 @@ class TestFinal100PercentCoverage:
         resolved_ir = resolver.resolve()
 
         # Verify dict was resolved
-        assert resolved_ir.variables["server_config"].value == {"address": "localhost", "port": "8080"}
+        assert resolved_ir.variables["server_config"].value == {
+            "address": "localhost",
+            "port": "8080",
+        }

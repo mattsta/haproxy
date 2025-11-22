@@ -1,6 +1,5 @@
 """Tests for quic-initial directive implementation for QUIC Initial packet processing."""
 
-
 from haproxy_translator.codegen.haproxy import HAProxyCodeGenerator
 from haproxy_translator.parsers.dsl_parser import DSLParser
 
@@ -490,7 +489,10 @@ class TestQuicInitial:
         assert ir.frontends[0].quic_initial_rules[0].action == "track-sc1"
         assert ir.frontends[0].quic_initial_rules[0].parameters["track_key"] == "src"
         assert ir.frontends[0].quic_initial_rules[1].action == "track-sc2"
-        assert ir.frontends[0].quic_initial_rules[1].parameters["track_key"] == "req.hdr(X-Forwarded-For)"
+        assert (
+            ir.frontends[0].quic_initial_rules[1].parameters["track_key"]
+            == "req.hdr(X-Forwarded-For)"
+        )
 
         codegen = HAProxyCodeGenerator()
         output = codegen.generate(ir)

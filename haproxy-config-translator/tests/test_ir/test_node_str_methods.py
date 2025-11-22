@@ -1,6 +1,5 @@
 """Test __str__ methods for IR nodes."""
 
-
 from haproxy_translator.ir.nodes import ACL, Bind, HttpRequestRule
 
 
@@ -14,9 +13,7 @@ class TestACLStr:
 
     def test_acl_with_flags(self):
         """Test ACL with flags."""
-        acl = ACL(
-            name="is_api", criterion="path_beg", flags=["-i"], values=["/api"]
-        )
+        acl = ACL(name="is_api", criterion="path_beg", flags=["-i"], values=["/api"])
         assert str(acl) == "acl is_api path_beg -i /api"
 
     def test_acl_with_multiple_values(self):
@@ -71,10 +68,7 @@ class TestHttpRequestRuleStr:
             action="set-header",
             parameters={"X-Custom-Header": "value with space"},
         )
-        assert (
-            str(rule)
-            == 'http-request set-header X-Custom-Header "value with space"'
-        )
+        assert str(rule) == 'http-request set-header X-Custom-Header "value with space"'
 
     def test_http_request_rule_with_parameters_and_condition(self):
         """Test HTTP request rule with both parameters and condition."""
@@ -83,10 +77,7 @@ class TestHttpRequestRuleStr:
             parameters={"location": "https://example.com"},
             condition="!is_admin",
         )
-        assert (
-            str(rule)
-            == "http-request redirect location https://example.com if !is_admin"
-        )
+        assert str(rule) == "http-request redirect location https://example.com if !is_admin"
 
     def test_http_request_rule_multiple_parameters(self):
         """Test HTTP request rule with multiple parameters."""

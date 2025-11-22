@@ -73,21 +73,13 @@ class TestLoopUnrollerCoverage:
         loop = ForLoop(
             variable="i",
             iterable="invalid",  # String is not a valid iterable
-            body=[Server(name="test", address="10.0.1.1", port=8080)]
+            body=[Server(name="test", address="10.0.1.1", port=8080)],
         )
 
-        backend = Backend(
-            name="test",
-            servers=[],
-            metadata={"server_loops": loop}
-        )
+        backend = Backend(name="test", servers=[], metadata={"server_loops": loop})
 
         config = ConfigIR(
-            name="test",
-            backends=[backend],
-            frontends=[],
-            defaults=None,
-            global_config=None
+            name="test", backends=[backend], frontends=[], defaults=None, global_config=None
         )
 
         unroller = LoopUnroller(config)
@@ -124,22 +116,18 @@ class TestLoopUnrollerCoverage:
         loop = ForLoop(
             variable="i",
             iterable=(1, 2),
-            body=[Server(name="srv${i}", address="10.0.1.${i}", port=8080)]
+            body=[Server(name="srv${i}", address="10.0.1.${i}", port=8080)],
         )
 
         # Store single loop (not as list) in metadata
         backend = Backend(
             name="test",
             servers=[],
-            metadata={"server_loops": loop}  # Single loop, not [loop]
+            metadata={"server_loops": loop},  # Single loop, not [loop]
         )
 
         config = ConfigIR(
-            name="test",
-            backends=[backend],
-            frontends=[],
-            defaults=None,
-            global_config=None
+            name="test", backends=[backend], frontends=[], defaults=None, global_config=None
         )
 
         unroller = LoopUnroller(config)
@@ -157,15 +145,11 @@ class TestLoopUnrollerCoverage:
         backend = Backend(
             name="test",
             servers=[],
-            metadata={"server_loops": ["not a ForLoop object", "another invalid"]}
+            metadata={"server_loops": ["not a ForLoop object", "another invalid"]},
         )
 
         config = ConfigIR(
-            name="test",
-            backends=[backend],
-            frontends=[],
-            defaults=None,
-            global_config=None
+            name="test", backends=[backend], frontends=[], defaults=None, global_config=None
         )
 
         unroller = LoopUnroller(config)
@@ -187,25 +171,17 @@ class TestLoopUnrollerCoverage:
         loop = ForLoop(
             variable="i",
             iterable=(1, 2),
-            body=[[server1, server2]]  # Nested list structure
+            body=[[server1, server2]],  # Nested list structure
         )
 
-        backend = Backend(
-            name="test",
-            servers=[],
-            metadata={"server_loops": [loop]}
-        )
+        backend = Backend(name="test", servers=[], metadata={"server_loops": [loop]})
 
         config = ConfigIR(
-            name="test",
-            backends=[backend],
-            frontends=[],
-            defaults=None,
-            global_config=None
+            name="test", backends=[backend], frontends=[], defaults=None, global_config=None
         )
 
         unroller = LoopUnroller(config)
         result = unroller.unroll()
 
-        # Should have 4 servers (2 iterations × 2 servers per iteration)
+        # Should have 4 servers (2 iterations x 2 servers per iteration)
         assert len(result.backends[0].servers) == 4

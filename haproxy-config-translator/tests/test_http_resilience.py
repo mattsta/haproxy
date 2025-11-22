@@ -316,7 +316,10 @@ class TestHttpResilienceIntegration:
         assert backend.http_reuse == "aggressive"
         assert backend.http_send_name_header == "X-API-Server"
         assert backend.retries == 3
-        assert backend.retry_on == "conn-failure,empty-response,junk-response,response-timeout,500,502,503,504"
+        assert (
+            backend.retry_on
+            == "conn-failure,empty-response,junk-response,response-timeout,500,502,503,504"
+        )
         assert backend.timeout_connect == "3s"
         assert backend.timeout_server == "10s"
         assert backend.timeout_check == "2s"
@@ -331,7 +334,10 @@ class TestHttpResilienceIntegration:
         assert "http-reuse aggressive" in output
         assert "http-send-name-header X-API-Server" in output
         assert "retries 3" in output
-        assert "retry-on conn-failure,empty-response,junk-response,response-timeout,500,502,503,504" in output
+        assert (
+            "retry-on conn-failure,empty-response,junk-response,response-timeout,500,502,503,504"
+            in output
+        )
         assert "timeout connect 3s" in output
         assert "timeout server 10s" in output
         assert "timeout check 2s" in output
@@ -510,7 +516,10 @@ class TestHttpResilienceIntegration:
         backend = ir.backends[0]
         assert backend.description == "External API proxy with full observability"
         assert backend.http_send_name_header == "X-Proxy-Server"
-        assert backend.retry_on == "conn-failure,empty-response,junk-response,response-timeout,0rtt-rejected,500,502,503,504"
+        assert (
+            backend.retry_on
+            == "conn-failure,empty-response,junk-response,response-timeout,0rtt-rejected,500,502,503,504"
+        )
         assert backend.retries == 4
         assert len(backend.log) == 1
         assert backend.log_tag == "external-api"
@@ -521,7 +530,10 @@ class TestHttpResilienceIntegration:
         assert "backend external_api" in output
         assert "description External API proxy with full observability" in output
         assert "http-send-name-header X-Proxy-Server" in output
-        assert "retry-on conn-failure,empty-response,junk-response,response-timeout,0rtt-rejected,500,502,503,504" in output
+        assert (
+            "retry-on conn-failure,empty-response,junk-response,response-timeout,0rtt-rejected,500,502,503,504"
+            in output
+        )
         assert "retries 4" in output
         assert "log 127.0.0.1:514 local0" in output
         assert "log-tag external-api" in output

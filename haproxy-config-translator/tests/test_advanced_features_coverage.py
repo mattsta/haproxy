@@ -2,8 +2,8 @@
 
 import pytest
 
-from haproxy_translator.parsers import DSLParser
 from haproxy_translator.codegen.haproxy import HAProxyCodeGenerator
+from haproxy_translator.parsers import DSLParser
 
 
 class TestCompressionFeatures:
@@ -19,7 +19,7 @@ class TestCompressionFeatures:
 
     def test_compression_with_algo_and_types(self, parser, codegen):
         """Test compression with algorithm and types."""
-        source = '''
+        source = """
         config test {
             backend api {
                 balance: roundrobin
@@ -32,7 +32,7 @@ class TestCompressionFeatures:
                 }
             }
         }
-        '''
+        """
         ir = parser.parse(source)
         output = codegen.generate(ir)
         assert "compression algo gzip" in output
@@ -52,7 +52,7 @@ class TestServerOptions:
 
     def test_server_with_check_enabled(self, parser, codegen):
         """Test server with health check options."""
-        source = '''
+        source = """
         config test {
             backend api {
                 balance: roundrobin
@@ -67,7 +67,7 @@ class TestServerOptions:
                 }
             }
         }
-        '''
+        """
         ir = parser.parse(source)
         output = codegen.generate(ir)
         assert "check" in output
@@ -76,7 +76,7 @@ class TestServerOptions:
 
     def test_server_with_backup_flag(self, parser, codegen):
         """Test server with backup flag."""
-        source = '''
+        source = """
         config test {
             backend api {
                 balance: roundrobin
@@ -93,7 +93,7 @@ class TestServerOptions:
                 }
             }
         }
-        '''
+        """
         ir = parser.parse(source)
         output = codegen.generate(ir)
         assert "backup" in output
@@ -112,14 +112,14 @@ class TestMailersSection:
 
     def test_mailers_section(self, parser, codegen):
         """Test mailers section configuration."""
-        source = '''
+        source = """
         config test {
             mailers alert_mailers {
                 timeout_mail: 20s
                 mailer smtp1 "smtp.example.com" 25
             }
         }
-        '''
+        """
         ir = parser.parse(source)
         output = codegen.generate(ir)
         assert "mailers alert_mailers" in output
@@ -140,14 +140,14 @@ class TestPeersSection:
 
     def test_peers_section(self, parser, codegen):
         """Test peers section configuration."""
-        source = '''
+        source = """
         config test {
             peers mypeers {
                 peer haproxy1 "192.168.1.1" 10000
                 peer haproxy2 "192.168.1.2" 10000
             }
         }
-        '''
+        """
         ir = parser.parse(source)
         output = codegen.generate(ir)
         assert "peers mypeers" in output
@@ -168,26 +168,26 @@ class TestGlobalLuaConfiguration:
 
     def test_global_lua_load(self, parser, codegen):
         """Test global lua-load directive."""
-        source = '''
+        source = """
         config test {
             global {
                 lua-load "/etc/haproxy/lua/helpers.lua"
             }
         }
-        '''
+        """
         ir = parser.parse(source)
         output = codegen.generate(ir)
         assert "lua-load /etc/haproxy/lua/helpers.lua" in output
 
     def test_global_lua_prepend_path(self, parser, codegen):
         """Test global lua-prepend-path directive."""
-        source = '''
+        source = """
         config test {
             global {
                 lua-prepend-path "/etc/haproxy/lua"
             }
         }
-        '''
+        """
         ir = parser.parse(source)
         output = codegen.generate(ir)
         assert "lua-prepend-path /etc/haproxy/lua" in output
@@ -206,7 +206,7 @@ class TestFrontendCapture:
 
     def test_frontend_declare_capture(self, parser, codegen):
         """Test frontend declare capture directive."""
-        source = '''
+        source = """
         config test {
             frontend web {
                 bind *:80
@@ -219,7 +219,7 @@ class TestFrontendCapture:
                 servers { server s1 { address: "10.0.0.1" port: 8080 } }
             }
         }
-        '''
+        """
         ir = parser.parse(source)
         output = codegen.generate(ir)
         assert "declare capture request len 64" in output

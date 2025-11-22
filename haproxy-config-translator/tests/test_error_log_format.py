@@ -25,7 +25,10 @@ class TestDefaultsErrorLogFormat:
         parser = DSLParser()
         ir = parser.parse(config)
         assert ir.defaults is not None
-        assert ir.defaults.error_log_format == "%ci:%cp [%t] %ft %b/%s %Tq/%Tw/%Tc/%Tr/%Tt %ST %B %CC %CS %tsc %ac/%fc/%bc/%sc/%rc %sq/%bq %hr %hs %{+Q}r"
+        assert (
+            ir.defaults.error_log_format
+            == "%ci:%cp [%t] %ft %b/%s %Tq/%Tw/%Tc/%Tr/%Tt %ST %B %CC %CS %tsc %ac/%fc/%bc/%sc/%rc %sq/%bq %hr %hs %{+Q}r"
+        )
 
     def test_defaults_error_log_format_codegen(self):
         """Test defaults error-log-format code generation."""

@@ -222,11 +222,17 @@ class TestSSLHardening:
         }
         """
         ir = parser.parse(source)
-        assert ir.global_config.ssl_default_bind_ciphers == "ECDHE-RSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384"
+        assert (
+            ir.global_config.ssl_default_bind_ciphers
+            == "ECDHE-RSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384"
+        )
 
         # Test code generation
         output = codegen.generate(ir)
-        assert "ssl-default-bind-ciphers ECDHE-RSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384" in output
+        assert (
+            "ssl-default-bind-ciphers ECDHE-RSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384"
+            in output
+        )
 
     def test_global_ssl_default_bind_options(self, parser, codegen):
         """Test global SSL default bind options."""
@@ -269,8 +275,16 @@ class TestSSLHardening:
         ir = parser.parse(source)
 
         # Verify global config
-        assert ir.global_config.ssl_default_bind_ciphers == "ECDHE-RSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384"
-        assert ir.global_config.ssl_default_bind_options == ["no-sslv3", "no-tlsv10", "no-tlsv11", "no-tls-tickets"]
+        assert (
+            ir.global_config.ssl_default_bind_ciphers
+            == "ECDHE-RSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384"
+        )
+        assert ir.global_config.ssl_default_bind_options == [
+            "no-sslv3",
+            "no-tlsv10",
+            "no-tlsv11",
+            "no-tls-tickets",
+        ]
 
         # Verify frontend bind
         bind = ir.frontends[0].binds[0]
@@ -282,7 +296,10 @@ class TestSSLHardening:
         output = codegen.generate(ir)
 
         # Global SSL
-        assert "ssl-default-bind-ciphers ECDHE-RSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384" in output
+        assert (
+            "ssl-default-bind-ciphers ECDHE-RSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384"
+            in output
+        )
         assert "ssl-default-bind-options no-sslv3" in output
         assert "ssl-default-bind-options no-tlsv10" in output
         assert "ssl-default-bind-options no-tlsv11" in output

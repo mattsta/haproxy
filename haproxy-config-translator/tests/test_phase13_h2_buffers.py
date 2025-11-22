@@ -9,7 +9,6 @@ Coverage:
 - tune.h2.fe.rxbuf: Frontend HTTP/2 receive buffer size
 """
 
-
 from haproxy_translator.codegen.haproxy import HAProxyCodeGenerator
 from haproxy_translator.parsers.dsl_parser import DSLParser
 

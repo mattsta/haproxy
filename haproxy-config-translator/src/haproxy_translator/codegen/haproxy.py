@@ -1,7 +1,7 @@
 """HAProxy native configuration code generator."""
 
 import dataclasses
-from pathlib import Path
+from typing import TYPE_CHECKING
 
 from ..ir.nodes import (
     ACL,
@@ -38,6 +38,9 @@ from ..ir.nodes import (
     TcpResponseRule,
     UseServerRule,
 )
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 
 class HAProxyCodeGenerator:
@@ -230,7 +233,11 @@ class HAProxyCodeGenerator:
             lines.append(self._indent(f"server-state-file {global_config.server_state_file}"))
 
         if global_config.load_server_state_from_file:
-            lines.append(self._indent(f"load-server-state-from-file {global_config.load_server_state_from_file}"))
+            lines.append(
+                self._indent(
+                    f"load-server-state-from-file {global_config.load_server_state_from_file}"
+                )
+            )
 
         # Performance tuning (basic)
         if "nbthread" in global_config.tuning:
@@ -247,9 +254,10 @@ class HAProxyCodeGenerator:
             if tune_key not in ("nbthread", "maxsslconn", "ulimit_n"):
                 # Keys already in HAProxy format from transformer
                 # Convert boolean values to on/off
-                if isinstance(tune_value, bool):
-                    tune_value = "on" if tune_value else "off"
-                lines.append(self._indent(f"{tune_key} {tune_value}"))
+                output_value = (
+                    "on" if tune_value else "off" if isinstance(tune_value, bool) else tune_value
+                )
+                lines.append(self._indent(f"{tune_key} {output_value}"))
 
         # Environment variables
         for var_name, var_value in global_config.env_vars.items():
@@ -294,28 +302,41 @@ class HAProxyCodeGenerator:
             lines.append(self._indent(f"default-path {global_config.default_path}"))
 
         # HTTP Client Configuration (Phase 4B Part 1)
-        if global_config.httpclient_resolvers_disabled is not None:
-            if global_config.httpclient_resolvers_disabled:
-                lines.append(self._indent("httpclient.resolvers.disabled"))
+        if global_config.httpclient_resolvers_disabled:
+            lines.append(self._indent("httpclient.resolvers.disabled"))
 
         if global_config.httpclient_resolvers_id:
-            lines.append(self._indent(f"httpclient.resolvers.id {global_config.httpclient_resolvers_id}"))
+            lines.append(
+                self._indent(f"httpclient.resolvers.id {global_config.httpclient_resolvers_id}")
+            )
 
         if global_config.httpclient_resolvers_prefer:
-            lines.append(self._indent(f"httpclient.resolvers.prefer {global_config.httpclient_resolvers_prefer}"))
+            lines.append(
+                self._indent(
+                    f"httpclient.resolvers.prefer {global_config.httpclient_resolvers_prefer}"
+                )
+            )
 
         if global_config.httpclient_retries is not None:
             lines.append(self._indent(f"httpclient.retries {global_config.httpclient_retries}"))
 
         if global_config.httpclient_ssl_verify:
-            lines.append(self._indent(f"httpclient.ssl.verify {global_config.httpclient_ssl_verify}"))
+            lines.append(
+                self._indent(f"httpclient.ssl.verify {global_config.httpclient_ssl_verify}")
+            )
 
         if global_config.httpclient_ssl_ca_file:
-            lines.append(self._indent(f"httpclient.ssl.ca-file {global_config.httpclient_ssl_ca_file}"))
+            lines.append(
+                self._indent(f"httpclient.ssl.ca-file {global_config.httpclient_ssl_ca_file}")
+            )
 
         # Phase 12 Batch 3 - HTTPClient timeout
         if global_config.httpclient_timeout_connect:
-            lines.append(self._indent(f"httpclient.timeout.connect {global_config.httpclient_timeout_connect}"))
+            lines.append(
+                self._indent(
+                    f"httpclient.timeout.connect {global_config.httpclient_timeout_connect}"
+                )
+            )
 
         # Platform-Specific Options (Phase 4B Part 1)
         if global_config.noepoll is not None and global_config.noepoll:
@@ -357,7 +378,9 @@ class HAProxyCodeGenerator:
             lines.append(self._indent(f"ssl-load-extra-files {global_config.ssl_load_extra_files}"))
 
         if global_config.ssl_load_extra_del_ext:
-            lines.append(self._indent(f"ssl-load-extra-del-ext {global_config.ssl_load_extra_del_ext}"))
+            lines.append(
+                self._indent(f"ssl-load-extra-del-ext {global_config.ssl_load_extra_del_ext}")
+            )
 
         if global_config.ssl_mode_async is not None and global_config.ssl_mode_async:
             lines.append(self._indent("ssl-mode-async"))
@@ -375,17 +398,14 @@ class HAProxyCodeGenerator:
             lines.append(self._indent(f"issuers-chain-path {global_config.issuers_chain_path}"))
 
         # Profiling & Debugging (Phase 4B Part 2)
-        if global_config.profiling_tasks_on is not None:
-            if global_config.profiling_tasks_on:
-                lines.append(self._indent("profiling.tasks.on"))
+        if global_config.profiling_tasks_on:
+            lines.append(self._indent("profiling.tasks.on"))
 
-        if global_config.profiling_tasks_automatic is not None:
-            if global_config.profiling_tasks_automatic:
-                lines.append(self._indent("profiling.tasks.automatic"))
+        if global_config.profiling_tasks_automatic:
+            lines.append(self._indent("profiling.tasks.automatic"))
 
-        if global_config.profiling_memory_on is not None:
-            if global_config.profiling_memory_on:
-                lines.append(self._indent("profiling.memory.on"))
+        if global_config.profiling_memory_on:
+            lines.append(self._indent("profiling.memory.on"))
 
         # Phase 12 Batch 6 - Additional profiling directives
         if global_config.profiling_memory:
@@ -395,9 +415,8 @@ class HAProxyCodeGenerator:
             lines.append(self._indent(f"profiling.tasks {global_config.profiling_tasks}"))
 
         # Debugging & Development (Phase 7)
-        if global_config.quiet is not None:
-            if global_config.quiet:
-                lines.append(self._indent("quiet"))
+        if global_config.quiet is not None and global_config.quiet:
+            lines.append(self._indent("quiet"))
 
         if global_config.debug_counters:
             lines.append(self._indent(f"debug.counters {global_config.debug_counters}"))
@@ -405,52 +424,82 @@ class HAProxyCodeGenerator:
         if global_config.anonkey is not None:
             lines.append(self._indent(f"anonkey {global_config.anonkey}"))
 
-        if global_config.zero_warning is not None:
-            if global_config.zero_warning:
-                lines.append(self._indent("zero-warning"))
+        if global_config.zero_warning is not None and global_config.zero_warning:
+            lines.append(self._indent("zero-warning"))
 
         if global_config.warn_blocked_traffic_after:
-            lines.append(self._indent(f"warn-blocked-traffic-after {global_config.warn_blocked_traffic_after}"))
+            lines.append(
+                self._indent(
+                    f"warn-blocked-traffic-after {global_config.warn_blocked_traffic_after}"
+                )
+            )
 
-        if global_config.force_cfg_parser_pause is not None:
-            if global_config.force_cfg_parser_pause:
-                lines.append(self._indent("force-cfg-parser-pause"))
+        if global_config.force_cfg_parser_pause:
+            lines.append(self._indent("force-cfg-parser-pause"))
 
         # Device Detection - DeviceAtlas (Phase 4B Part 4)
         if global_config.deviceatlas_json_file:
-            lines.append(self._indent(f"deviceatlas-json-file {global_config.deviceatlas_json_file}"))
+            lines.append(
+                self._indent(f"deviceatlas-json-file {global_config.deviceatlas_json_file}")
+            )
 
         if global_config.deviceatlas_log_level is not None:
-            lines.append(self._indent(f"deviceatlas-log-level {global_config.deviceatlas_log_level}"))
+            lines.append(
+                self._indent(f"deviceatlas-log-level {global_config.deviceatlas_log_level}")
+            )
 
         if global_config.deviceatlas_separator:
-            lines.append(self._indent(f"deviceatlas-separator {global_config.deviceatlas_separator}"))
+            lines.append(
+                self._indent(f"deviceatlas-separator {global_config.deviceatlas_separator}")
+            )
 
         if global_config.deviceatlas_properties_cookie:
-            lines.append(self._indent(f"deviceatlas-properties-cookie {global_config.deviceatlas_properties_cookie}"))
+            lines.append(
+                self._indent(
+                    f"deviceatlas-properties-cookie {global_config.deviceatlas_properties_cookie}"
+                )
+            )
 
         # Device Detection - 51Degrees (Phase 4B Part 4)
         if global_config.fiftyone_degrees_data_file:
-            lines.append(self._indent(f"51degrees-data-file {global_config.fiftyone_degrees_data_file}"))
+            lines.append(
+                self._indent(f"51degrees-data-file {global_config.fiftyone_degrees_data_file}")
+            )
 
         if global_config.fiftyone_degrees_property_name_list:
-            lines.append(self._indent(f"51degrees-property-name-list {global_config.fiftyone_degrees_property_name_list}"))
+            lines.append(
+                self._indent(
+                    f"51degrees-property-name-list {global_config.fiftyone_degrees_property_name_list}"
+                )
+            )
 
         if global_config.fiftyone_degrees_property_separator:
-            lines.append(self._indent(f"51degrees-property-separator {global_config.fiftyone_degrees_property_separator}"))
+            lines.append(
+                self._indent(
+                    f"51degrees-property-separator {global_config.fiftyone_degrees_property_separator}"
+                )
+            )
 
         if global_config.fiftyone_degrees_cache_size is not None:
-            lines.append(self._indent(f"51degrees-cache-size {global_config.fiftyone_degrees_cache_size}"))
+            lines.append(
+                self._indent(f"51degrees-cache-size {global_config.fiftyone_degrees_cache_size}")
+            )
 
         # Device Detection - WURFL (Phase 4B Part 4)
         if global_config.wurfl_data_file:
             lines.append(self._indent(f"wurfl-data-file {global_config.wurfl_data_file}"))
 
         if global_config.wurfl_information_list:
-            lines.append(self._indent(f"wurfl-information-list {global_config.wurfl_information_list}"))
+            lines.append(
+                self._indent(f"wurfl-information-list {global_config.wurfl_information_list}")
+            )
 
         if global_config.wurfl_information_list_separator:
-            lines.append(self._indent(f"wurfl-information-list-separator {global_config.wurfl_information_list_separator}"))
+            lines.append(
+                self._indent(
+                    f"wurfl-information-list-separator {global_config.wurfl_information_list_separator}"
+                )
+            )
 
         if global_config.wurfl_patch_file:
             lines.append(self._indent(f"wurfl-patch-file {global_config.wurfl_patch_file}"))
@@ -462,7 +511,9 @@ class HAProxyCodeGenerator:
             lines.append(self._indent(f"wurfl-engine-mode {global_config.wurfl_engine_mode}"))
 
         if global_config.wurfl_useragent_priority:
-            lines.append(self._indent(f"wurfl-useragent-priority {global_config.wurfl_useragent_priority}"))
+            lines.append(
+                self._indent(f"wurfl-useragent-priority {global_config.wurfl_useragent_priority}")
+            )
 
         # Logging configuration
         if global_config.log_tag:
@@ -489,7 +540,9 @@ class HAProxyCodeGenerator:
 
         if global_config.ssl_default_bind_ciphersuites:
             lines.append(
-                self._indent(f"ssl-default-bind-ciphersuites {global_config.ssl_default_bind_ciphersuites}")
+                self._indent(
+                    f"ssl-default-bind-ciphersuites {global_config.ssl_default_bind_ciphersuites}"
+                )
             )
 
         for option in global_config.ssl_default_bind_options:
@@ -497,12 +550,16 @@ class HAProxyCodeGenerator:
 
         if global_config.ssl_default_server_ciphers:
             lines.append(
-                self._indent(f"ssl-default-server-ciphers {global_config.ssl_default_server_ciphers}")
+                self._indent(
+                    f"ssl-default-server-ciphers {global_config.ssl_default_server_ciphers}"
+                )
             )
 
         if global_config.ssl_default_server_ciphersuites:
             lines.append(
-                self._indent(f"ssl-default-server-ciphersuites {global_config.ssl_default_server_ciphersuites}")
+                self._indent(
+                    f"ssl-default-server-ciphersuites {global_config.ssl_default_server_ciphersuites}"
+                )
             )
 
         for option in global_config.ssl_default_server_options:
@@ -516,22 +573,40 @@ class HAProxyCodeGenerator:
 
         # Phase 13 Batch 4 - SSL Advanced Configuration
         if global_config.ssl_default_bind_curves:
-            lines.append(self._indent(f"ssl-default-bind-curves {global_config.ssl_default_bind_curves}"))
+            lines.append(
+                self._indent(f"ssl-default-bind-curves {global_config.ssl_default_bind_curves}")
+            )
 
         if global_config.ssl_default_bind_sigalgs:
-            lines.append(self._indent(f"ssl-default-bind-sigalgs {global_config.ssl_default_bind_sigalgs}"))
+            lines.append(
+                self._indent(f"ssl-default-bind-sigalgs {global_config.ssl_default_bind_sigalgs}")
+            )
 
         if global_config.ssl_default_bind_client_sigalgs:
-            lines.append(self._indent(f"ssl-default-bind-client-sigalgs {global_config.ssl_default_bind_client_sigalgs}"))
+            lines.append(
+                self._indent(
+                    f"ssl-default-bind-client-sigalgs {global_config.ssl_default_bind_client_sigalgs}"
+                )
+            )
 
         if global_config.ssl_default_server_curves:
-            lines.append(self._indent(f"ssl-default-server-curves {global_config.ssl_default_server_curves}"))
+            lines.append(
+                self._indent(f"ssl-default-server-curves {global_config.ssl_default_server_curves}")
+            )
 
         if global_config.ssl_default_server_sigalgs:
-            lines.append(self._indent(f"ssl-default-server-sigalgs {global_config.ssl_default_server_sigalgs}"))
+            lines.append(
+                self._indent(
+                    f"ssl-default-server-sigalgs {global_config.ssl_default_server_sigalgs}"
+                )
+            )
 
         if global_config.ssl_default_server_client_sigalgs:
-            lines.append(self._indent(f"ssl-default-server-client-sigalgs {global_config.ssl_default_server_client_sigalgs}"))
+            lines.append(
+                self._indent(
+                    f"ssl-default-server-client-sigalgs {global_config.ssl_default_server_client_sigalgs}"
+                )
+            )
 
         if global_config.ssl_security_level is not None:
             lines.append(self._indent(f"ssl-security-level {global_config.ssl_security_level}"))
@@ -620,7 +695,9 @@ class HAProxyCodeGenerator:
             lines.append(self._indent(f"timeout http-request {defaults.timeout_http_request}"))
 
         if defaults.timeout_http_keep_alive:
-            lines.append(self._indent(f"timeout http-keep-alive {defaults.timeout_http_keep_alive}"))
+            lines.append(
+                self._indent(f"timeout http-keep-alive {defaults.timeout_http_keep_alive}")
+            )
 
         if defaults.timeout_tunnel:
             lines.append(self._indent(f"timeout tunnel {defaults.timeout_tunnel}"))
@@ -689,7 +766,7 @@ class HAProxyCodeGenerator:
         if frontend.description:
             lines.append(self._indent(f"description {frontend.description}"))
 
-        # Status (disabled/enabled)
+        # Handle disabled/enabled status
         if frontend.disabled:
             lines.append(self._indent("disabled"))
 
@@ -728,7 +805,9 @@ class HAProxyCodeGenerator:
             lines.append(self._indent(f"timeout http-request {frontend.timeout_http_request}"))
 
         if frontend.timeout_http_keep_alive:
-            lines.append(self._indent(f"timeout http-keep-alive {frontend.timeout_http_keep_alive}"))
+            lines.append(
+                self._indent(f"timeout http-keep-alive {frontend.timeout_http_keep_alive}")
+            )
 
         if frontend.timeout_client_fin:
             lines.append(self._indent(f"timeout client-fin {frontend.timeout_client_fin}"))
@@ -912,7 +991,7 @@ class HAProxyCodeGenerator:
         if backend.description:
             lines.append(self._indent(f"description {backend.description}"))
 
-        # Status (disabled/enabled)
+        # Handle disabled/enabled status
         if backend.disabled:
             lines.append(self._indent("disabled"))
 
@@ -947,7 +1026,9 @@ class HAProxyCodeGenerator:
 
         # Load server state from file
         if backend.load_server_state_from:
-            lines.append(self._indent(f"load-server-state-from-file {backend.load_server_state_from.value}"))
+            lines.append(
+                self._indent(f"load-server-state-from-file {backend.load_server_state_from.value}")
+            )
 
         # Server state file name
         if backend.server_state_file_name:
@@ -1176,7 +1257,7 @@ class HAProxyCodeGenerator:
         if listen.description:
             lines.append(self._indent(f"description {listen.description}"))
 
-        # Status (disabled/enabled)
+        # Handle disabled/enabled status
         if listen.disabled:
             lines.append(self._indent("disabled"))
 
@@ -1196,7 +1277,9 @@ class HAProxyCodeGenerator:
 
         # Load server state from file
         if listen.load_server_state_from:
-            lines.append(self._indent(f"load-server-state-from-file {listen.load_server_state_from.value}"))
+            lines.append(
+                self._indent(f"load-server-state-from-file {listen.load_server_state_from.value}")
+            )
 
         # Server state file name
         if listen.server_state_file_name:
@@ -1322,13 +1405,21 @@ class HAProxyCodeGenerator:
         negate_prefix = "! " if health_check.expect_negate else ""
 
         if health_check.expect_status:
-            lines.append(ind(f"http-check expect {negate_prefix}status {health_check.expect_status}"))
+            lines.append(
+                ind(f"http-check expect {negate_prefix}status {health_check.expect_status}")
+            )
         elif health_check.expect_string:
-            lines.append(ind(f"http-check expect {negate_prefix}string {health_check.expect_string}"))
+            lines.append(
+                ind(f"http-check expect {negate_prefix}string {health_check.expect_string}")
+            )
         elif health_check.expect_rstatus:
-            lines.append(ind(f"http-check expect {negate_prefix}rstatus {health_check.expect_rstatus}"))
+            lines.append(
+                ind(f"http-check expect {negate_prefix}rstatus {health_check.expect_rstatus}")
+            )
         elif health_check.expect_rstring:
-            lines.append(ind(f"http-check expect {negate_prefix}rstring {health_check.expect_rstring}"))
+            lines.append(
+                ind(f"http-check expect {negate_prefix}rstring {health_check.expect_rstring}")
+            )
 
         return lines
 
@@ -1363,7 +1454,7 @@ class HAProxyCodeGenerator:
 
         return " ".join(parts)
 
-    def _format_filter(self, filter_obj: "Filter") -> str:
+    def _format_filter(self, filter_obj: Filter) -> str:
         """Format filter directive."""
         parts = ["filter"]
 
@@ -1477,7 +1568,7 @@ class HAProxyCodeGenerator:
 
         return " ".join(parts)
 
-    def _format_redirect_rule(self, redirect: "RedirectRule") -> str:
+    def _format_redirect_rule(self, redirect: RedirectRule) -> str:
         """Format redirect rule."""
         parts = [f"redirect {redirect.type}"]
 
@@ -1507,7 +1598,7 @@ class HAProxyCodeGenerator:
 
         return " ".join(parts)
 
-    def _format_http_error(self, http_error: "HttpError") -> str:
+    def _format_http_error(self, http_error: HttpError) -> str:
         """Format http-error directive."""
         parts = [f"http-error status {http_error.status}"]
 
@@ -1537,7 +1628,7 @@ class HAProxyCodeGenerator:
 
         return " ".join(parts)
 
-    def _format_email_alert(self, email_alert: "EmailAlert") -> list[str]:
+    def _format_email_alert(self, email_alert: EmailAlert) -> list[str]:
         """Format email-alert directives."""
         lines = []
 
@@ -1554,14 +1645,14 @@ class HAProxyCodeGenerator:
 
         return lines
 
-    def _format_declare_captures(self, declare_captures: list["DeclareCapture"]) -> list[str]:
+    def _format_declare_captures(self, declare_captures: list[DeclareCapture]) -> list[str]:
         """Format declare capture directives."""
         lines = []
         for capture in declare_captures:
             lines.append(f"declare capture {capture.capture_type} len {capture.length}")
         return lines
 
-    def _format_force_persist_rules(self, rules: list["ForcePersistRule"]) -> list[str]:
+    def _format_force_persist_rules(self, rules: list[ForcePersistRule]) -> list[str]:
         """Format force-persist directives."""
         lines = []
         for rule in rules:
@@ -1571,7 +1662,7 @@ class HAProxyCodeGenerator:
             lines.append(line)
         return lines
 
-    def _format_ignore_persist_rules(self, rules: list["IgnorePersistRule"]) -> list[str]:
+    def _format_ignore_persist_rules(self, rules: list[IgnorePersistRule]) -> list[str]:
         """Format ignore-persist directives."""
         lines = []
         for rule in rules:
@@ -1581,7 +1672,7 @@ class HAProxyCodeGenerator:
             lines.append(line)
         return lines
 
-    def _format_use_server_rule(self, use_server: "UseServerRule") -> str:
+    def _format_use_server_rule(self, use_server: UseServerRule) -> str:
         """Format use-server rule."""
         parts = [f"use-server {use_server.server}"]
 
@@ -1591,7 +1682,7 @@ class HAProxyCodeGenerator:
 
         return " ".join(parts)
 
-    def _format_http_check_rule(self, http_check: "HttpCheckRule") -> str:
+    def _format_http_check_rule(self, http_check: HttpCheckRule) -> str:
         """Format http-check rule."""
         if http_check.type == "send":
             parts = ["http-check send"]
@@ -1635,7 +1726,7 @@ class HAProxyCodeGenerator:
 
         return ""
 
-    def _format_tcp_check_rule(self, tcp_check: "TcpCheckRule") -> str:
+    def _format_tcp_check_rule(self, tcp_check: TcpCheckRule) -> str:
         """Format tcp-check rule."""
         if tcp_check.type == "connect":
             parts = ["tcp-check connect"]
@@ -1666,7 +1757,7 @@ class HAProxyCodeGenerator:
 
         return ""
 
-    def _format_default_server(self, default_server: "DefaultServer") -> str:
+    def _format_default_server(self, default_server: DefaultServer) -> str:
         """Format default-server directive."""
         parts = ["default-server"]
 
@@ -1843,7 +1934,7 @@ class HAProxyCodeGenerator:
         """Get list of Lua files referenced in configuration."""
         return self.lua_files
 
-    def _format_stick_table(self, stick_table: "StickTable") -> str:
+    def _format_stick_table(self, stick_table: StickTable) -> str:
         """Format stick-table directive."""
         parts = [f"stick-table type {stick_table.type} size {stick_table.size}"]
 
@@ -1862,7 +1953,7 @@ class HAProxyCodeGenerator:
 
         return " ".join(parts)
 
-    def _format_stick_rule(self, stick_rule: "StickRule") -> str:
+    def _format_stick_rule(self, stick_rule: StickRule) -> str:
         """Format stick rule (stick on/match/store)."""
         parts = [f"stick {stick_rule.rule_type}"]
 
@@ -1877,7 +1968,7 @@ class HAProxyCodeGenerator:
 
         return " ".join(parts)
 
-    def _format_tcp_request_rule(self, tcp_req: "TcpRequestRule") -> str:
+    def _format_tcp_request_rule(self, tcp_req: TcpRequestRule) -> str:
         """Format tcp-request rule."""
         parts = [f"tcp-request {tcp_req.rule_type} {tcp_req.action}"]
 
@@ -1894,7 +1985,7 @@ class HAProxyCodeGenerator:
 
         return " ".join(parts)
 
-    def _format_tcp_response_rule(self, tcp_resp: "TcpResponseRule") -> str:
+    def _format_tcp_response_rule(self, tcp_resp: TcpResponseRule) -> str:
         """Format tcp-response rule."""
         parts = [f"tcp-response {tcp_resp.rule_type} {tcp_resp.action}"]
 
@@ -1946,7 +2037,7 @@ class HAProxyCodeGenerator:
 
         return " ".join(parts)
 
-    def _generate_peers(self, peers: "PeersSection") -> list[str]:
+    def _generate_peers(self, peers: PeersSection) -> list[str]:
         """Generate peers section for stick table replication."""
         lines = [f"peers {peers.name}"]
 
@@ -1958,12 +2049,14 @@ class HAProxyCodeGenerator:
 
         return lines
 
-    def _generate_resolvers(self, resolvers: "ResolversSection") -> list[str]:
+    def _generate_resolvers(self, resolvers: ResolversSection) -> list[str]:
         """Generate resolvers section for DNS resolution."""
         lines = [f"resolvers {resolvers.name}"]
 
         for nameserver in resolvers.nameservers:
-            lines.append(self._indent(f"nameserver {nameserver.name} {nameserver.address}:{nameserver.port}"))
+            lines.append(
+                self._indent(f"nameserver {nameserver.name} {nameserver.address}:{nameserver.port}")
+            )
 
         if resolvers.accepted_payload_size:
             lines.append(self._indent(f"accepted_payload_size {resolvers.accepted_payload_size}"))
@@ -1990,7 +2083,7 @@ class HAProxyCodeGenerator:
 
         return lines
 
-    def _generate_mailers(self, mailers: "MailersSection") -> list[str]:
+    def _generate_mailers(self, mailers: MailersSection) -> list[str]:
         """Generate mailers section for email alerts."""
         lines = [f"mailers {mailers.name}"]
 
@@ -2001,4 +2094,3 @@ class HAProxyCodeGenerator:
             lines.append(self._indent(f"mailer {mailer.name} {mailer.address}:{mailer.port}"))
 
         return lines
-

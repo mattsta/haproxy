@@ -200,12 +200,18 @@ class TestPhase1GlobalDirectives:
         # Verify IR
         assert ir.global_config is not None
         assert ir.global_config.ssl_dh_param_file == "/etc/ssl/dhparam.pem"
-        assert ir.global_config.ssl_default_server_ciphers == "ECDHE-RSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384"
+        assert (
+            ir.global_config.ssl_default_server_ciphers
+            == "ECDHE-RSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384"
+        )
         assert ir.global_config.ssl_server_verify == "required"
 
         # Verify code generation
         assert "ssl-dh-param-file /etc/ssl/dhparam.pem" in output
-        assert "ssl-default-server-ciphers ECDHE-RSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384" in output
+        assert (
+            "ssl-default-server-ciphers ECDHE-RSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384"
+            in output
+        )
         assert "ssl-server-verify required" in output
 
     def test_global_environment_variables(self, parser, codegen):

@@ -15,21 +15,21 @@ class TestVariableResolverEdgeCases:
 
     def test_variable_in_global_maxconn(self, parser):
         """Test variable resolution in global maxconn."""
-        source = '''
+        source = """
         config test {
             let max_connections = 10000
             global {
                 maxconn: ${max_connections}
             }
         }
-        '''
+        """
         ir = parser.parse(source)
         assert ir.global_config is not None
         assert ir.global_config.maxconn == 10000
 
     def test_weight_variable_resolution(self, parser):
         """Test weight variable resolution in servers."""
-        source = '''
+        source = """
         config test {
             let server_weight = 100
             backend api {
@@ -43,7 +43,7 @@ class TestVariableResolverEdgeCases:
                 }
             }
         }
-        '''
+        """
         ir = parser.parse(source)
         backend = ir.backends[0]
         assert backend.servers[0].weight == 100
@@ -59,7 +59,7 @@ class TestTemplateExpanderEdgeCases:
 
     def test_backend_template_with_timeout_check(self, parser):
         """Test backend template with timeout_check."""
-        source = '''
+        source = """
         config test {
             template backend_template {
                 balance: "roundrobin"
@@ -76,14 +76,14 @@ class TestTemplateExpanderEdgeCases:
                 }
             }
         }
-        '''
+        """
         ir = parser.parse(source)
         backend = ir.backends[0]
         assert backend.timeout_check == "5s"
 
     def test_backend_template_with_options_single(self, parser):
         """Test backend template with single option value."""
-        source = '''
+        source = """
         config test {
             template backend_template {
                 balance: "roundrobin"
@@ -100,7 +100,7 @@ class TestTemplateExpanderEdgeCases:
                 }
             }
         }
-        '''
+        """
         ir = parser.parse(source)
         backend = ir.backends[0]
         assert "httpchk" in backend.options
@@ -116,7 +116,7 @@ class TestHealthCheckTemplateEdgeCases:
 
     def test_health_check_with_template_spread(self, parser):
         """Test health check with template spread."""
-        source = '''
+        source = """
         config test {
             template health_template {
                 method: "GET"
@@ -134,7 +134,7 @@ class TestHealthCheckTemplateEdgeCases:
                 }
             }
         }
-        '''
+        """
         ir = parser.parse(source)
         backend = ir.backends[0]
         assert backend.health_check is not None
@@ -152,7 +152,7 @@ class TestACLTemplateEdgeCases:
 
     def test_acl_template_spread(self, parser):
         """Test ACL template spread."""
-        source = '''
+        source = """
         config test {
             template acl_block_ips {
                 criterion: "src"
@@ -175,7 +175,7 @@ class TestACLTemplateEdgeCases:
                 }
             }
         }
-        '''
+        """
         ir = parser.parse(source)
         frontend = ir.frontends[0]
         blocked_acls = [a for a in frontend.acls if a.name == "blocked_ips"]
@@ -193,7 +193,7 @@ class TestForLoopVariables:
 
     def test_for_loop_with_weight_variable(self, parser):
         """Test for loop with weight variable."""
-        source = '''
+        source = """
         config test {
             let base_weight = 10
             backend api {
@@ -209,7 +209,7 @@ class TestForLoopVariables:
                 }
             }
         }
-        '''
+        """
         ir = parser.parse(source)
         backend = ir.backends[0]
         assert len(backend.servers) == 3
@@ -218,7 +218,7 @@ class TestForLoopVariables:
 
     def test_for_loop_with_different_ports(self, parser):
         """Test for loop generating servers with different ports."""
-        source = '''
+        source = """
         config test {
             backend api {
                 balance: roundrobin
@@ -232,7 +232,7 @@ class TestForLoopVariables:
                 }
             }
         }
-        '''
+        """
         ir = parser.parse(source)
         backend = ir.backends[0]
         assert len(backend.servers) == 3
@@ -251,7 +251,7 @@ class TestListenSectionCoverage:
 
     def test_listen_with_quic_initial(self, parser):
         """Test listen section with quic-initial rules."""
-        source = '''
+        source = """
         config test {
             listen quic_listen {
                 bind *:443
@@ -268,14 +268,14 @@ class TestListenSectionCoverage:
                 }
             }
         }
-        '''
+        """
         ir = parser.parse(source)
         listen = ir.listens[0]
         assert len(listen.quic_initial_rules) >= 1
 
     def test_listen_with_log_format(self, parser):
         """Test listen section with log-format."""
-        source = '''
+        source = """
         config test {
             listen api {
                 bind *:8080
@@ -290,7 +290,7 @@ class TestListenSectionCoverage:
                 }
             }
         }
-        '''
+        """
         ir = parser.parse(source)
         listen = ir.listens[0]
         assert listen.log_format is not None

@@ -308,7 +308,10 @@ class TestHttpAfterResponseIntegration:
             ("set_header", {"name": "X-Test-1", "value": "value1"}),
             ("add_header", {"name": "X-Test-2", "value": "value2"}),
             ("del_header", {"name": "X-Remove"}),
-            ("replace_header", {"name": "Content-Type", "match": "text/", "replace": "application/"}),
+            (
+                "replace_header",
+                {"name": "Content-Type", "match": "text/", "replace": "application/"},
+            ),
             ("replace_value", {"name": "Location", "match": "http:", "replace": "https:"}),
         ]
 

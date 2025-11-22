@@ -157,9 +157,9 @@ class TestTimeUnitRegression:
 
             for key, expected_value in expected.items():
                 actual_value = template.parameters[key]
-                assert (
-                    actual_value == expected_value
-                ), f"{key}: expected {expected_value!r}, got {actual_value!r}"
+                assert actual_value == expected_value, (
+                    f"{key}: expected {expected_value!r}, got {actual_value!r}"
+                )
 
 
 if __name__ == "__main__":

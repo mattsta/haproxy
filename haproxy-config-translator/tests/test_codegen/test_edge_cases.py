@@ -61,13 +61,9 @@ class TestCodeGenEdgeCases:
             name="api1",
             address="10.0.1.1",
             port=8080,
-            options={"resolvers": "dns", "init-addr": "last"}
+            options={"resolvers": "dns", "init-addr": "last"},
         )
-        backend = Backend(
-            name="api",
-            balance=BalanceAlgorithm.ROUNDROBIN,
-            servers=[server]
-        )
+        backend = Backend(name="api", balance=BalanceAlgorithm.ROUNDROBIN, servers=[server])
         ir = ConfigIR(backends=[backend])
 
         output = codegen.generate(ir)
@@ -77,18 +73,14 @@ class TestCodeGenEdgeCases:
     def test_stick_rule_with_table(self, codegen):
         """Test stick-on rule with table reference."""
         stick_table = StickTable(type="ip", size=100000, expire="30m")
-        stick_rule = StickRule(
-            rule_type="on",
-            pattern="src",
-            table="other_backend"
-        )
+        stick_rule = StickRule(rule_type="on", pattern="src", table="other_backend")
         server = Server(name="api1", address="10.0.1.1", port=8080)
         backend = Backend(
             name="api",
             balance=BalanceAlgorithm.ROUNDROBIN,
             stick_table=stick_table,
             stick_rules=[stick_rule],
-            servers=[server]
+            servers=[server],
         )
         ir = ConfigIR(backends=[backend])
 
@@ -98,21 +90,19 @@ class TestCodeGenEdgeCases:
     def test_tcp_request_with_params_list(self, codegen):
         """Test TCP request rule with params list."""
         tcp_rule = TcpRequestRule(
-            rule_type="connection",
-            action="accept",
-            parameters={"params": ["if", "!local"]}
+            rule_type="connection", action="accept", parameters={"params": ["if", "!local"]}
         )
         frontend = Frontend(
             name="web",
             binds=[Bind(address="*:80")],
             mode=Mode.TCP,
             tcp_request_rules=[tcp_rule],
-            default_backend="api"
+            default_backend="api",
         )
         backend = Backend(
             name="api",
             balance=BalanceAlgorithm.ROUNDROBIN,
-            servers=[Server(name="api1", address="10.0.1.1", port=8080)]
+            servers=[Server(name="api1", address="10.0.1.1", port=8080)],
         )
         ir = ConfigIR(frontends=[frontend], backends=[backend])
 
@@ -122,16 +112,14 @@ class TestCodeGenEdgeCases:
     def test_tcp_response_with_params_list(self, codegen):
         """Test TCP response rule with params list."""
         tcp_rule = TcpResponseRule(
-            rule_type="content",
-            action="accept",
-            parameters={"params": ["if", "valid"]}
+            rule_type="content", action="accept", parameters={"params": ["if", "valid"]}
         )
         backend = Backend(
             name="api",
             balance=BalanceAlgorithm.ROUNDROBIN,
             mode=Mode.TCP,
             tcp_response_rules=[tcp_rule],
-            servers=[Server(name="api1", address="10.0.1.1", port=8080)]
+            servers=[Server(name="api1", address="10.0.1.1", port=8080)],
         )
         ir = ConfigIR(backends=[backend])
 
@@ -140,17 +128,13 @@ class TestCodeGenEdgeCases:
 
     def test_tcp_response_with_condition(self, codegen):
         """Test TCP response rule with condition."""
-        tcp_rule = TcpResponseRule(
-            rule_type="content",
-            action="accept",
-            condition="valid_response"
-        )
+        tcp_rule = TcpResponseRule(rule_type="content", action="accept", condition="valid_response")
         backend = Backend(
             name="api",
             balance=BalanceAlgorithm.ROUNDROBIN,
             mode=Mode.TCP,
             tcp_response_rules=[tcp_rule],
-            servers=[Server(name="api1", address="10.0.1.1", port=8080)]
+            servers=[Server(name="api1", address="10.0.1.1", port=8080)],
         )
         ir = ConfigIR(backends=[backend])
 
@@ -160,19 +144,18 @@ class TestCodeGenEdgeCases:
     def test_http_request_rule_with_quoted_param(self, codegen):
         """Test HTTP request rule with parameter containing spaces."""
         http_rule = HttpRequestRule(
-            action="set-header",
-            parameters={"X-Custom": "value with spaces"}
+            action="set-header", parameters={"X-Custom": "value with spaces"}
         )
         frontend = Frontend(
             name="web",
             binds=[Bind(address="*:80")],
             http_request_rules=[http_rule],
-            default_backend="api"
+            default_backend="api",
         )
         backend = Backend(
             name="api",
             balance=BalanceAlgorithm.ROUNDROBIN,
-            servers=[Server(name="api1", address="10.0.1.1", port=8080)]
+            servers=[Server(name="api1", address="10.0.1.1", port=8080)],
         )
         ir = ConfigIR(frontends=[frontend], backends=[backend])
 

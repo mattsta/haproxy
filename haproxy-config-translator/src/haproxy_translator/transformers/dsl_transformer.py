@@ -586,7 +586,9 @@ class DSLTransformer(Transformer):
                                 else:
                                     # No sub-subcategory (e.g., max-idle-timeout)
                                     directive_parts = parts[3:]
-                                    tune_key = f"tune.quic.{subcategory}.{'-'.join(directive_parts)}"
+                                    tune_key = (
+                                        f"tune.quic.{subcategory}.{'-'.join(directive_parts)}"
+                                    )
                             elif len(parts) >= 4 and parts[2] == "mem":
                                 # Phase 13 Batch 2: tune_quic_mem_tx_max → tune.quic.mem.tx-max
                                 directive_parts = parts[3:]
@@ -623,7 +625,12 @@ class DSLTransformer(Transformer):
                             directive_parts = parts[3:]
                             tune_key = f"tune.{category}.{subcategory}.{'-'.join(directive_parts)}"
                         # Special case for top-level multi-word tune directives (Phase 6 & 12 Batch 6)
-                        elif len(parts) == 3 and parts[1] in ("recv", "runqueue", "pipesize", "fail"):
+                        elif len(parts) == 3 and parts[1] in (
+                            "recv",
+                            "runqueue",
+                            "pipesize",
+                            "fail",
+                        ):
                             # tune_recv_enough, tune_runqueue_depth, tune_pipesize, tune_fail_alloc
                             tune_key = f"tune.{'-'.join(parts[1:])}"
                         # Special case for categorized directives with sub-params (Phase 12 Batch 6)
@@ -2621,7 +2628,9 @@ class DSLTransformer(Transformer):
                     elif key in ("set-cookie", "clear-cookie"):
                         options[key] = value
 
-        return RedirectRule(type=redirect_type, target=target, code=code, condition=condition, options=options)
+        return RedirectRule(
+            type=redirect_type, target=target, code=code, condition=condition, options=options
+        )
 
     def redirect_location(self, items: list[Any]) -> str:
         return "location"
@@ -2972,7 +2981,9 @@ class DSLTransformer(Transformer):
 
         return (method, uri, headers)
 
-    def http_check_send_method_only(self, items: list[Any]) -> tuple[str, str | None, dict[str, str]]:
+    def http_check_send_method_only(
+        self, items: list[Any]
+    ) -> tuple[str, str | None, dict[str, str]]:
         """Transform http-check send with method only."""
         method = str(items[0])
 
@@ -3005,7 +3016,12 @@ class DSLTransformer(Transformer):
 
         if isinstance(expect, tuple):
             expect_type, expect_value, expect_negate = expect
-            return HttpCheckRule(type="expect", expect_type=expect_type, expect_value=expect_value, expect_negate=expect_negate)
+            return HttpCheckRule(
+                type="expect",
+                expect_type=expect_type,
+                expect_value=expect_value,
+                expect_negate=expect_negate,
+            )
 
         return HttpCheckRule(type="expect")
 
@@ -3688,6 +3704,7 @@ class DSLTransformer(Transformer):
                     hash_preserve_affinity = value
                 elif key == "load_server_state_from":
                     from ..ir.nodes import LoadServerStateFrom
+
                     load_server_state_from = LoadServerStateFrom(value)
                 elif key == "server_state_file_name":
                     server_state_file_name = value
@@ -4201,6 +4218,7 @@ class DSLTransformer(Transformer):
                     maxconn = value
                 elif key == "load_server_state_from":
                     from ..ir.nodes import LoadServerStateFrom
+
                     load_server_state_from = LoadServerStateFrom(value)
                 elif key == "server_state_file_name":
                     server_state_file_name = value
@@ -4413,7 +4431,7 @@ class DSLTransformer(Transformer):
             expect_rstring=expect_rstring,
             expect_negate=expect_negate,
             headers=headers,
-            metadata=metadata
+            metadata=metadata,
         )
 
     def hc_method(self, items: list[Any]) -> tuple[str, str]:
@@ -4440,9 +4458,7 @@ class DSLTransformer(Transformer):
     def health_check_template_spread(self, items: list[Any]) -> HealthCheck:
         """Health check defined entirely by a template spread."""
         template_name = str(items[0])
-        return HealthCheck(
-            metadata={"template_spreads": [template_name]}
-        )
+        return HealthCheck(metadata={"template_spreads": [template_name]})
 
     def expect_status(self, items: list[Any]) -> tuple[str, int, bool]:
         return ("status", items[0], False)
@@ -5000,7 +5016,7 @@ class DSLTransformer(Transformer):
         return ACL(
             name=name,
             criterion="",  # Will be filled from template
-            metadata={"template_spreads": [template_name]}
+            metadata={"template_spreads": [template_name]},
         )
 
     # ===== Template =====
@@ -5042,7 +5058,7 @@ class DSLTransformer(Transformer):
         return ForLoop(variable=var_name, iterable=iterable, body=body)
 
     def for_iterable(self, items: list[Any]) -> Any:
-        return items[0]
+        return cast("int | float | str", items[0])
 
     def for_body(self, items: list[Any]) -> list[Any]:
         return items
@@ -5101,7 +5117,7 @@ class DSLTransformer(Transformer):
 
     def number_or_var(self, items: list[Any]) -> int | float | str:
         """Handle number_or_var rule - returns number or variable reference string."""
-        return items[0]
+        return cast("int | float | str", items[0])
 
     def VAR_REF(self, token: Token) -> str:
         """Handle VAR_REF token - returns the variable reference as a string."""
@@ -5364,7 +5380,7 @@ class DSLTransformer(Transformer):
 
     def tcp_rule_value(self, items: list[Any]) -> Any:
         """Transform tcp rule value."""
-        return items[0]
+        return cast("int | float | str", items[0])
 
     # ===== QUIC Initial Rules =====
     def quic_initial_block(self, items: list[Any]) -> list[QuicInitialRule]:

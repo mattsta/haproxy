@@ -66,6 +66,7 @@ class TestEnvFunction:
     def test_env_call_simple(self, parser):
         """Test simple env() call."""
         import os
+
         # Set the environment variable for the test
         os.environ["PORT"] = "9000"
         try:

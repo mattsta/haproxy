@@ -2,8 +2,8 @@
 
 import pytest
 
-from haproxy_translator.parsers import DSLParser
 from haproxy_translator.codegen.haproxy import HAProxyCodeGenerator
+from haproxy_translator.parsers import DSLParser
 
 
 class TestStatsRefreshOption:
@@ -19,7 +19,7 @@ class TestStatsRefreshOption:
 
     def test_stats_with_refresh_option(self, parser, codegen):
         """Test stats configuration with refresh option."""
-        source = '''
+        source = """
         config test {
             frontend web {
                 bind *:80
@@ -38,7 +38,7 @@ class TestStatsRefreshOption:
                 }
             }
         }
-        '''
+        """
         ir = parser.parse(source)
         frontend = ir.frontends[0]
         assert frontend.stats_config is not None
@@ -58,7 +58,7 @@ class TestSingleRuleFormats:
 
     def test_frontend_with_single_use_backend(self, parser, codegen):
         """Test frontend with single use_backend rule."""
-        source = '''
+        source = """
         config test {
             frontend web {
                 bind *:80
@@ -82,7 +82,7 @@ class TestSingleRuleFormats:
                 }
             }
         }
-        '''
+        """
         ir = parser.parse(source)
         output = codegen.generate(ir)
         assert "use_backend api if is_api" in output
@@ -101,7 +101,7 @@ class TestRedirectDropQuery:
 
     def test_redirect_with_drop_query(self, parser, codegen):
         """Test redirect with drop-query option."""
-        source = '''
+        source = """
         config test {
             frontend web {
                 bind *:80
@@ -116,7 +116,7 @@ class TestRedirectDropQuery:
                 }
             }
         }
-        '''
+        """
         ir = parser.parse(source)
         output = codegen.generate(ir)
         assert "redirect location https://example.com drop-query" in output
@@ -135,7 +135,7 @@ class TestHttpCheckConnectOptions:
 
     def test_http_check_connect_with_port(self, parser, codegen):
         """Test http-check connect with port."""
-        source = '''
+        source = """
         config test {
             backend api {
                 balance: roundrobin
@@ -147,7 +147,7 @@ class TestHttpCheckConnectOptions:
                 }
             }
         }
-        '''
+        """
         ir = parser.parse(source)
         backend = ir.backends[0]
         connect_rules = [r for r in backend.http_check_rules if r.type == "connect"]
@@ -168,7 +168,7 @@ class TestServerResolvers:
 
     def test_server_with_resolvers(self, parser, codegen):
         """Test server with resolvers option."""
-        source = '''
+        source = """
         config test {
             resolvers dns {
                 nameserver ns1 "8.8.8.8" 53
@@ -187,7 +187,7 @@ class TestServerResolvers:
                 }
             }
         }
-        '''
+        """
         ir = parser.parse(source)
         output = codegen.generate(ir)
         assert "resolvers dns" in output
@@ -206,7 +206,7 @@ class TestFrontendAclVariants:
 
     def test_multiple_acls_in_block(self, parser, codegen):
         """Test multiple ACLs in a block."""
-        source = '''
+        source = """
         config test {
             frontend web {
                 bind *:80
@@ -238,7 +238,7 @@ class TestFrontendAclVariants:
                 }
             }
         }
-        '''
+        """
         ir = parser.parse(source)
         frontend = ir.frontends[0]
         assert len(frontend.acls) >= 2
@@ -257,7 +257,7 @@ class TestCompressionConfig:
 
     def test_backend_with_compression(self, parser, codegen):
         """Test backend with compression configuration."""
-        source = '''
+        source = """
         config test {
             backend api {
                 balance: roundrobin
@@ -270,7 +270,7 @@ class TestCompressionConfig:
                 }
             }
         }
-        '''
+        """
         ir = parser.parse(source)
         output = codegen.generate(ir)
         assert "compression algo gzip" in output
@@ -289,7 +289,7 @@ class TestHttpRequestSetVar:
 
     def test_http_request_set_var(self, parser, codegen):
         """Test http-request set-var action."""
-        source = '''
+        source = """
         config test {
             frontend web {
                 bind *:80
@@ -306,7 +306,7 @@ class TestHttpRequestSetVar:
                 }
             }
         }
-        '''
+        """
         ir = parser.parse(source)
         output = codegen.generate(ir)
         assert "http-request set-var" in output
@@ -325,7 +325,7 @@ class TestDefaultServer:
 
     def test_backend_with_default_server(self, parser, codegen):
         """Test backend with default-server options."""
-        source = '''
+        source = """
         config test {
             backend api {
                 balance: roundrobin
@@ -341,7 +341,7 @@ class TestDefaultServer:
                 }
             }
         }
-        '''
+        """
         ir = parser.parse(source)
         output = codegen.generate(ir)
         assert "default-server" in output
@@ -360,7 +360,7 @@ class TestErrorFile:
 
     def test_frontend_with_errorfile(self, parser, codegen):
         """Test frontend with errorfile directive."""
-        source = '''
+        source = """
         config test {
             frontend web {
                 bind *:80
@@ -375,7 +375,7 @@ class TestErrorFile:
                 }
             }
         }
-        '''
+        """
         ir = parser.parse(source)
         output = codegen.generate(ir)
         assert "errorfile 503 /etc/haproxy/errors/503.http" in output
@@ -394,7 +394,7 @@ class TestLogFormat:
 
     def test_frontend_with_log_format(self, parser, codegen):
         """Test frontend with custom log-format."""
-        source = '''
+        source = """
         config test {
             frontend web {
                 bind *:80
@@ -409,7 +409,7 @@ class TestLogFormat:
                 }
             }
         }
-        '''
+        """
         ir = parser.parse(source)
         output = codegen.generate(ir)
         assert "log-format" in output

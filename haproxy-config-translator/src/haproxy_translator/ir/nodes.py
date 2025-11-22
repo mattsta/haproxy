@@ -2,9 +2,10 @@
 
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any, Optional
+from typing import TYPE_CHECKING, Any
 
-from ..utils.errors import SourceLocation
+if TYPE_CHECKING:
+    from ..utils.errors import SourceLocation
 
 
 # Enums for type safety
@@ -180,7 +181,9 @@ class StickTable(IRNode):
     expire: str | None = None  # Expiration time (e.g., "30m", "1h")
     nopurge: bool = False  # Don't purge oldest entries when full
     peers: str | None = None  # Peer section name for replication
-    store: list[str] = field(default_factory=list)  # Data types: gpc0, conn_rate, http_req_rate, etc.
+    store: list[str] = field(
+        default_factory=list
+    )  # Data types: gpc0, conn_rate, http_req_rate, etc.
 
 
 @dataclass(frozen=True)
@@ -230,7 +233,9 @@ class RedirectRule(IRNode):
     target: str = ""  # Redirect target (URL, path, scheme)
     code: int | None = None  # HTTP status code (301, 302, 303, etc.)
     condition: str | None = None  # ACL condition
-    options: dict[str, Any] = field(default_factory=dict)  # drop-query, append-slash, set-cookie, etc.
+    options: dict[str, Any] = field(
+        default_factory=dict
+    )  # drop-query, append-slash, set-cookie, etc.
 
 
 @dataclass(frozen=True)
@@ -387,8 +392,8 @@ class GlobalConfig(IRNode):
     external_check: bool | None = None
     numa_cpu_mapping: bool | None = None  # Phase 10
 
-    # Connection limits
-    maxconn: int = 2000
+    # Connection limits (can be str for variable references like "$MAXCONN")
+    maxconn: int | str = 2000
     maxconnrate: int | None = None
     maxsslrate: int | None = None
     maxsessrate: int | None = None
@@ -525,7 +530,9 @@ class GlobalConfig(IRNode):
 
     # Lua global directives (Phase 13 Batch 3)
     lua_load_files: list[tuple[str, list[str]]] = field(default_factory=list)  # (file, args)
-    lua_load_per_thread_files: list[tuple[str, list[str]]] = field(default_factory=list)  # (file, args)
+    lua_load_per_thread_files: list[tuple[str, list[str]]] = field(
+        default_factory=list
+    )  # (file, args)
     lua_prepend_paths: list[tuple[str, str]] = field(default_factory=list)  # (path, type)
 
     # Stats
@@ -561,7 +568,7 @@ class DefaultsConfig(IRNode):
     errorloc: dict[int, str] = field(default_factory=dict)  # 302 redirect
     errorloc302: dict[int, str] = field(default_factory=dict)  # explicit 302
     errorloc303: dict[int, str] = field(default_factory=dict)  # 303 redirect
-    http_check: Optional["HealthCheck"] = None
+    http_check: HealthCheck | None = None
     email_alert: EmailAlert | None = None  # Email alert configuration
     rate_limit_sessions: int | None = None  # Max new sessions per second (Phase 5B)
     # TCP keepalive (Phase 5B) - both client and server side
@@ -572,7 +579,9 @@ class DefaultsConfig(IRNode):
     srvtcpka_idle: str | None = None  # Time before sending server keepalive probes
     srvtcpka_intvl: str | None = None  # Interval between server keepalive probes
     persist_rdp_cookie: str | None = None  # RDP cookie name for persistence (None = default "msts")
-    quic_initial_rules: list[QuicInitialRule] = field(default_factory=list)  # QUIC Initial packet processing rules
+    quic_initial_rules: list[QuicInitialRule] = field(
+        default_factory=list
+    )  # QUIC Initial packet processing rules
 
 
 @dataclass(frozen=True)
@@ -682,7 +691,9 @@ class Server(IRNode):
     # SSL/TLS options
     check_ssl: bool = False  # Use SSL for health checks
     check_sni: str | None = None  # SNI value for SSL health checks
-    ssl_min_ver: str | None = None  # Minimum TLS version (SSLv3, TLSv1.0, TLSv1.1, TLSv1.2, TLSv1.3)
+    ssl_min_ver: str | None = (
+        None  # Minimum TLS version (SSLv3, TLSv1.0, TLSv1.1, TLSv1.2, TLSv1.3)
+    )
     ssl_max_ver: str | None = None  # Maximum TLS version
     ca_file: str | None = None  # CA file for server certificate verification
     crt: str | None = None  # Client certificate for mutual TLS
@@ -803,14 +814,14 @@ class Frontend(IRNode):
     http_request_rules: list[HttpRequestRule] = field(default_factory=list)
     http_response_rules: list[HttpResponseRule] = field(default_factory=list)
     http_after_response_rules: list[HttpAfterResponseRule] = field(default_factory=list)
-    tcp_request_rules: list["TcpRequestRule"] = field(default_factory=list)
-    tcp_response_rules: list["TcpResponseRule"] = field(default_factory=list)
+    tcp_request_rules: list[TcpRequestRule] = field(default_factory=list)
+    tcp_response_rules: list[TcpResponseRule] = field(default_factory=list)
     quic_initial_rules: list[QuicInitialRule] = field(default_factory=list)
     use_backend_rules: list[UseBackendRule] = field(default_factory=list)
     default_backend: str | None = None
     options: list[str] = field(default_factory=list)
-    stick_table: Optional["StickTable"] = None
-    stick_rules: list["StickRule"] = field(default_factory=list)
+    stick_table: StickTable | None = None
+    stick_rules: list[StickRule] = field(default_factory=list)
     timeout_client: str | None = None
     timeout_http_request: str | None = None  # HTTP request timeout
     timeout_http_keep_alive: str | None = None  # Keep-alive timeout
@@ -823,7 +834,9 @@ class Frontend(IRNode):
     rate_limit_sessions: int | None = None  # Max new sessions per second (Phase 5B)
     monitor_uri: str | None = None  # Monitor URI for health checks
     monitor_net: list[str] = field(default_factory=list)  # Network sources for monitoring requests
-    monitor_fail_rules: list[MonitorFailRule] = field(default_factory=list)  # Conditional monitoring failures
+    monitor_fail_rules: list[MonitorFailRule] = field(
+        default_factory=list
+    )  # Conditional monitoring failures
     log: list[str] = field(default_factory=list)  # Log targets (global or specific)
     log_tag: str | None = None  # Tag for log messages
     log_format: str | None = None  # Custom log format string
@@ -833,8 +846,12 @@ class Frontend(IRNode):
     unique_id_format: str | None = None  # Format string for unique request IDs
     unique_id_header: str | None = None  # HTTP header name for unique request ID
     stats_config: StatsConfig | None = None  # Statistics reporting configuration
-    capture_request_headers: list[tuple[str, int]] = field(default_factory=list)  # [(header_name, length), ...]
-    capture_response_headers: list[tuple[str, int]] = field(default_factory=list)  # [(header_name, length), ...]
+    capture_request_headers: list[tuple[str, int]] = field(
+        default_factory=list
+    )  # [(header_name, length), ...]
+    capture_response_headers: list[tuple[str, int]] = field(
+        default_factory=list
+    )  # [(header_name, length), ...]
     redirect_rules: list[RedirectRule] = field(default_factory=list)  # HTTP redirect rules
     error_files: list[ErrorFile] = field(default_factory=list)  # Custom error page files
     errorloc: dict[int, str] = field(default_factory=dict)  # 302 redirect for error codes
@@ -843,8 +860,12 @@ class Frontend(IRNode):
     http_errors: list[HttpError] = field(default_factory=list)  # Custom HTTP error responses
     email_alert: EmailAlert | None = None  # Email alert configuration
     declare_captures: list[DeclareCapture] = field(default_factory=list)  # Declare capture slots
-    force_persist_rules: list[ForcePersistRule] = field(default_factory=list)  # Force persistence rules
-    ignore_persist_rules: list[IgnorePersistRule] = field(default_factory=list)  # Ignore persistence rules
+    force_persist_rules: list[ForcePersistRule] = field(
+        default_factory=list
+    )  # Force persistence rules
+    ignore_persist_rules: list[IgnorePersistRule] = field(
+        default_factory=list
+    )  # Ignore persistence rules
     # TCP keepalive (Phase 5B)
     clitcpka_cnt: int | None = None  # Max keepalive probes before dropping connection
     clitcpka_idle: str | None = None  # Time before sending keepalive probes
@@ -873,17 +894,17 @@ class Backend(IRNode):
     http_request_rules: list[HttpRequestRule] = field(default_factory=list)
     http_response_rules: list[HttpResponseRule] = field(default_factory=list)
     http_after_response_rules: list[HttpAfterResponseRule] = field(default_factory=list)
-    tcp_request_rules: list["TcpRequestRule"] = field(default_factory=list)
+    tcp_request_rules: list[TcpRequestRule] = field(default_factory=list)
     log: list[str] = field(default_factory=list)  # Log targets (global or specific)
     log_tag: str | None = None  # Tag for log messages
     log_format: str | None = None  # Custom log format string
     error_log_format: str | None = None  # Custom error log format string
     log_format_sd: str | None = None  # Structured data log format (RFC 5424)
-    tcp_response_rules: list["TcpResponseRule"] = field(default_factory=list)
+    tcp_response_rules: list[TcpResponseRule] = field(default_factory=list)
     compression: CompressionConfig | None = None
     cookie: str | None = None
-    stick_table: Optional["StickTable"] = None
-    stick_rules: list["StickRule"] = field(default_factory=list)
+    stick_table: StickTable | None = None
+    stick_rules: list[StickRule] = field(default_factory=list)
     timeout_server: str | None = None
     timeout_connect: str | None = None
     timeout_check: str | None = None
@@ -901,26 +922,42 @@ class Backend(IRNode):
     errorloc303: dict[int, str] = field(default_factory=dict)  # 303 See Other redirect
     http_errors: list[HttpError] = field(default_factory=list)  # Custom HTTP error responses
     errorfiles: str | None = None  # Directory containing custom error files
-    dispatch: str | None = None  # Simple dispatch target (IP:port) for load balancing without backend
+    dispatch: str | None = (
+        None  # Simple dispatch target (IP:port) for load balancing without backend
+    )
     use_fcgi_app: str | None = None  # FastCGI application name to use for this backend
     http_reuse: str | None = None  # Connection reuse mode: never, safe, aggressive, always
     http_send_name_header: str | None = None  # HTTP header name to send backend/server name
     retry_on: str | None = None  # Retry conditions (comma-separated keywords)
-    http_check_rules: list[HttpCheckRule] = field(default_factory=list)  # Advanced HTTP health checks
+    http_check_rules: list[HttpCheckRule] = field(
+        default_factory=list
+    )  # Advanced HTTP health checks
     tcp_check_rules: list[TcpCheckRule] = field(default_factory=list)  # Advanced TCP health checks
-    use_server_rules: list[UseServerRule] = field(default_factory=list)  # Conditional server selection
+    use_server_rules: list[UseServerRule] = field(
+        default_factory=list
+    )  # Conditional server selection
     external_check_command: str | None = None  # External health check command to execute
     external_check_path: str | None = None  # PATH environment variable for external check command
     source: str | None = None  # Source IP/port for backend connections
     hash_type: str | None = None  # Hash algorithm: map-based, consistent
     hash_balance_factor: int | None = None  # Hash balance factor (100-65535)
-    hash_preserve_affinity: str | None = None  # Stream assignment when saturated: always, maxconn, maxqueue (Phase 5B)
-    load_server_state_from: LoadServerStateFrom | None = None  # Server state loading mode for seamless reload
-    server_state_file_name: str | None = None  # Server state file name (use-backend-name or file path)
+    hash_preserve_affinity: str | None = (
+        None  # Stream assignment when saturated: always, maxconn, maxqueue (Phase 5B)
+    )
+    load_server_state_from: LoadServerStateFrom | None = (
+        None  # Server state loading mode for seamless reload
+    )
+    server_state_file_name: str | None = (
+        None  # Server state file name (use-backend-name or file path)
+    )
     email_alert: EmailAlert | None = None  # Email alert configuration
     declare_captures: list[DeclareCapture] = field(default_factory=list)  # Declare capture slots
-    force_persist_rules: list[ForcePersistRule] = field(default_factory=list)  # Force persistence rules
-    ignore_persist_rules: list[IgnorePersistRule] = field(default_factory=list)  # Ignore persistence rules
+    force_persist_rules: list[ForcePersistRule] = field(
+        default_factory=list
+    )  # Force persistence rules
+    ignore_persist_rules: list[IgnorePersistRule] = field(
+        default_factory=list
+    )  # Ignore persistence rules
     # TCP keepalive (Phase 5B)
     srvtcpka_cnt: int | None = None  # Max keepalive probes before dropping connection
     srvtcpka_idle: str | None = None  # Time before sending keepalive probes
@@ -947,12 +984,12 @@ class Listen(IRNode):
     http_request_rules: list[HttpRequestRule] = field(default_factory=list)
     http_response_rules: list[HttpResponseRule] = field(default_factory=list)
     http_after_response_rules: list[HttpAfterResponseRule] = field(default_factory=list)
-    tcp_request_rules: list["TcpRequestRule"] = field(default_factory=list)
-    tcp_response_rules: list["TcpResponseRule"] = field(default_factory=list)
+    tcp_request_rules: list[TcpRequestRule] = field(default_factory=list)
+    tcp_response_rules: list[TcpResponseRule] = field(default_factory=list)
     quic_initial_rules: list[QuicInitialRule] = field(default_factory=list)
     options: list[str] = field(default_factory=list)
-    stick_table: Optional["StickTable"] = None
-    stick_rules: list["StickRule"] = field(default_factory=list)
+    stick_table: StickTable | None = None
+    stick_rules: list[StickRule] = field(default_factory=list)
     redirect_rules: list[RedirectRule] = field(default_factory=list)  # HTTP redirect rules
     error_files: list[ErrorFile] = field(default_factory=list)  # Custom error page files
     http_errors: list[HttpError] = field(default_factory=list)  # Custom HTTP error responses
@@ -962,8 +999,12 @@ class Listen(IRNode):
     timeout_connect: str | None = None
     maxconn: int | None = None
     rate_limit_sessions: int | None = None  # Max new sessions per second (Phase 5B)
-    load_server_state_from: LoadServerStateFrom | None = None  # Server state loading mode for seamless reload
-    server_state_file_name: str | None = None  # Server state file name (use-backend-name or file path)
+    load_server_state_from: LoadServerStateFrom | None = (
+        None  # Server state loading mode for seamless reload
+    )
+    server_state_file_name: str | None = (
+        None  # Server state file name (use-backend-name or file path)
+    )
     log_tag: str | None = None  # Tag for log messages
     log_format: str | None = None  # Custom log format string
     error_log_format: str | None = None  # Custom error log format string
@@ -971,8 +1012,12 @@ class Listen(IRNode):
     log_steps: str | None = None  # Logging steps (accept, connect, request, response, close, all)
     email_alert: EmailAlert | None = None  # Email alert configuration
     declare_captures: list[DeclareCapture] = field(default_factory=list)  # Declare capture slots
-    force_persist_rules: list[ForcePersistRule] = field(default_factory=list)  # Force persistence rules
-    ignore_persist_rules: list[IgnorePersistRule] = field(default_factory=list)  # Ignore persistence rules
+    force_persist_rules: list[ForcePersistRule] = field(
+        default_factory=list
+    )  # Force persistence rules
+    ignore_persist_rules: list[IgnorePersistRule] = field(
+        default_factory=list
+    )  # Ignore persistence rules
     # TCP keepalive (Phase 5B) - both client and server side
     clitcpka_cnt: int | None = None  # Max keepalive probes before dropping client connection
     clitcpka_idle: str | None = None  # Time before sending client keepalive probes
@@ -981,7 +1026,7 @@ class Listen(IRNode):
     srvtcpka_idle: str | None = None  # Time before sending server keepalive probes
     srvtcpka_intvl: str | None = None  # Interval between server keepalive probes
     persist_rdp_cookie: str | None = None  # RDP cookie name for persistence (None = default "msts")
-    stats: Optional["StatsConfig"] = None  # Stats configuration for listen section
+    stats: StatsConfig | None = None  # Stats configuration for listen section
 
 
 # DSL-specific IR nodes (for advanced features)
@@ -1017,8 +1062,8 @@ class IfBlock(IRNode):
     """Conditional block (if/else)."""
 
     condition: str = ""
-    then_config: Optional["ConfigIR"] = None
-    else_config: Optional["ConfigIR"] = None
+    then_config: ConfigIR | None = None
+    else_config: ConfigIR | None = None
 
 
 @dataclass(frozen=True)

@@ -590,6 +590,7 @@ class TestTcpCheckCoverageGaps:
     def test_tcp_check_empty_type_fallback(self):
         """Test tcp-check with unknown type returns empty string."""
         from haproxy_translator.ir.nodes import TcpCheckRule
+
         codegen = HAProxyCodeGenerator()
 
         # Create a tcp-check with an unknown type to hit the fallback
@@ -600,6 +601,7 @@ class TestTcpCheckCoverageGaps:
     def test_http_check_empty_type_fallback(self):
         """Test http-check with unknown type returns empty string."""
         from haproxy_translator.ir.nodes import HttpCheckRule
+
         codegen = HAProxyCodeGenerator()
 
         # Create a http-check with an unknown type to hit the fallback

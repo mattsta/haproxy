@@ -21,7 +21,9 @@ class TestParserCoverage:
         # during the transformation phase
 
         # Mock DSLTransformer to raise a generic exception
-        with patch("haproxy_translator.parsers.dsl_parser.DSLTransformer") as mock_transformer_class:
+        with patch(
+            "haproxy_translator.parsers.dsl_parser.DSLTransformer"
+        ) as mock_transformer_class:
             mock_transformer = mock_transformer_class.return_value
             mock_transformer.transform.side_effect = RuntimeError("Unexpected transformer error")
 

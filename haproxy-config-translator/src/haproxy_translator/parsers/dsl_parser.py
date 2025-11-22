@@ -1,12 +1,10 @@
 """DSL parser using Lark."""
 
 from importlib import resources
-from pathlib import Path
-from typing import cast
+from typing import TYPE_CHECKING, cast
 
 from lark import Lark, LarkError
 
-from ..ir import ConfigIR
 from ..transformers.dsl_transformer import DSLTransformer
 from ..transformers.loop_unroller import LoopUnroller
 from ..transformers.template_expander import TemplateExpander
@@ -15,15 +13,18 @@ from ..utils.errors import ParseError, SourceLocation, ValidationError
 from ..validators.semantic import SemanticValidator
 from .base import ConfigParser
 
+if TYPE_CHECKING:
+    from pathlib import Path
+
+    from ..ir import ConfigIR
+
 
 class DSLParser(ConfigParser):
     """Parser for HAProxy DSL format."""
 
     def __init__(self) -> None:
         # Load grammar file using importlib.resources (Python 3.9+)
-        grammar_file = resources.files("haproxy_translator").joinpath(
-            "grammars/haproxy_dsl.lark"
-        )
+        grammar_file = resources.files("haproxy_translator").joinpath("grammars/haproxy_dsl.lark")
         grammar = grammar_file.read_text()
 
         self.parser = Lark(

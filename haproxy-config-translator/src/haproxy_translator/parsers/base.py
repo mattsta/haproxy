@@ -1,11 +1,14 @@
 """Base parser interface and registry for pluggable parsers."""
 
 from abc import ABC, abstractmethod
-from pathlib import Path
-from typing import ClassVar
+from typing import TYPE_CHECKING, ClassVar
 
-from ..ir import ConfigIR
 from ..utils.errors import ParseError
+
+if TYPE_CHECKING:
+    from pathlib import Path
+
+    from ..ir import ConfigIR
 
 
 class ConfigParser(ABC):

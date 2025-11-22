@@ -10,7 +10,6 @@ Tests for:
 - ssl-security-level: OpenSSL security level
 """
 
-
 from haproxy_translator.codegen.haproxy import HAProxyCodeGenerator
 from haproxy_translator.parsers.dsl_parser import DSLParser
 
@@ -179,7 +178,10 @@ class TestPhase13SSLAdvanced:
 
         # Verify bind configuration
         assert ir.global_config.ssl_default_bind_curves == "X25519:P-256:P-384"
-        assert ir.global_config.ssl_default_bind_sigalgs == "ECDSA+SHA256:RSA+SHA256:ECDSA+SHA384:RSA+SHA384"
+        assert (
+            ir.global_config.ssl_default_bind_sigalgs
+            == "ECDSA+SHA256:RSA+SHA256:ECDSA+SHA384:RSA+SHA384"
+        )
         assert ir.global_config.ssl_default_bind_client_sigalgs == "ECDSA+SHA256:RSA+SHA256"
 
         # Verify server configuration
@@ -250,7 +252,10 @@ class TestPhase13SSLAdvanced:
         assert ir.global_config.ssl_default_bind_curves == "X25519:P-256:P-384:P-521"
         assert ir.global_config.ssl_default_server_curves == "P-256:P-384"
         assert ir.global_config.ssl_default_bind_sigalgs == "ECDSA+SHA256:RSA+SHA256"
-        assert ir.global_config.ssl_default_server_sigalgs == "ECDSA+SHA384:RSA+SHA384:ECDSA+SHA512:RSA+SHA512"
+        assert (
+            ir.global_config.ssl_default_server_sigalgs
+            == "ECDSA+SHA384:RSA+SHA384:ECDSA+SHA512:RSA+SHA512"
+        )
 
         codegen = HAProxyCodeGenerator()
         output = codegen.generate(ir)
@@ -258,4 +263,6 @@ class TestPhase13SSLAdvanced:
         assert "ssl-default-bind-curves X25519:P-256:P-384:P-521" in output
         assert "ssl-default-server-curves P-256:P-384" in output
         assert "ssl-default-bind-sigalgs ECDSA+SHA256:RSA+SHA256" in output
-        assert "ssl-default-server-sigalgs ECDSA+SHA384:RSA+SHA384:ECDSA+SHA512:RSA+SHA512" in output
+        assert (
+            "ssl-default-server-sigalgs ECDSA+SHA384:RSA+SHA384:ECDSA+SHA512:RSA+SHA512" in output
+        )

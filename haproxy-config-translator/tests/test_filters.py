@@ -207,7 +207,10 @@ class TestBandwidthLimitFilter:
         assert filter_obj.default_period == "10s"
         assert filter_obj.key == "src"
         assert filter_obj.table == "stick_table"
-        assert "filter bwlim-in bw_in default-limit 1m default-period 10s key src table stick_table" in output
+        assert (
+            "filter bwlim-in bw_in default-limit 1m default-period 10s key src table stick_table"
+            in output
+        )
 
     def test_bwlim_out_filter(self):
         """Test bwlim-out filter."""

@@ -8,7 +8,6 @@ import re
 from datetime import datetime
 from pathlib import Path
 
-
 # Mapping from HAProxy proxy keywords to their DSL equivalents
 # Key: HAProxy keyword, Value: DSL implementation name(s)
 HAPROXY_TO_DSL_KEYWORD_MAP = {
@@ -104,8 +103,17 @@ DEPRECATED_KEYWORDS = {"transparent", "dispatch"}
 
 # Keywords that are internal/composite and checked via other features
 COMPOSITE_KEYWORDS = {
-    "and", "or", "with", "they", "specified", "sections", "limited", "marked",
-    "anonymous", "crt", "capture",  # These are used as part of other constructs
+    "and",
+    "or",
+    "with",
+    "they",
+    "specified",
+    "sections",
+    "limited",
+    "marked",
+    "anonymous",
+    "crt",
+    "capture",  # These are used as part of other constructs
 }
 
 
@@ -129,7 +137,7 @@ class DirectiveExtractor:
             "lua": [],
             "quic_http3": [],
             "device_detection": [],
-            "other": []
+            "other": [],
         }
 
         # Find global section keywords list
@@ -181,7 +189,12 @@ class DirectiveExtractor:
             if in_matrix and (line.startswith("4.2.") or line.startswith("4.3.")):
                 break
 
-            if in_matrix and line.strip() and not line.startswith("---") and not line.startswith(" keyword"):
+            if (
+                in_matrix
+                and line.strip()
+                and not line.startswith("---")
+                and not line.startswith(" keyword")
+            ):
                 # Try to parse keyword line
                 match = re.match(r"^([a-z][a-zA-Z0-9_-]+(?:\s*\([^)]*\))?)\s+", line)
                 if match:
@@ -235,7 +248,25 @@ class DirectiveExtractor:
                 if match:
                     option = match.group(1)
                     # Filter out common words
-                    if option not in ["see", "this", "the", "it", "if", "is", "be", "to", "for", "and", "or", "on", "of", "in", "at", "by", "from"]:
+                    if option not in [
+                        "see",
+                        "this",
+                        "the",
+                        "it",
+                        "if",
+                        "is",
+                        "be",
+                        "to",
+                        "for",
+                        "and",
+                        "or",
+                        "on",
+                        "of",
+                        "in",
+                        "at",
+                        "by",
+                        "from",
+                    ]:
                         options.append(option)
 
         return sorted(set(options))
@@ -258,7 +289,33 @@ class DirectiveExtractor:
                 if match:
                     option = match.group(1)
                     # Filter common words
-                    if option not in ["see", "this", "the", "it", "if", "is", "be", "to", "for", "and", "or", "on", "of", "in", "at", "by", "from", "when", "may", "are", "not", "all", "can", "will", "example"]:
+                    if option not in [
+                        "see",
+                        "this",
+                        "the",
+                        "it",
+                        "if",
+                        "is",
+                        "be",
+                        "to",
+                        "for",
+                        "and",
+                        "or",
+                        "on",
+                        "of",
+                        "in",
+                        "at",
+                        "by",
+                        "from",
+                        "when",
+                        "may",
+                        "are",
+                        "not",
+                        "all",
+                        "can",
+                        "will",
+                        "example",
+                    ]:
                         options.append(option)
 
         return sorted(set(options))
@@ -285,7 +342,7 @@ class ImplementationAnalyzer:
             "listen": [],
             "bind": [],
             "server": [],
-            "actions": []
+            "actions": [],
         }
 
         # Extract global directives
@@ -332,7 +389,7 @@ class ImplementationAnalyzer:
             "actions": 0,
             "parser": 0,
             "codegen": 0,
-            "other": 0
+            "other": 0,
         }
 
         for test_file in test_files:
@@ -352,14 +409,12 @@ class ImplementationAnalyzer:
             else:
                 categories["other"] += 1
 
-        return {
-            "total_files": len(test_files),
-            "categories": categories
-        }
+        return {"total_files": len(test_files), "categories": categories}
 
 
 def calculate_coverage(doc_items, impl_items):
     """Calculate coverage percentage."""
+
     # Normalize names for comparison
     def normalize(s):
         return s.replace("-", "_").replace(".", "_").lower()
@@ -378,12 +433,13 @@ def calculate_coverage(doc_items, impl_items):
         "total": total,
         "covered": covered_count,
         "missing": sorted([d for d in doc_items if normalize(d) in missing]),
-        "coverage_pct": coverage_pct
+        "coverage_pct": coverage_pct,
     }
 
 
 def calculate_proxy_coverage(haproxy_keywords, grammar_content):
     """Calculate proxy keyword coverage using DSL mapping."""
+
     def normalize(s):
         return s.replace("-", "_").replace(".", "_").lower()
 
@@ -391,7 +447,9 @@ def calculate_proxy_coverage(haproxy_keywords, grammar_content):
     impl_patterns = set()
 
     # Extract all rule names from grammar
-    rule_matches = re.findall(r'->\s*(?:frontend|backend|defaults|listen)_([a-zA-Z0-9_]+)', grammar_content)
+    rule_matches = re.findall(
+        r"->\s*(?:frontend|backend|defaults|listen)_([a-zA-Z0-9_]+)", grammar_content
+    )
     impl_patterns.update(normalize(m) for m in rule_matches)
 
     # Also check for specific keywords in grammar
@@ -399,11 +457,11 @@ def calculate_proxy_coverage(haproxy_keywords, grammar_content):
     impl_patterns.update(normalize(m) for m in keyword_matches)
 
     # Check for blocks (e.g., stick_table_block, filters_block)
-    block_matches = re.findall(r'([a-zA-Z0-9_]+)_block', grammar_content)
+    block_matches = re.findall(r"([a-zA-Z0-9_]+)_block", grammar_content)
     impl_patterns.update(normalize(m) for m in block_matches)
 
     # Check for directive rules (e.g., bind_directive, stick_rule)
-    directive_matches = re.findall(r'([a-zA-Z0-9_]+)_(?:directive|rule)', grammar_content)
+    directive_matches = re.findall(r"([a-zA-Z0-9_]+)_(?:directive|rule)", grammar_content)
     impl_patterns.update(normalize(m) for m in directive_matches)
 
     # Check for keywords used directly in grammar
@@ -439,14 +497,13 @@ def calculate_proxy_coverage(haproxy_keywords, grammar_content):
                     covered.append(keyword)
                 else:
                     missing.append(keyword)
+        # Check direct match or underscore-normalized match
+        elif keyword_normalized in impl_patterns or any(
+            keyword_normalized in p or p.startswith(keyword_normalized) for p in impl_patterns
+        ):
+            covered.append(keyword)
         else:
-            # Check direct match or underscore-normalized match
-            if keyword_normalized in impl_patterns:
-                covered.append(keyword)
-            elif any(keyword_normalized in p or p.startswith(keyword_normalized) for p in impl_patterns):
-                covered.append(keyword)
-            else:
-                missing.append(keyword)
+            missing.append(keyword)
 
     total_relevant = len(haproxy_keywords) - len(composite_skipped)
     covered_count = len(covered) + len(deprecated_skipped)  # deprecated count as "handled"
@@ -457,7 +514,7 @@ def calculate_proxy_coverage(haproxy_keywords, grammar_content):
         "covered": len(covered),
         "deprecated": len(deprecated_skipped),
         "missing": missing,
-        "coverage_pct": coverage_pct
+        "coverage_pct": coverage_pct,
     }
 
 
@@ -465,14 +522,36 @@ def categorize_missing_by_priority(missing_directives):
     """Categorize missing directives by priority."""
     # Define critical keywords
     critical_keywords = [
-        "timeout", "maxconn", "retries", "balance", "mode", "bind", "server",
-        "backend", "frontend", "acl", "http-request", "http-response",
-        "ssl", "redirect", "cookie", "stick", "option"
+        "timeout",
+        "maxconn",
+        "retries",
+        "balance",
+        "mode",
+        "bind",
+        "server",
+        "backend",
+        "frontend",
+        "acl",
+        "http-request",
+        "http-response",
+        "ssl",
+        "redirect",
+        "cookie",
+        "stick",
+        "option",
     ]
 
     important_keywords = [
-        "log", "stats", "monitor", "check", "health", "compression",
-        "cache", "tcp-request", "tcp-response", "errorfile"
+        "log",
+        "stats",
+        "monitor",
+        "check",
+        "health",
+        "compression",
+        "cache",
+        "tcp-request",
+        "tcp-response",
+        "errorfile",
     ]
 
     critical = []
@@ -491,11 +570,7 @@ def categorize_missing_by_priority(missing_directives):
         else:
             optional.append(directive)
 
-    return {
-        "critical": critical,
-        "important": important,
-        "optional": optional
-    }
+    return {"critical": critical, "important": important, "optional": optional}
 
 
 def generate_report(output_path, doc_data, impl_data, test_data):
@@ -512,7 +587,9 @@ def generate_report(output_path, doc_data, impl_data, test_data):
     # Executive Summary
     report.append("## Executive Summary")
     report.append("")
-    report.append("This report provides a comprehensive analysis of feature parity between the official HAProxy 3.3")
+    report.append(
+        "This report provides a comprehensive analysis of feature parity between the official HAProxy 3.3"
+    )
     report.append("configuration language and the haproxy-config-translator implementation.")
     report.append("")
 
@@ -522,8 +599,7 @@ def generate_report(output_path, doc_data, impl_data, test_data):
 
     # Global directives coverage
     global_cov = calculate_coverage(
-        [d for cat in doc_data["global"].values() for d in cat],
-        impl_data["global"]
+        [d for cat in doc_data["global"].values() for d in cat], impl_data["global"]
     )
 
     report.append("### Global Directives")
@@ -533,7 +609,9 @@ def generate_report(output_path, doc_data, impl_data, test_data):
     report.append(f"- **Coverage:** `{global_cov['coverage_pct']:.1f}%`")
     report.append("")
     report.append("```")
-    report.append(f"[{'=' * int(global_cov['coverage_pct'] / 2)}{' ' * (50 - int(global_cov['coverage_pct'] / 2))}] {global_cov['coverage_pct']:.1f}%")
+    report.append(
+        f"[{'=' * int(global_cov['coverage_pct'] / 2)}{' ' * (50 - int(global_cov['coverage_pct'] / 2))}] {global_cov['coverage_pct']:.1f}%"
+    )
     report.append("```")
     report.append("")
 
@@ -548,7 +626,7 @@ def generate_report(output_path, doc_data, impl_data, test_data):
     report.append("")
     report.append(f"- **Total HAProxy Keywords:** {proxy_cov['total']}")
     report.append(f"- **Implemented:** {proxy_cov['covered']}")
-    if proxy_cov.get('deprecated', 0) > 0:
+    if proxy_cov.get("deprecated", 0) > 0:
         report.append(f"- **Deprecated (handled):** {proxy_cov['deprecated']}")
     report.append(f"- **Coverage:** `{proxy_cov['coverage_pct']:.1f}%`")
     report.append("")
@@ -652,7 +730,9 @@ def generate_report(output_path, doc_data, impl_data, test_data):
     report.append("")
     report.append("### ✅ Well-Implemented Features")
     report.append("")
-    report.append("1. **Core Global Directives** - Strong coverage of essential global configuration")
+    report.append(
+        "1. **Core Global Directives** - Strong coverage of essential global configuration"
+    )
     report.append("   - Process management (daemon, user, group, chroot, pidfile)")
     report.append("   - Connection limits (maxconn, maxsslconn, maxconnrate, maxsessrate)")
     report.append("   - SSL/TLS configuration (ssl-default-bind-*, ssl-default-server-*)")
@@ -688,7 +768,9 @@ def generate_report(output_path, doc_data, impl_data, test_data):
     # Priority Recommendations
     report.append("## Priority Recommendations")
     report.append("")
-    report.append("Based on the analysis, here are recommended priorities for achieving 100% parity:")
+    report.append(
+        "Based on the analysis, here are recommended priorities for achieving 100% parity:"
+    )
     report.append("")
 
     report.append("### 🔴 High Priority (Critical for Production Use)")
@@ -773,8 +855,12 @@ def generate_report(output_path, doc_data, impl_data, test_data):
     # Conclusion
     report.append("## Conclusion")
     report.append("")
-    report.append(f"The haproxy-config-translator currently implements **{global_cov['covered']}** out of ")
-    report.append(f"**{global_cov['total']}** global directives ({global_cov['coverage_pct']:.1f}% coverage), ")
+    report.append(
+        f"The haproxy-config-translator currently implements **{global_cov['covered']}** out of "
+    )
+    report.append(
+        f"**{global_cov['total']}** global directives ({global_cov['coverage_pct']:.1f}% coverage), "
+    )
     report.append("demonstrating strong foundational support for HAProxy configuration.")
     report.append("")
     report.append("**Strengths:**")
@@ -790,7 +876,9 @@ def generate_report(output_path, doc_data, impl_data, test_data):
     report.append("- HTTP caching")
     report.append("- QUIC/HTTP3 advanced features")
     report.append("")
-    report.append("With focused development following the recommended roadmap, achieving 95%+ feature parity")
+    report.append(
+        "With focused development following the recommended roadmap, achieving 95%+ feature parity"
+    )
     report.append("with HAProxy 3.3 is highly achievable.")
     report.append("")
 
@@ -801,7 +889,9 @@ def generate_report(output_path, doc_data, impl_data, test_data):
     report.append("### Appendix A: Implemented Global Directives")
     report.append("")
     report.append("<details>")
-    report.append(f"<summary>All Implemented Global Directives ({len(impl_data['global'])})</summary>")
+    report.append(
+        f"<summary>All Implemented Global Directives ({len(impl_data['global'])})</summary>"
+    )
     report.append("")
     report.append("```")
     for directive in impl_data["global"]:
@@ -847,7 +937,7 @@ def main():
         "proxy": extractor.extract_proxy_keywords(),
         "actions": extractor.extract_actions(),
         "bind": extractor.extract_bind_options(),
-        "server": extractor.extract_server_options()
+        "server": extractor.extract_server_options(),
     }
 
     print(f"   ✓ Global directives: {sum(len(v) for v in doc_data['global'].values())}")

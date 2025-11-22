@@ -278,8 +278,16 @@ class TestDescriptionIntegration:
         codegen = HAProxyCodeGenerator()
         output = codegen.generate(ir)
 
-        assert ir.frontends[0].description == "Web frontend - handles traffic for example.com & api.example.com"
-        assert ir.backends[0].description == "App servers (production): load balanced with RR algorithm"
+        assert (
+            ir.frontends[0].description
+            == "Web frontend - handles traffic for example.com & api.example.com"
+        )
+        assert (
+            ir.backends[0].description
+            == "App servers (production): load balanced with RR algorithm"
+        )
 
-        assert "description Web frontend - handles traffic for example.com & api.example.com" in output
+        assert (
+            "description Web frontend - handles traffic for example.com & api.example.com" in output
+        )
         assert "description App servers (production): load balanced with RR algorithm" in output

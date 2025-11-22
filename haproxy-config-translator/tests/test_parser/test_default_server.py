@@ -231,7 +231,10 @@ class TestDefaultServer:
 
         # Test code generation
         output = codegen.generate(ir)
-        assert "default-server check inter 5s rise 2 fall 3 weight 100 maxconn 500 slowstart 30s" in output
+        assert (
+            "default-server check inter 5s rise 2 fall 3 weight 100 maxconn 500 slowstart 30s"
+            in output
+        )
         assert "server api1 10.0.1.1:8080" in output
         assert "server api2 10.0.1.2:8080" in output
         assert "server api3 10.0.1.3:8080" in output

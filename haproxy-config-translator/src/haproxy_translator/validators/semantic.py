@@ -127,34 +127,25 @@ class SemanticValidator:
 
         for option in options:
             if mode == Mode.TCP and option in http_only_options:
-                self.errors.append(
-                    f"{context}: HTTP option '{option}' used in TCP mode"
-                )
+                self.errors.append(f"{context}: HTTP option '{option}' used in TCP mode")
             elif mode == Mode.HTTP and option in tcp_only_options:
-                self.warnings.append(
-                    f"{context}: TCP option '{option}' used in HTTP mode"
-                )
+                self.warnings.append(f"{context}: TCP option '{option}' used in HTTP mode")
 
     def _validate_health_check(self, health_check: Any, context: str) -> None:
         """Validate health check configuration."""
         # Validate method
         valid_methods = {"GET", "POST", "HEAD", "OPTIONS", "PUT", "DELETE", "PATCH"}
         if health_check.method and health_check.method.upper() not in valid_methods:
-            self.errors.append(
-                f"{context}: invalid health check method '{health_check.method}'"
-            )
+            self.errors.append(f"{context}: invalid health check method '{health_check.method}'")
 
         # Validate URI is present for HTTP checks
         if health_check.method and not health_check.uri:
-            self.warnings.append(
-                f"{context}: health check has method but no URI"
-            )
+            self.warnings.append(f"{context}: health check has method but no URI")
 
         # Validate expect status is valid
         if health_check.expect_status:
             status = health_check.expect_status
             if not (100 <= status <= 599):
                 self.errors.append(
-                    f"{context}: invalid health check expect status {status} "
-                    f"(must be 100-599)"
+                    f"{context}: invalid health check expect status {status} (must be 100-599)"
                 )

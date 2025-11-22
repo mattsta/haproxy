@@ -10,8 +10,8 @@ This test suite validates every example from:
 
 import pytest
 
-from haproxy_translator.parsers import DSLParser
 from haproxy_translator.codegen.haproxy import HAProxyCodeGenerator
+from haproxy_translator.parsers import DSLParser
 
 
 @pytest.fixture
@@ -870,7 +870,6 @@ config test {
 
     def test_env_function_with_default(self, parser, codegen):
         """Test env() function with default value."""
-        import os
 
         # Test with unset variable (uses default)
         dsl_source = """

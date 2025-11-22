@@ -3,23 +3,25 @@
 import os
 import re
 from dataclasses import replace
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
-from ..ir.nodes import (
-    ACL,
-    Backend,
-    Bind,
-    ConfigIR,
-    DefaultsConfig,
-    Frontend,
-    GlobalConfig,
-    HealthCheck,
-    Listen,
-    LuaScript,
-    Server,
-    Variable,
-)
 from ..utils.errors import ParseError
+
+if TYPE_CHECKING:
+    from ..ir.nodes import (
+        ACL,
+        Backend,
+        Bind,
+        ConfigIR,
+        DefaultsConfig,
+        Frontend,
+        GlobalConfig,
+        HealthCheck,
+        Listen,
+        LuaScript,
+        Server,
+        Variable,
+    )
 
 
 class VariableResolver:
@@ -37,12 +39,18 @@ class VariableResolver:
         resolved_variables = self._resolve_variable_values()
 
         # Then substitute variable references throughout the config
-        resolved_global = self._resolve_global(self.config.global_config) if self.config.global_config else None
-        resolved_defaults = self._resolve_defaults(self.config.defaults) if self.config.defaults else None
+        resolved_global = (
+            self._resolve_global(self.config.global_config) if self.config.global_config else None
+        )
+        resolved_defaults = (
+            self._resolve_defaults(self.config.defaults) if self.config.defaults else None
+        )
         resolved_frontends = [self._resolve_frontend(f) for f in self.config.frontends]
         resolved_backends = [self._resolve_backend(b) for b in self.config.backends]
         resolved_listens = [self._resolve_listen(listen) for listen in self.config.listens]
-        resolved_lua_scripts = [self._resolve_lua_script(script) for script in self.config.lua_scripts]
+        resolved_lua_scripts = [
+            self._resolve_lua_script(script) for script in self.config.lua_scripts
+        ]
 
         return replace(
             self.config,
@@ -130,7 +138,9 @@ class VariableResolver:
         # Resolve Lua scripts in global config
         resolved_lua_scripts = []
         if global_config.lua_scripts:
-            resolved_lua_scripts = [self._resolve_lua_script(script) for script in global_config.lua_scripts]
+            resolved_lua_scripts = [
+                self._resolve_lua_script(script) for script in global_config.lua_scripts
+            ]
 
         # Resolve maxconn if it's a variable reference
         resolved_maxconn = global_config.maxconn
@@ -146,7 +156,9 @@ class VariableResolver:
     def _resolve_defaults(self, defaults: DefaultsConfig) -> DefaultsConfig:
         """Resolve variables in defaults config."""
         # Resolve log if it's a string
-        resolved_log = self._resolve_value(defaults.log) if isinstance(defaults.log, str) else defaults.log
+        resolved_log = (
+            self._resolve_value(defaults.log) if isinstance(defaults.log, str) else defaults.log
+        )
         return replace(defaults, log=resolved_log)
 
     def _resolve_frontend(self, frontend: Frontend) -> Frontend:
@@ -156,9 +168,7 @@ class VariableResolver:
 
         # Resolve default_backend if it's a variable reference
         resolved_default_backend = (
-            self._resolve_value(frontend.default_backend)
-            if frontend.default_backend
-            else None
+            self._resolve_value(frontend.default_backend) if frontend.default_backend else None
         )
 
         # Resolve ACLs
@@ -178,9 +188,7 @@ class VariableResolver:
 
         # Resolve health check if present
         resolved_health_check = (
-            self._resolve_health_check(backend.health_check)
-            if backend.health_check
-            else None
+            self._resolve_health_check(backend.health_check) if backend.health_check else None
         )
 
         return replace(
@@ -212,9 +220,7 @@ class VariableResolver:
     def _resolve_server(self, server: Server) -> Server:
         """Resolve variables in server."""
         resolved_address = self._resolve_value(server.address)
-        resolved_ssl_verify = (
-            self._resolve_value(server.ssl_verify) if server.ssl_verify else None
-        )
+        resolved_ssl_verify = self._resolve_value(server.ssl_verify) if server.ssl_verify else None
 
         # Resolve port if it's a string with variable reference
         resolved_port = server.port
@@ -271,7 +277,7 @@ class VariableResolver:
         resolved_uri = str(self._resolve_value(health_check.uri))
         return replace(health_check, uri=resolved_uri)
 
-    def _resolve_lua_script(self, script: "LuaScript") -> "LuaScript":
+    def _resolve_lua_script(self, script: LuaScript) -> LuaScript:
         """Resolve variables in Lua script."""
         # Do NOT resolve content - it may contain Lua template parameters like ${user}
         # which should be preserved for Lua manager interpolation
@@ -282,8 +288,7 @@ class VariableResolver:
 
         # Resolve parameters (template parameters might reference config variables)
         resolved_parameters = {
-            key: self._resolve_value(value)
-            for key, value in script.parameters.items()
+            key: self._resolve_value(value) for key, value in script.parameters.items()
         }
 
         return replace(

@@ -2,8 +2,8 @@
 
 import pytest
 
-from haproxy_translator.parsers import DSLParser
 from haproxy_translator.codegen.haproxy import HAProxyCodeGenerator
+from haproxy_translator.parsers import DSLParser
 
 
 class TestBackendLoadBalancing:
@@ -19,7 +19,7 @@ class TestBackendLoadBalancing:
 
     def test_backend_balance_leastconn(self, parser, codegen):
         """Test backend with leastconn balance algorithm."""
-        source = '''
+        source = """
         config test {
             backend api {
                 balance: leastconn
@@ -28,14 +28,14 @@ class TestBackendLoadBalancing:
                 }
             }
         }
-        '''
+        """
         ir = parser.parse(source)
         output = codegen.generate(ir)
         assert "balance leastconn" in output
 
     def test_backend_balance_source(self, parser, codegen):
         """Test backend with source balance algorithm."""
-        source = '''
+        source = """
         config test {
             backend api {
                 balance: source
@@ -44,7 +44,7 @@ class TestBackendLoadBalancing:
                 }
             }
         }
-        '''
+        """
         ir = parser.parse(source)
         output = codegen.generate(ir)
         assert "balance source" in output
@@ -63,7 +63,7 @@ class TestHttpCheckExpect:
 
     def test_http_check_expect_status(self, parser, codegen):
         """Test http-check with expect status."""
-        source = '''
+        source = """
         config test {
             backend api {
                 balance: roundrobin
@@ -76,7 +76,7 @@ class TestHttpCheckExpect:
                 }
             }
         }
-        '''
+        """
         ir = parser.parse(source)
         backend = ir.backends[0]
         expect_rules = [r for r in backend.http_check_rules if r.type == "expect"]
@@ -96,7 +96,7 @@ class TestFrontendHttpRulesBlock:
 
     def test_http_request_deny(self, parser, codegen):
         """Test http-request deny action."""
-        source = '''
+        source = """
         config test {
             frontend web {
                 bind *:80
@@ -116,14 +116,14 @@ class TestFrontendHttpRulesBlock:
                 }
             }
         }
-        '''
+        """
         ir = parser.parse(source)
         output = codegen.generate(ir)
         assert "http-request deny" in output
 
     def test_http_request_tarpit(self, parser, codegen):
         """Test http-request tarpit action."""
-        source = '''
+        source = """
         config test {
             frontend web {
                 bind *:80
@@ -143,7 +143,7 @@ class TestFrontendHttpRulesBlock:
                 }
             }
         }
-        '''
+        """
         ir = parser.parse(source)
         output = codegen.generate(ir)
         assert "http-request tarpit" in output
@@ -162,7 +162,7 @@ class TestBackendHttpRequestRules:
 
     def test_backend_http_request_set_path(self, parser, codegen):
         """Test backend http-request set-path."""
-        source = '''
+        source = """
         config test {
             backend api {
                 balance: roundrobin
@@ -174,7 +174,7 @@ class TestBackendHttpRequestRules:
                 }
             }
         }
-        '''
+        """
         ir = parser.parse(source)
         output = codegen.generate(ir)
         assert "http-request set-path" in output
@@ -193,7 +193,7 @@ class TestBackendOptions:
 
     def test_backend_with_multiple_options(self, parser, codegen):
         """Test backend with multiple options."""
-        source = '''
+        source = """
         config test {
             backend api {
                 balance: roundrobin
@@ -203,7 +203,7 @@ class TestBackendOptions:
                 }
             }
         }
-        '''
+        """
         ir = parser.parse(source)
         output = codegen.generate(ir)
         assert "option httpchk" in output
@@ -224,7 +224,7 @@ class TestGlobalConfiguration:
 
     def test_global_with_maxconn(self, parser, codegen):
         """Test global section with maxconn."""
-        source = '''
+        source = """
         config test {
             global {
                 maxconn: 50000
@@ -233,7 +233,7 @@ class TestGlobalConfiguration:
                 group: "haproxy"
             }
         }
-        '''
+        """
         ir = parser.parse(source)
         output = codegen.generate(ir)
         assert "maxconn 50000" in output
@@ -252,7 +252,7 @@ class TestFrontendBindOptions:
 
     def test_multiple_binds(self, parser, codegen):
         """Test frontend with multiple binds."""
-        source = '''
+        source = """
         config test {
             frontend web {
                 bind *:80
@@ -267,7 +267,7 @@ class TestFrontendBindOptions:
                 }
             }
         }
-        '''
+        """
         ir = parser.parse(source)
         frontend = ir.frontends[0]
         assert len(frontend.binds) == 2
@@ -286,7 +286,7 @@ class TestResolversComplete:
 
     def test_resolvers_full_config(self, parser, codegen):
         """Test resolvers with complete configuration."""
-        source = '''
+        source = """
         config test {
             resolvers mydns {
                 nameserver dns1 "8.8.8.8" 53
@@ -297,7 +297,7 @@ class TestResolversComplete:
                 hold_valid: 60s
             }
         }
-        '''
+        """
         ir = parser.parse(source)
         output = codegen.generate(ir)
         assert "resolvers mydns" in output
@@ -318,14 +318,14 @@ class TestPeersSection:
 
     def test_peers_basic(self, parser, codegen):
         """Test peers section."""
-        source = '''
+        source = """
         config test {
             peers mypeers {
                 peer haproxy1 "192.168.1.1" 10000
                 peer haproxy2 "192.168.1.2" 10000
             }
         }
-        '''
+        """
         ir = parser.parse(source)
         output = codegen.generate(ir)
         assert "peers mypeers" in output

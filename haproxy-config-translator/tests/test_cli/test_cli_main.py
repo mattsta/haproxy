@@ -14,7 +14,7 @@ class TestTranslateOnce:
         from haproxy_translator.cli.main import _translate_once
 
         with tempfile.NamedTemporaryFile(suffix=".hap", delete=False, mode="w") as f:
-            f.write('''
+            f.write("""
             config test {
                 frontend web {
                     bind *:80
@@ -28,7 +28,7 @@ class TestTranslateOnce:
                     }
                 }
             }
-            ''')
+            """)
             config_path = Path(f.name)
 
         try:
@@ -50,7 +50,7 @@ class TestTranslateOnce:
         from haproxy_translator.cli.main import _translate_once
 
         with tempfile.NamedTemporaryFile(suffix=".hap", delete=False, mode="w") as f:
-            f.write('''
+            f.write("""
             config test {
                 frontend web {
                     bind *:80
@@ -64,7 +64,7 @@ class TestTranslateOnce:
                     }
                 }
             }
-            ''')
+            """)
             config_path = Path(f.name)
 
         # Create output file path (file doesn't exist yet)
@@ -95,7 +95,7 @@ class TestTranslateOnce:
         from haproxy_translator.cli.main import _translate_once
 
         with tempfile.NamedTemporaryFile(suffix=".hap", delete=False, mode="w") as f:
-            f.write('''
+            f.write("""
             config test {
                 frontend web {
                     bind *:80
@@ -109,7 +109,7 @@ class TestTranslateOnce:
                     }
                 }
             }
-            ''')
+            """)
             config_path = Path(f.name)
 
         try:
@@ -130,7 +130,7 @@ class TestTranslateOnce:
         from haproxy_translator.cli.main import _translate_once
 
         with tempfile.NamedTemporaryFile(suffix=".hap", delete=False, mode="w") as f:
-            f.write('''
+            f.write("""
             config test {
                 frontend web {
                     bind *:80
@@ -144,7 +144,7 @@ class TestTranslateOnce:
                     }
                 }
             }
-            ''')
+            """)
             config_path = Path(f.name)
 
         with tempfile.TemporaryDirectory() as lua_dir:
@@ -171,13 +171,13 @@ class TestTranslatorErrors:
         from haproxy_translator.utils.errors import ParseError
 
         with tempfile.NamedTemporaryFile(suffix=".hap", delete=False, mode="w") as f:
-            f.write('''
+            f.write("""
             config test {
                 frontend web {
                     this is invalid syntax
                 }
             }
-            ''')
+            """)
             config_path = Path(f.name)
 
         try:
@@ -200,13 +200,13 @@ class TestTranslatorErrors:
         from haproxy_translator.utils.errors import ParseError
 
         with tempfile.NamedTemporaryFile(suffix=".hap", delete=False, mode="w") as f:
-            f.write('''
+            f.write("""
             config test {
                 frontend web {
                     this is invalid syntax
                 }
             }
-            ''')
+            """)
             config_path = Path(f.name)
 
         try:
@@ -232,7 +232,7 @@ class TestFormatSpecification:
         from haproxy_translator.cli.main import _translate_once
 
         with tempfile.NamedTemporaryFile(suffix=".txt", delete=False, mode="w") as f:
-            f.write('''
+            f.write("""
             config test {
                 frontend web {
                     bind *:80
@@ -246,7 +246,7 @@ class TestFormatSpecification:
                     }
                 }
             }
-            ''')
+            """)
             config_path = Path(f.name)
 
         try:

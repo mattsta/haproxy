@@ -15,24 +15,24 @@ class TestImportStatement:
 
     def test_import_single_file(self, parser):
         """Test importing a single file."""
-        source = '''
+        source = """
         config test {
             import "common/defaults.hcl"
         }
-        '''
+        """
         ir = parser.parse(source)
         assert len(ir.imports) == 1
         assert ir.imports[0] == "common/defaults.hcl"
 
     def test_import_multiple_files(self, parser):
         """Test importing multiple files."""
-        source = '''
+        source = """
         config test {
             import "common/defaults.hcl"
             import "security/ssl.hcl"
             import "backends/api.hcl"
         }
-        '''
+        """
         ir = parser.parse(source)
         assert len(ir.imports) == 3
         assert "common/defaults.hcl" in ir.imports
@@ -50,7 +50,7 @@ class TestLuaScripts:
 
     def test_lua_inline_script(self, parser):
         """Test inline Lua script."""
-        source = '''
+        source = """
         config test {
             lua {
                 inline hello_world {
@@ -58,7 +58,7 @@ class TestLuaScripts:
                 }
             }
         }
-        '''
+        """
         ir = parser.parse(source)
         assert len(ir.lua_scripts) == 1
         assert ir.lua_scripts[0].name == "hello_world"
@@ -66,13 +66,13 @@ class TestLuaScripts:
 
     def test_lua_load_file(self, parser):
         """Test Lua load directive."""
-        source = '''
+        source = """
         config test {
             lua {
                 load "/etc/haproxy/lua/helpers.lua"
             }
         }
-        '''
+        """
         ir = parser.parse(source)
         assert len(ir.lua_scripts) == 1
         assert ir.lua_scripts[0].source_type == "file"
@@ -89,7 +89,7 @@ class TestResolversHoldOptions:
 
     def test_resolvers_all_hold_options(self, parser):
         """Test resolvers with all hold options."""
-        source = '''
+        source = """
         config test {
             resolvers dns {
                 nameserver ns1 "8.8.8.8" 53
@@ -104,7 +104,7 @@ class TestResolversHoldOptions:
                 timeout_retry: 1s
             }
         }
-        '''
+        """
         ir = parser.parse(source)
         assert len(ir.resolvers) == 1
         resolver = ir.resolvers[0]
@@ -126,7 +126,7 @@ class TestHttpCheckSSLOptions:
 
     def test_http_check_connect_ssl_only(self, parser):
         """Test http-check connect with SSL only."""
-        source = '''
+        source = """
         config test {
             backend api {
                 balance: roundrobin
@@ -141,7 +141,7 @@ class TestHttpCheckSSLOptions:
                 }
             }
         }
-        '''
+        """
         ir = parser.parse(source)
         backend = ir.backends[0]
         connect_rules = [r for r in backend.http_check_rules if r.type == "connect"]
@@ -150,7 +150,7 @@ class TestHttpCheckSSLOptions:
 
     def test_http_check_connect_ssl_with_sni(self, parser):
         """Test http-check connect with SSL and SNI."""
-        source = '''
+        source = """
         config test {
             backend api {
                 balance: roundrobin
@@ -165,7 +165,7 @@ class TestHttpCheckSSLOptions:
                 }
             }
         }
-        '''
+        """
         ir = parser.parse(source)
         backend = ir.backends[0]
         connect_rules = [r for r in backend.http_check_rules if r.type == "connect"]
@@ -175,7 +175,7 @@ class TestHttpCheckSSLOptions:
 
     def test_http_check_connect_ssl_with_sni_and_alpn(self, parser):
         """Test http-check connect with SSL, SNI, and ALPN."""
-        source = '''
+        source = """
         config test {
             backend api {
                 balance: roundrobin
@@ -190,7 +190,7 @@ class TestHttpCheckSSLOptions:
                 }
             }
         }
-        '''
+        """
         ir = parser.parse(source)
         backend = ir.backends[0]
         connect_rules = [r for r in backend.http_check_rules if r.type == "connect"]
@@ -210,7 +210,7 @@ class TestTcpCheckSSLOptions:
 
     def test_tcp_check_connect_ssl(self, parser):
         """Test tcp-check connect with SSL."""
-        source = '''
+        source = """
         config test {
             backend tcp_backend {
                 mode: tcp
@@ -226,7 +226,7 @@ class TestTcpCheckSSLOptions:
                 }
             }
         }
-        '''
+        """
         ir = parser.parse(source)
         backend = ir.backends[0]
         connect_rules = [r for r in backend.tcp_check_rules if r.type == "connect"]
@@ -244,7 +244,7 @@ class TestHttpCheckSendHeaders:
 
     def test_http_check_send_with_headers(self, parser):
         """Test http-check send with custom headers."""
-        source = '''
+        source = """
         config test {
             backend api {
                 balance: roundrobin
@@ -262,7 +262,7 @@ class TestHttpCheckSendHeaders:
                 }
             }
         }
-        '''
+        """
         ir = parser.parse(source)
         backend = ir.backends[0]
         send_rules = [r for r in backend.http_check_rules if r.type == "send"]
@@ -282,7 +282,7 @@ class TestStatsRefresh:
 
     def test_stats_with_refresh(self, parser):
         """Test stats with refresh option."""
-        source = '''
+        source = """
         config test {
             frontend web {
                 bind *:80
@@ -304,7 +304,7 @@ class TestStatsRefresh:
                 }
             }
         }
-        '''
+        """
         ir = parser.parse(source)
         frontend = ir.frontends[0]
         assert frontend.stats_config is not None

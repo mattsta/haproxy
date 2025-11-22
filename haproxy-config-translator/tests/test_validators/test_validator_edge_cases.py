@@ -53,7 +53,7 @@ class TestValidatorEdgeCases:
             name="api",
             balance=BalanceAlgorithm.ROUNDROBIN,
             health_check=health_check,
-            servers=[Server(name="api1", address="10.0.1.1", port=8080)]
+            servers=[Server(name="api1", address="10.0.1.1", port=8080)],
         )
         ir = ConfigIR(backends=[backend])
 

@@ -87,12 +87,23 @@ class TestPhase2GlobalDirectives:
 
         # Verify IR
         assert ir.global_config is not None
-        assert ir.global_config.ssl_default_bind_ciphersuites == "TLS_AES_128_GCM_SHA256:TLS_AES_256_GCM_SHA384"
-        assert ir.global_config.ssl_default_server_ciphersuites == "TLS_CHACHA20_POLY1305_SHA256:TLS_AES_128_GCM_SHA256"
+        assert (
+            ir.global_config.ssl_default_bind_ciphersuites
+            == "TLS_AES_128_GCM_SHA256:TLS_AES_256_GCM_SHA384"
+        )
+        assert (
+            ir.global_config.ssl_default_server_ciphersuites
+            == "TLS_CHACHA20_POLY1305_SHA256:TLS_AES_128_GCM_SHA256"
+        )
 
         # Verify code generation
-        assert "ssl-default-bind-ciphersuites TLS_AES_128_GCM_SHA256:TLS_AES_256_GCM_SHA384" in output
-        assert "ssl-default-server-ciphersuites TLS_CHACHA20_POLY1305_SHA256:TLS_AES_128_GCM_SHA256" in output
+        assert (
+            "ssl-default-bind-ciphersuites TLS_AES_128_GCM_SHA256:TLS_AES_256_GCM_SHA384" in output
+        )
+        assert (
+            "ssl-default-server-ciphersuites TLS_CHACHA20_POLY1305_SHA256:TLS_AES_128_GCM_SHA256"
+            in output
+        )
 
     def test_global_ssl_server_options(self, parser, codegen):
         """Test ssl-default-server-options directive."""
@@ -502,7 +513,9 @@ class TestPhase2GlobalDirectives:
         assert "maxpipes 16384" in output
         assert "tune.bufsize 65536" in output
         assert "key-base /etc/ssl/keys" in output
-        assert "ssl-default-bind-ciphersuites TLS_AES_128_GCM_SHA256:TLS_AES_256_GCM_SHA384" in output
+        assert (
+            "ssl-default-bind-ciphersuites TLS_AES_128_GCM_SHA256:TLS_AES_256_GCM_SHA384" in output
+        )
         assert "ssl-default-server-ciphersuites TLS_CHACHA20_POLY1305_SHA256" in output
         assert "ssl-default-server-options no-sslv3" in output
         assert "ssl-engine aesni" in output
