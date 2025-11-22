@@ -8,7 +8,7 @@ A modern, powerful DSL for HAProxy configuration with **templates**, **loops**, 
 | --------------------- | ------------------------ |
 | **HAProxy Version**   | 3.3                      |
 | **Tests**             | 1,430 passing            |
-| **Global Directives** | 83.9% coverage (213/254) |
+| **Global Directives** | 100% coverage (254/254)  |
 | **Proxy Keywords**    | 100% coverage (79/79)    |
 | **Production Ready**  | Yes                      |
 

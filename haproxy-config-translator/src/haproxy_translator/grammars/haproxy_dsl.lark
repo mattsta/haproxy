@@ -320,6 +320,46 @@ global_section: "global" "{" global_property* "}"
                 | "lua-load" string string*            -> global_lua_load
                 | "lua-load-per-thread" string string* -> global_lua_load_per_thread
                 | "lua-prepend-path" string [string]   -> global_lua_prepend_path
+                // Phase 14 - Remaining Global Directives (30 directives)
+                // Security & Process Management
+                | "cluster-secret" ":" string                    -> global_cluster_secret
+                | "expose-deprecated-directives" ":" boolean     -> global_expose_deprecated_directives
+                | "expose-experimental-directives" ":" boolean   -> global_expose_experimental_directives
+                | "insecure-fork-wanted" ":" boolean             -> global_insecure_fork_wanted
+                | "insecure-setuid-wanted" ":" boolean           -> global_insecure_setuid_wanted
+                | "harden.reject-privileged-ports.quic" ":" boolean -> global_harden_reject_privileged_ports_quic
+                | "harden.reject-privileged-ports.tcp" ":" boolean  -> global_harden_reject_privileged_ports_tcp
+                | "pp2-never-send-local" ":" boolean             -> global_pp2_never_send_local
+                | "prealloc-fd" ":" boolean                      -> global_prealloc_fd
+                | "ssl-skip-self-issued-ca" ":" boolean          -> global_ssl_skip_self_issued_ca
+                | "grace" ":" string                             -> global_grace
+                | "stats-file" ":" string                        -> global_stats_file
+                // CPU Management
+                | "cpu-policy" ":" string                        -> global_cpu_policy
+                | "cpu-set" ":" string                           -> global_cpu_set
+                // DNS
+                | "dns-accept-family" ":" string                 -> global_dns_accept_family
+                // HTTP/1 Protocol Options
+                | "h1-accept-payload-with-any-method" ":" boolean -> global_h1_accept_payload_with_any_method
+                | "h1-case-adjust" ":" string                    -> global_h1_case_adjust
+                | "h1-case-adjust-file" ":" string               -> global_h1_case_adjust_file
+                | "h1-do-not-close-on-insecure-transfer-encoding" ":" boolean -> global_h1_do_not_close_on_insecure_transfer_encoding
+                // HTTP/2 Protocol Options
+                | "h2-workaround-bogus-websocket-clients" ":" boolean -> global_h2_workaround_bogus_websocket_clients
+                // OCSP Update
+                | "ocsp-update.disable" ":" boolean              -> global_ocsp_update_disable
+                | "ocsp-update.httpproxy" ":" string             -> global_ocsp_update_httpproxy
+                | "ocsp-update.maxdelay" ":" number              -> global_ocsp_update_maxdelay
+                | "ocsp-update.mindelay" ":" number              -> global_ocsp_update_mindelay
+                | "ocsp-update.mode" ":" string                  -> global_ocsp_update_mode
+                // 51Degrees Additional Options
+                | "51degrees-allow-unmatched" ":" boolean        -> global_51degrees_allow_unmatched
+                | "51degrees-difference" ":" number              -> global_51degrees_difference
+                | "51degrees-drift" ":" number                   -> global_51degrees_drift
+                | "51degrees-use-performance-graph" ":" boolean  -> global_51degrees_use_performance_graph
+                | "51degrees-use-predictive-graph" ":" boolean   -> global_51degrees_use_predictive_graph
+                // Variables
+                | "set-var" string ":" string                    -> global_set_var
                 | log_target                           -> global_log
                 | lua_section                          -> global_lua
                 | stats_section                        -> global_stats

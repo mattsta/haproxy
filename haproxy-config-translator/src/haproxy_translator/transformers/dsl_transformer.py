@@ -1257,6 +1257,108 @@ class DSLTransformer(Transformer):
     def global_tune_zlib_windowsize(self, items: list[Any]) -> tuple[str, int]:
         return ("tune_zlib_windowsize", items[0])
 
+    # Phase 14 - Remaining Global Directives (30 directives)
+    # Security & Process Management
+    def global_cluster_secret(self, items: list[Any]) -> tuple[str, str]:
+        return ("cluster_secret", items[0])
+
+    def global_expose_deprecated_directives(self, items: list[Any]) -> tuple[str, bool]:
+        return ("expose_deprecated_directives", items[0])
+
+    def global_expose_experimental_directives(self, items: list[Any]) -> tuple[str, bool]:
+        return ("expose_experimental_directives", items[0])
+
+    def global_insecure_fork_wanted(self, items: list[Any]) -> tuple[str, bool]:
+        return ("insecure_fork_wanted", items[0])
+
+    def global_insecure_setuid_wanted(self, items: list[Any]) -> tuple[str, bool]:
+        return ("insecure_setuid_wanted", items[0])
+
+    def global_harden_reject_privileged_ports_quic(self, items: list[Any]) -> tuple[str, bool]:
+        return ("harden_reject_privileged_ports_quic", items[0])
+
+    def global_harden_reject_privileged_ports_tcp(self, items: list[Any]) -> tuple[str, bool]:
+        return ("harden_reject_privileged_ports_tcp", items[0])
+
+    def global_pp2_never_send_local(self, items: list[Any]) -> tuple[str, bool]:
+        return ("pp2_never_send_local", items[0])
+
+    def global_prealloc_fd(self, items: list[Any]) -> tuple[str, bool]:
+        return ("prealloc_fd", items[0])
+
+    def global_ssl_skip_self_issued_ca(self, items: list[Any]) -> tuple[str, bool]:
+        return ("ssl_skip_self_issued_ca", items[0])
+
+    def global_grace(self, items: list[Any]) -> tuple[str, str]:
+        return ("grace", items[0])
+
+    def global_stats_file(self, items: list[Any]) -> tuple[str, str]:
+        return ("stats_file", items[0])
+
+    # CPU Management
+    def global_cpu_policy(self, items: list[Any]) -> tuple[str, str]:
+        return ("cpu_policy", items[0])
+
+    def global_cpu_set(self, items: list[Any]) -> tuple[str, str]:
+        return ("cpu_set", items[0])
+
+    # DNS
+    def global_dns_accept_family(self, items: list[Any]) -> tuple[str, str]:
+        return ("dns_accept_family", items[0])
+
+    # HTTP/1 Protocol Options
+    def global_h1_accept_payload_with_any_method(self, items: list[Any]) -> tuple[str, bool]:
+        return ("h1_accept_payload_with_any_method", items[0])
+
+    def global_h1_case_adjust(self, items: list[Any]) -> tuple[str, str]:
+        return ("h1_case_adjust", items[0])
+
+    def global_h1_case_adjust_file(self, items: list[Any]) -> tuple[str, str]:
+        return ("h1_case_adjust_file", items[0])
+
+    def global_h1_do_not_close_on_insecure_transfer_encoding(self, items: list[Any]) -> tuple[str, bool]:
+        return ("h1_do_not_close_on_insecure_transfer_encoding", items[0])
+
+    # HTTP/2 Protocol Options
+    def global_h2_workaround_bogus_websocket_clients(self, items: list[Any]) -> tuple[str, bool]:
+        return ("h2_workaround_bogus_websocket_clients", items[0])
+
+    # OCSP Update
+    def global_ocsp_update_disable(self, items: list[Any]) -> tuple[str, bool]:
+        return ("ocsp_update_disable", items[0])
+
+    def global_ocsp_update_httpproxy(self, items: list[Any]) -> tuple[str, str]:
+        return ("ocsp_update_httpproxy", items[0])
+
+    def global_ocsp_update_maxdelay(self, items: list[Any]) -> tuple[str, int]:
+        return ("ocsp_update_maxdelay", items[0])
+
+    def global_ocsp_update_mindelay(self, items: list[Any]) -> tuple[str, int]:
+        return ("ocsp_update_mindelay", items[0])
+
+    def global_ocsp_update_mode(self, items: list[Any]) -> tuple[str, str]:
+        return ("ocsp_update_mode", items[0])
+
+    # 51Degrees Additional Options
+    def global_51degrees_allow_unmatched(self, items: list[Any]) -> tuple[str, bool]:
+        return ("51degrees_allow_unmatched", items[0])
+
+    def global_51degrees_difference(self, items: list[Any]) -> tuple[str, int]:
+        return ("51degrees_difference", items[0])
+
+    def global_51degrees_drift(self, items: list[Any]) -> tuple[str, int]:
+        return ("51degrees_drift", items[0])
+
+    def global_51degrees_use_performance_graph(self, items: list[Any]) -> tuple[str, bool]:
+        return ("51degrees_use_performance_graph", items[0])
+
+    def global_51degrees_use_predictive_graph(self, items: list[Any]) -> tuple[str, bool]:
+        return ("51degrees_use_predictive_graph", items[0])
+
+    # Variables
+    def global_set_var(self, items: list[Any]) -> tuple[str, tuple[str, str]]:
+        return ("set_var", (items[0], items[1]))
+
     def log_target(self, items: list[Any]) -> LogTarget:
         address = items[0]
         facility = LogFacility(items[1])

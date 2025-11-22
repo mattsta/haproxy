@@ -419,8 +419,25 @@ class ImplementationAnalyzer:
             "actions": [],
         }
 
-        global_pattern = r'"([a-zA-Z0-9._-]+)"\s*":"\s*.*?->\s*global_'
-        directives["global"] = sorted(set(re.findall(global_pattern, content)))
+        # Match directives with colon syntax: "directive" ":" value -> global_xxx
+        global_pattern_colon = r'"([a-zA-Z0-9._-]+)"\s*":"\s*.*?->\s*global_'
+        # Match directives without colon: "directive" value -> global_xxx
+        global_pattern_no_colon = r'"([a-zA-Z0-9._-]+)"\s+(?:string|number|boolean).*?->\s*global_'
+        # Match directives that are just rule references: | xxx -> global_xxx
+        global_pattern_rule = r'->\s*global_([a-zA-Z0-9_]+)'
+
+        found_directives = set()
+        found_directives.update(re.findall(global_pattern_colon, content))
+        found_directives.update(re.findall(global_pattern_no_colon, content))
+
+        # Also extract the directive name from the rule name (e.g., global_setenv -> setenv)
+        rule_names = re.findall(global_pattern_rule, content)
+        for rule_name in rule_names:
+            # Convert rule name back to directive name (e.g., setenv, lua_load -> lua-load)
+            directive = rule_name.replace("_", "-")
+            found_directives.add(directive)
+
+        directives["global"] = sorted(found_directives)
 
         frontend_pattern = r"->\s*frontend_([a-zA-Z0-9_]+)"
         directives["frontend"] = sorted(set(re.findall(frontend_pattern, content)))
