@@ -845,13 +845,105 @@ def generate_json_report(data: ReportData) -> str:
     return json.dumps(report, indent=2)
 
 
+def format_progress_bar(percentage: float, width: int = 30) -> str:
+    """Format a progress bar string."""
+    filled = int(percentage / 100 * width)
+    empty = width - filled
+    bar = "█" * filled + "░" * empty
+    return f"[{bar}] {percentage:5.1f}%"
+
+
+def format_status(percentage: float) -> str:
+    """Return a status indicator based on percentage."""
+    if percentage >= 100:
+        return "✓ COMPLETE"
+    elif percentage >= 95:
+        return "● EXCELLENT"
+    elif percentage >= 80:
+        return "● GOOD"
+    elif percentage >= 60:
+        return "○ PARTIAL"
+    else:
+        return "✗ INCOMPLETE"
+
+
+def print_coverage_summary(data: ReportData) -> None:
+    """Print a coverage summary to console."""
+    print("")
+    print("=" * 60)
+    print("  HAPROXY FEATURE PARITY ANALYSIS")
+    print("=" * 60)
+    print("")
+
+    # Global directives
+    g = data.global_coverage
+    print(f"  Global Directives:  {g.covered:3d} / {g.total:3d}  {format_status(g.coverage_pct)}")
+    print(f"                      {format_progress_bar(g.coverage_pct)}")
+    if g.missing:
+        print(f"                      Missing: {len(g.missing)} directives")
+    print("")
+
+    # Proxy keywords
+    p = data.proxy_coverage
+    effective_pct = p.coverage_pct
+    print(f"  Proxy Keywords:     {p.covered:3d} / {p.total:3d}  {format_status(effective_pct)}")
+    print(f"                      {format_progress_bar(effective_pct)}")
+    if p.deprecated > 0:
+        print(f"                      + {p.deprecated} deprecated (handled)")
+    if p.missing:
+        print(f"                      Missing: {len(p.missing)} keywords")
+    print("")
+
+    # Test coverage
+    t = data.test_data
+    print(f"  Test Files:         {t['total_files']:3d} files")
+    cats = t["categories"]
+    print(f"                      global:{cats['global']} bind:{cats['bind']} server:{cats['server']} actions:{cats['actions']}")
+    print("")
+
+    # Overall status
+    print("-" * 60)
+    overall = (g.coverage_pct + effective_pct) / 2
+    if overall >= 95:
+        status_msg = "Production Ready"
+    elif overall >= 80:
+        status_msg = "Near Complete"
+    elif overall >= 60:
+        status_msg = "Work in Progress"
+    else:
+        status_msg = "Early Development"
+
+    print(f"  Overall Coverage:   {overall:.1f}%  -  {status_msg}")
+    print("-" * 60)
+
+    # Show missing items summary if any
+    if g.missing or p.missing:
+        print("")
+        print("  Missing Features Summary:")
+        if g.missing:
+            shown = g.missing[:5]
+            print(f"    Global: {', '.join(shown)}")
+            if len(g.missing) > 5:
+                print(f"            ... and {len(g.missing) - 5} more")
+        if p.missing:
+            shown = p.missing[:5]
+            print(f"    Proxy:  {', '.join(shown)}")
+            if len(p.missing) > 5:
+                print(f"            ... and {len(p.missing) - 5} more")
+
+    print("")
+
+
 def collect_report_data(
     doc_path: Path, project_path: Path, verbose: bool = True
 ) -> ReportData:
     """Collect all data needed for the report."""
     log = print if verbose else lambda *args, **kwargs: None
 
-    log("Extracting from HAProxy documentation...")
+    log("Analyzing HAProxy documentation and implementation...")
+    log("")
+
+    # Extract from documentation
     extractor = DirectiveExtractor(doc_path)
     doc_data = {
         "global": extractor.extract_global_directives(),
@@ -861,24 +953,10 @@ def collect_report_data(
         "server": extractor.extract_server_options(),
     }
 
-    log(f"  Global directives: {sum(len(v) for v in doc_data['global'].values())}")
-    log(f"  Proxy keywords: {len(doc_data['proxy'])}")
-    log(f"  Actions: {len(doc_data['actions'])}")
-    log(f"  Bind options: {len(doc_data['bind'])}")
-    log(f"  Server options: {len(doc_data['server'])}")
-    log("")
-
-    log("Analyzing implementation...")
+    # Analyze implementation
     analyzer = ImplementationAnalyzer(project_path)
     impl_data = analyzer.extract_grammar_directives()
     test_data = analyzer.count_test_coverage()
-
-    log(f"  Global directives: {len(impl_data['global'])}")
-    log(f"  Frontend keywords: {len(impl_data['frontend'])}")
-    log(f"  Backend keywords: {len(impl_data['backend'])}")
-    log(f"  Server options: {len(impl_data['server'])}")
-    log(f"  Test files: {test_data['total_files']}")
-    log("")
 
     # Calculate coverage
     all_global = [d for cat in doc_data["global"].values() for d in cat]
@@ -889,7 +967,7 @@ def collect_report_data(
         grammar_content = f.read()
     proxy_coverage = calculate_proxy_coverage(doc_data["proxy"], grammar_content)
 
-    return ReportData(
+    report_data = ReportData(
         doc_data=doc_data,
         impl_data=impl_data,
         test_data=test_data,
@@ -897,6 +975,12 @@ def collect_report_data(
         proxy_coverage=proxy_coverage,
         doc_path=str(doc_path),
     )
+
+    # Print live coverage summary
+    if verbose:
+        print_coverage_summary(report_data)
+
+    return report_data
 
 
 def write_output(content: str, output: Path | TextIO | None, verbose: bool = True) -> None:
@@ -1020,11 +1104,7 @@ Examples:
 
     verbose = not args.quiet and not args.stdout
 
-    if verbose:
-        print("Generating comprehensive feature parity report...")
-        print()
-
-    # Collect data
+    # Collect data and print live analysis
     data = collect_report_data(args.docs, args.project, verbose=verbose)
 
     # Generate report
